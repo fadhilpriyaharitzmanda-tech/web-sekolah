@@ -532,126 +532,158 @@ function renderDigitalFlow(container) {
   container.innerHTML = `
     <div class="trx-modal-header">
       <div class="trx-modal-title-wrap">
-        <div class="trx-modal-icon" style="background: rgba(34, 197, 94, 0.12); color: #006e2f;">
+        <div class="trx-modal-icon">
           <span class="material-symbols-outlined">download_done</span>
         </div>
         <div>
           <h3 class="trx-modal-title">Transaksi Produk Digital</h3>
-          <p class="trx-modal-subtitle">${selectedProduct.jurusanName} (RPL)</p>
+          <p class="trx-modal-subtitle">TeFa Rekayasa Perangkat Lunak</p>
         </div>
       </div>
-      <button class="trx-modal-close" onclick="closeTransactionModal()">
-        <span class="material-symbols-outlined">close</span>
+      <button type="button" class="trx-modal-close" onclick="closeTransactionModal()" title="Tutup">
+        <span class="material-symbols-outlined" style="font-size: 1.15rem;">close</span>
       </button>
     </div>
 
     <form id="digitalForm" onsubmit="handleDigitalSubmit(event)">
       <div class="trx-modal-body">
         <div class="trx-alert trx-alert-info">
-          <span class="material-symbols-outlined">verified</span>
+          <span class="material-symbols-outlined">bolt</span>
           <div>
-            <strong>Metode Otomatis RPL:</strong> File source code/template akan langsung di-download otomatis setelah pembayaran terverifikasi, dan Serial License Key resmi dikirimkan ke email Anda.
+            File langsung terunduh otomatis &amp; lisensi resmi dikirim ke email.
           </div>
         </div>
 
         <!-- Detail Produk Ringkas -->
-        <div style="background: var(--surface-container-low); padding: 1rem 1.25rem; border-radius: 16px; border: 1px solid var(--outline-variant); display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <h4 style="font-size: 1rem; color: var(--on-surface); font-family: var(--font-heading); margin-bottom: 0.2rem;">${selectedProduct.title}</h4>
-            <span style="font-size: 0.8rem; color: var(--secondary);">${selectedProduct.category}</span>
+        <div class="trx-prod-preview-compact">
+          <div class="trx-pp-info">
+            <span class="trx-pp-cat">${selectedProduct.category}</span>
+            <h4 class="trx-pp-name">${selectedProduct.title}</h4>
+            <span class="trx-pp-sub">${selectedProduct.fileName || 'Paket Source Code & Template (.zip)'}</span>
           </div>
-          <div style="font-size: 1.2rem; font-weight: 800; color: var(--primary-dark);">
-            ${selectedProduct.priceFormatted}
-          </div>
+          <div class="trx-pp-price">${selectedProduct.priceFormatted}</div>
         </div>
 
         <div class="trx-grid-2">
           <div class="trx-field">
             <label class="trx-label">Nama Lengkap <span style="color:var(--error)">*</span></label>
-            <input type="text" class="trx-input" id="digName" placeholder="Contoh: Budi Santoso" required>
+            <input type="text" class="trx-input" id="digName" placeholder="Nama Anda" required>
           </div>
           <div class="trx-field">
             <label class="trx-label">Nomor WhatsApp <span style="color:var(--error)">*</span></label>
-            <input type="tel" class="trx-input" id="digPhone" placeholder="0812xxxxxxxx" required>
+            <input type="tel" class="trx-input" id="digPhone" placeholder="08xxxxxxxxxx" required>
           </div>
         </div>
 
         <div class="trx-field">
-          <label class="trx-label">Alamat Email (Pengiriman Lisensi) <span style="color:var(--error)">*</span></label>
+          <label class="trx-label">Email Penerima Lisensi <span style="color:var(--error)">*</span></label>
           <input type="email" class="trx-input" id="digEmail" placeholder="nama@email.com" required>
-          <small style="color: var(--secondary); font-size: 0.78rem;">Sistem akan mengirimkan sertifikat lisensi dan link unduhan cadangan ke email ini.</small>
+          <small class="trx-field-hint">Untuk pengiriman kode lisensi resmi &amp; link cadangan.</small>
         </div>
 
+        <!-- DROPDOWN PILIHAN PENGIRIMAN -->
         <div class="trx-field">
-          <label class="trx-label">Pilih Metode Pembayaran Cepat</label>
-          <div class="trx-tile-group cols-3">
-            <label class="trx-tile selected" onclick="selectPayTile(this)">
-              <input type="radio" name="payMethod" value="qris" checked>
-              <div class="trx-tile-content">
-                <span class="trx-tile-title">QRIS Instan</span>
-                <span class="trx-tile-sub">Semua E-Wallet/Bank</span>
-              </div>
-            </label>
-            <label class="trx-tile" onclick="selectPayTile(this)">
-              <input type="radio" name="payMethod" value="va">
-              <div class="trx-tile-content">
-                <span class="trx-tile-title">Virtual Account</span>
-                <span class="trx-tile-sub">BCA / Mandiri / BRI</span>
-              </div>
-            </label>
-            <label class="trx-tile" onclick="selectPayTile(this)">
-              <input type="radio" name="payMethod" value="ewallet">
-              <div class="trx-tile-content">
-                <span class="trx-tile-title">E-Wallet</span>
-                <span class="trx-tile-sub">GoPay / ShopeePay</span>
-              </div>
-            </label>
-          </div>
+          <label class="trx-label">Metode Pengiriman <span style="color:var(--error)">*</span></label>
+          <select class="trx-select" id="digShippingMethod" onchange="updateDigitalSummary()" required>
+            <option value="Unduh Langsung &amp; Email (Instan)" selected>Unduh Langsung &amp; Email (Instan)</option>
+            <option value="Kirim via Email Saja">Kirim via Email Saja</option>
+            <option value="Kirim via WhatsApp &amp; Email">Kirim via WhatsApp &amp; Email</option>
+            <option value="Google Drive Link (Email)">Google Drive Link via Email</option>
+            <option value="Akses GitHub Repo (Email)">Akses GitHub Repo via Email</option>
+          </select>
+        </div>
+
+        <!-- DROPDOWN METODE PEMBAYARAN -->
+        <div class="trx-field">
+          <label class="trx-label">Metode Pembayaran <span style="color:var(--error)">*</span></label>
+          <select class="trx-select" id="digPayMethod" onchange="updateDigitalSummary()" required>
+            <optgroup label="QRIS &amp; E-Wallet">
+              <option value="QRIS Instan" selected>QRIS Instan (Semua E-Wallet / Bank)</option>
+              <option value="GoPay">GoPay</option>
+              <option value="ShopeePay">ShopeePay</option>
+              <option value="DANA">DANA</option>
+              <option value="OVO">OVO</option>
+            </optgroup>
+            <optgroup label="Virtual Account">
+              <option value="BCA Virtual Account">BCA Virtual Account</option>
+              <option value="Mandiri Virtual Account">Mandiri Virtual Account</option>
+              <option value="BRI Virtual Account">BRI Virtual Account</option>
+              <option value="BNI Virtual Account">BNI Virtual Account</option>
+            </optgroup>
+            <optgroup label="Transfer Bank">
+              <option value="Transfer Bank TeFa SMKN 2">Transfer Rekening Sekolah TeFa SMKN 2</option>
+            </optgroup>
+          </select>
         </div>
 
         <div class="trx-summary-box">
           <div class="trx-summary-row">
-            <span>Harga Produk</span>
-            <span>${selectedProduct.priceFormatted}</span>
+            <span>Harga</span>
+            <span class="trx-summary-val">${selectedProduct.priceFormatted}</span>
           </div>
           <div class="trx-summary-row">
-            <span>Biaya Layanan & Download</span>
-            <span style="color: var(--primary-dark); font-weight: 600;">GRATIS</span>
+            <span>Pengiriman</span>
+            <span class="trx-summary-val" id="digSummaryShipping" style="color: var(--primary-dark); font-weight: 600;">Unduh &amp; Email (Gratis)</span>
+          </div>
+          <div class="trx-summary-row">
+            <span>Pembayaran</span>
+            <span class="trx-summary-val" id="digSummaryPay" style="font-weight: 600;">QRIS Instan</span>
           </div>
           <div class="trx-summary-row total">
-            <span>Total Pembayaran</span>
-            <span style="color: var(--primary-dark);">${selectedProduct.priceFormatted}</span>
+            <span>Total</span>
+            <span class="trx-summary-total">${selectedProduct.priceFormatted}</span>
           </div>
         </div>
       </div>
 
       <div class="trx-modal-footer">
-        <button type="button" class="btn-nav-outline" onclick="closeTransactionModal()">Batal</button>
-        <button type="submit" class="btn-primary" id="btnPayDigital">
-          <span>Konfirmasi &amp; Bayar</span>
-          <span class="material-symbols-outlined" style="font-size: 1.1rem;">arrow_forward</span>
+        <button type="button" class="trx-btn-cancel" onclick="closeTransactionModal()">Batal</button>
+        <button type="submit" class="trx-btn-submit" id="btnPayDigital">
+          <span>Bayar Sekarang</span>
+          <span class="material-symbols-outlined" style="font-size: 1rem;">arrow_forward</span>
         </button>
       </div>
     </form>
   `;
+
+  updateDigitalSummary();
+}
+
+function updateDigitalSummary() {
+  const shippingSelect = document.getElementById('digShippingMethod');
+  const paySelect = document.getElementById('digPayMethod');
+  const summaryShipping = document.getElementById('digSummaryShipping');
+  const summaryPay = document.getElementById('digSummaryPay');
+
+  if (shippingSelect && summaryShipping) {
+    const val = shippingSelect.value;
+    summaryShipping.innerText = val.length > 25 ? val.substring(0, 23) + '...' : val;
+    summaryShipping.title = val;
+  }
+  if (paySelect && summaryPay) {
+    const val = paySelect.value;
+    summaryPay.innerText = val.length > 25 ? val.substring(0, 23) + '...' : val;
+    summaryPay.title = val;
+  }
 }
 
 function handleDigitalSubmit(e) {
   e.preventDefault();
   const name = document.getElementById('digName').value;
   const email = document.getElementById('digEmail').value;
+  const shippingMethod = document.getElementById('digShippingMethod').value;
+  const payMethod = document.getElementById('digPayMethod').value;
   const btn = document.getElementById('btnPayDigital');
 
   btn.disabled = true;
-  btn.innerHTML = `<span class="material-symbols-outlined" style="animation: spin 1s linear infinite;">sync</span> <span>Memproses Pembayaran...</span>`;
+  btn.innerHTML = `<span class="material-symbols-outlined" style="animation: spin 1s linear infinite; font-size: 1rem;">sync</span> <span>Memproses...</span>`;
 
-  // Simulasi verifikasi instan
   setTimeout(() => {
-    showDigitalSuccess(name, email);
-  }, 1200);
+    showDigitalSuccess(name, email, shippingMethod, payMethod);
+  }, 900);
 }
 
-function showDigitalSuccess(name, email) {
+function showDigitalSuccess(name, email, shippingMethod, payMethod) {
   const container = document.getElementById('trxModalContent');
   const licenseKey = 'SMK2-RPL-' + Math.random().toString(36).substring(2, 6).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase() + '-2026';
   const orderId = 'INV-RPL-' + Math.floor(100000 + Math.random() * 900000);
@@ -659,16 +691,16 @@ function showDigitalSuccess(name, email) {
   container.innerHTML = `
     <div class="trx-modal-header">
       <div class="trx-modal-title-wrap">
-        <div class="trx-modal-icon" style="background: rgba(34, 197, 94, 0.15); color: #006e2f;">
+        <div class="trx-modal-icon">
           <span class="material-symbols-outlined">check_circle</span>
         </div>
         <div>
-          <h3 class="trx-modal-title">Pembayaran Sukses!</h3>
+          <h3 class="trx-modal-title">Pembayaran Berhasil!</h3>
           <p class="trx-modal-subtitle">${orderId}</p>
         </div>
       </div>
-      <button class="trx-modal-close" onclick="closeTransactionModal()">
-        <span class="material-symbols-outlined">close</span>
+      <button type="button" class="trx-modal-close" onclick="closeTransactionModal()" title="Tutup">
+        <span class="material-symbols-outlined" style="font-size: 1.15rem;">close</span>
       </button>
     </div>
 
@@ -677,54 +709,61 @@ function showDigitalSuccess(name, email) {
         <div class="trx-success-icon">
           <span class="material-symbols-outlined">verified</span>
         </div>
-        <h3 style="font-family: var(--font-heading); font-size: 1.35rem; color: var(--on-surface);">Terima Kasih, ${name}!</h3>
-        <p style="color: var(--secondary); font-size: 0.9rem; max-width: 440px; margin-top: 0.35rem;">
-          Pembayaran Anda telah dikonfirmasi secara otomatis. File siap diunduh dan lisensi resmi Anda telah diterbitkan.
+        <h3 class="trx-success-title">Terima Kasih, ${name}!</h3>
+        <p class="trx-success-desc">
+          Pembayaran terkonfirmasi. Lisensi resmi Anda telah aktif.
         </p>
 
         <div class="trx-ticket-card">
           <div class="trx-ticket-row">
-            <span style="color: var(--secondary);">Nama Produk</span>
+            <span>Produk</span>
             <strong>${selectedProduct.title}</strong>
           </div>
           <div class="trx-ticket-row">
-            <span style="color: var(--secondary);">Status Transaksi</span>
+            <span>Status</span>
             <span style="color: #006e2f; font-weight: 700;">Lunas (Verified)</span>
           </div>
           <div class="trx-ticket-row">
-            <span style="color: var(--secondary);">Email Pengiriman</span>
+            <span>Pengiriman</span>
+            <span>${shippingMethod || 'Unduh Langsung & Email'}</span>
+          </div>
+          <div class="trx-ticket-row">
+            <span>Pembayaran</span>
+            <span>${payMethod || 'QRIS Instan'}</span>
+          </div>
+          <div class="trx-ticket-row">
+            <span>Email</span>
             <span>${email}</span>
           </div>
-          <div style="margin-top: 1rem;">
-            <span style="font-size: 0.78rem; color: var(--secondary); font-weight: 600; text-transform: uppercase;">Kode Lisensi Resmi (License Key):</span>
+          <div style="margin-top: 0.35rem; border-top: 1px dashed var(--outline-variant); padding-top: 0.35rem;">
+            <span style="font-size: 0.72rem; color: var(--secondary); font-weight: 700; text-transform: uppercase;">Kode Lisensi Resmi:</span>
             <div class="trx-code-box">
               <span id="licenseCodeText">${licenseKey}</span>
-              <button class="trx-copy-btn" onclick="copyText('licenseCodeText', this)" title="Salin Lisensi">
-                <span class="material-symbols-outlined" style="font-size: 1.15rem;">content_copy</span>
+              <button type="button" class="trx-copy-btn" onclick="copyText('licenseCodeText', this)" title="Salin Lisensi">
+                <span class="material-symbols-outlined" style="font-size: 1rem;">content_copy</span>
               </button>
             </div>
-            <small style="color: var(--secondary); font-size: 0.78rem;">Salinan lisensi dan link cadangan telah otomatis dikirim ke <strong>${email}</strong>.</small>
+            <small class="trx-field-hint" style="margin-top: 0.25rem;">Salinan lisensi juga dikirim ke <strong>${email}</strong>.</small>
           </div>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 0.75rem; width: 100%;">
-          <button class="btn-primary" style="width: 100%; justify-content: center;" onclick="triggerFileDownload('${selectedProduct.fileName}')">
-            <span class="material-symbols-outlined">download</span>
-            <span>Download File Sekarang (${selectedProduct.fileName})</span>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
+          <button type="button" class="trx-btn-submit" style="width: 100%; justify-content: center;" onclick="triggerFileDownload('${selectedProduct.fileName || 'source-code.zip'}')">
+            <span class="material-symbols-outlined" style="font-size: 1rem;">download</span>
+            <span>Unduh File Sekarang (${selectedProduct.fileName || 'source-code.zip'})</span>
           </button>
-          <button class="btn-nav-outline" style="width: 100%; justify-content: center;" onclick="window.print()">
-            <span class="material-symbols-outlined">receipt_long</span>
-            <span>Cetak Bukti Pembayaran Digital</span>
+          <button type="button" class="trx-btn-cancel" style="width: 100%; justify-content: center;" onclick="window.print()">
+            <span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 0.25rem;">receipt_long</span>
+            <span>Cetak Bukti Transaksi</span>
           </button>
         </div>
       </div>
     </div>
   `;
 
-  // Auto trigger download dalam 2 detik
   setTimeout(() => {
-    triggerFileDownload(selectedProduct.fileName);
-  }, 2000);
+    triggerFileDownload(selectedProduct.fileName || 'source-code.zip');
+  }, 1600);
 }
 
 // -------------------------------------------------------------
@@ -732,7 +771,7 @@ function showDigitalSuccess(name, email) {
 // -------------------------------------------------------------
 function renderFisikFlow(container) {
   selectedShippingCost = 0;
-  selectedShippingName = 'Ambil Langsung di TeFa (Gedung B)';
+  selectedShippingName = 'Ambil di TeFa SMKN 2 (Gedung B)';
 
   container.innerHTML = `
     <div class="trx-modal-header">
@@ -745,8 +784,8 @@ function renderFisikFlow(container) {
           <p class="trx-modal-subtitle">Teaching Factory ${selectedProduct.jurusanName}</p>
         </div>
       </div>
-      <button class="trx-modal-close" onclick="closeTransactionModal()">
-        <span class="material-symbols-outlined">close</span>
+      <button type="button" class="trx-modal-close" onclick="closeTransactionModal()" title="Tutup">
+        <span class="material-symbols-outlined" style="font-size: 1.15rem;">close</span>
       </button>
     </div>
 
@@ -755,30 +794,29 @@ function renderFisikFlow(container) {
         <div class="trx-alert trx-alert-info">
           <span class="material-symbols-outlined">local_shipping</span>
           <div>
-            <strong>Metode Pengiriman TeFa:</strong> Anda dapat memilih dikirim via Kurir Lokal, Ekspedisi Reguler (JNE/J&T), atau diambil langsung di Teaching Factory SMKN 2 Karanganyar.
+            Pilih ambil di TeFa (Gratis), Kurir Lokal Solo Raya, atau Ekspedisi Reguler.
           </div>
         </div>
 
-        <div style="background: var(--surface-container-low); padding: 1rem 1.25rem; border-radius: 16px; border: 1px solid var(--outline-variant); display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <h4 style="font-size: 1rem; color: var(--on-surface); font-family: var(--font-heading); margin-bottom: 0.2rem;">${selectedProduct.title}</h4>
-            <span style="font-size: 0.8rem; color: var(--secondary);">${selectedProduct.category}</span>
+        <div class="trx-prod-preview-compact">
+          <div class="trx-pp-info">
+            <span class="trx-pp-cat">${selectedProduct.category}</span>
+            <h4 class="trx-pp-name">${selectedProduct.title}</h4>
+            <span class="trx-pp-sub">Produk Fisik TeFa</span>
           </div>
-          <div style="font-size: 1.2rem; font-weight: 800; color: var(--primary-dark);" id="itemBasePrice">
-            ${selectedProduct.priceFormatted}
-          </div>
+          <div class="trx-pp-price" id="itemBasePrice">${selectedProduct.priceFormatted}</div>
         </div>
 
         <div class="trx-grid-2">
           <div class="trx-field">
-            <label class="trx-label">Pilihan Varian / Ukuran / Spek</label>
+            <label class="trx-label">Pilihan Varian</label>
             <select class="trx-select" id="fisikVariant">
               <option value="Standar">Varian Standar / All Size</option>
               <option value="S">Ukuran S (Small)</option>
               <option value="M" selected>Ukuran M (Medium)</option>
               <option value="L">Ukuran L (Large)</option>
               <option value="XL">Ukuran XL (Extra Large)</option>
-              <option value="Custom">Kustom Spesifikasi Teknis</option>
+              <option value="Custom">Kustom Spesifikasi</option>
             </select>
           </div>
           <div class="trx-field">
@@ -787,91 +825,83 @@ function renderFisikFlow(container) {
           </div>
         </div>
 
+        <!-- DROPDOWN PILIHAN PENGIRIMAN FISIK -->
         <div class="trx-field">
-          <label class="trx-label">Pilihan Pengiriman / Pemenuhan <span style="color:var(--error)">*</span></label>
-          <div class="trx-tile-group">
-            <label class="trx-tile selected" onclick="selectShippingTile(this, 0, 'Ambil Langsung di TeFa SMKN 2 Karanganyar (Gedung B)')">
-              <input type="radio" name="shippingMethod" value="tefa" checked>
-              <div class="trx-tile-content">
-                <span class="trx-tile-title">Ambil Langsung di Teaching Factory (TeFa)</span>
-                <span class="trx-tile-sub">SMKN 2 Karanganyar Gedung B • Jam 08.00 - 15.30 WIB</span>
-                <span class="trx-tile-price">GRATIS (Rp 0)</span>
-              </div>
-            </label>
+          <label class="trx-label">Metode Pengiriman <span style="color:var(--error)">*</span></label>
+          <select class="trx-select" id="fisikShippingSelect" onchange="handleShippingDropdownChange(this)" required>
+            <option value="tefa" data-cost="0" data-name="Ambil di TeFa SMKN 2 (Gedung B)" selected>Ambil di TeFa SMKN 2 (Gratis - Rp 0)</option>
+            <option value="lokal" data-cost="15000" data-name="Kurir Lokal Solo Raya">Kurir Lokal Solo Raya (+ Rp 15.000)</option>
+            <option value="ekspedisi" data-cost="25000" data-name="Ekspedisi Reguler Nasional">Ekspedisi Reguler Nasional (+ Rp 25.000)</option>
+          </select>
+        </div>
 
-            <label class="trx-tile" onclick="selectShippingTile(this, 15000, 'Kurir Lokal Karanganyar - Solo Raya')">
-              <input type="radio" name="shippingMethod" value="lokal">
-              <div class="trx-tile-content">
-                <span class="trx-tile-title">Kurir Lokal (Wilayah Karanganyar - Solo)</span>
-                <span class="trx-tile-sub">Pengiriman cepat sampai di hari yang sama/berikutnya</span>
-                <span class="trx-tile-price">+ Rp 15.000</span>
-              </div>
-            </label>
-
-            <label class="trx-tile" onclick="selectShippingTile(this, 25000, 'Ekspedisi Reguler (JNE / J&T / SiCepat)')">
-              <input type="radio" name="shippingMethod" value="ekspedisi">
-              <div class="trx-tile-content">
-                <span class="trx-tile-title">Ekspedisi Nasional (JNE / J&T / SiCepat)</span>
-                <span class="trx-tile-sub">Pengiriman ke seluruh Indonesia dengan nomor resi online</span>
-                <span class="trx-tile-price">+ Rp 25.000</span>
-              </div>
-            </label>
-          </div>
+        <!-- DROPDOWN METODE PEMBAYARAN FISIK -->
+        <div class="trx-field">
+          <label class="trx-label">Metode Pembayaran <span style="color:var(--error)">*</span></label>
+          <select class="trx-select" id="fisikPayMethod" required>
+            <optgroup label="Online Otomatis">
+              <option value="QRIS Instan" selected>QRIS Instan (Semua E-Wallet &amp; Bank)</option>
+              <option value="Virtual Account">Virtual Account (BCA / Mandiri / BRI / BNI)</option>
+            </optgroup>
+            <optgroup label="Langsung &amp; Transfer">
+              <option value="Bayar di TeFa (COD / Kasir)">Bayar di Tempat (Kasir TeFa / COD)</option>
+              <option value="Transfer Bank TeFa">Transfer Bank Rekening Sekolah</option>
+            </optgroup>
+          </select>
         </div>
 
         <div class="trx-grid-2">
           <div class="trx-field">
-            <label class="trx-label">Nama Lengkap Penerima <span style="color:var(--error)">*</span></label>
+            <label class="trx-label">Nama Penerima <span style="color:var(--error)">*</span></label>
             <input type="text" class="trx-input" id="fisikName" placeholder="Nama Anda" required>
           </div>
           <div class="trx-field">
-            <label class="trx-label">Nomor WhatsApp / HP <span style="color:var(--error)">*</span></label>
+            <label class="trx-label">Nomor WhatsApp <span style="color:var(--error)">*</span></label>
             <input type="tel" class="trx-input" id="fisikPhone" placeholder="08xxxxxxxxxx" required>
           </div>
         </div>
 
         <div class="trx-field" id="addressFieldWrap" style="display: none;">
-          <label class="trx-label">Alamat Lengkap Pengiriman <span style="color:var(--error)">*</span></label>
-          <textarea class="trx-textarea" id="fisikAddress" rows="2" placeholder="Jalan, RT/RW, Kelurahan, Kecamatan, Kabupaten/Kota, Kode Pos"></textarea>
+          <label class="trx-label">Alamat Pengiriman <span style="color:var(--error)">*</span></label>
+          <textarea class="trx-textarea" id="fisikAddress" rows="2" placeholder="Alamat lengkap tujuan pengiriman"></textarea>
         </div>
 
         <div class="trx-field">
-          <label class="trx-label">Catatan Tambahan / Kustomisasi (Opsional)</label>
-          <input type="text" class="trx-input" id="fisikNotes" placeholder="Contoh: Bordir nama, toleransi ukuran baut, dll">
+          <label class="trx-label">Catatan (Opsional)</label>
+          <input type="text" class="trx-input" id="fisikNotes" placeholder="Catatan pesanan / kustomisasi (opsional)">
         </div>
 
         <div class="trx-summary-box">
           <div class="trx-summary-row">
-            <span>Subtotal Produk (<span id="summaryQty">1</span> item)</span>
-            <span id="summarySubtotal">${selectedProduct.priceFormatted}</span>
+            <span>Subtotal (<span id="summaryQty">1</span> item)</span>
+            <span id="summarySubtotal" class="trx-summary-val">${selectedProduct.priceFormatted}</span>
           </div>
           <div class="trx-summary-row">
-            <span>Metode Pemenuhan</span>
-            <span id="summaryShippingName" style="font-weight: 600;">Ambil di TeFa (Rp 0)</span>
+            <span>Ongkir</span>
+            <span id="summaryShippingName" class="trx-summary-val" style="font-weight: 600;">Ambil di TeFa (Rp 0)</span>
           </div>
           <div class="trx-summary-row total">
-            <span>Total Akhir</span>
-            <span id="summaryTotal" style="color: var(--primary-dark);">${selectedProduct.priceFormatted}</span>
+            <span>Total</span>
+            <span id="summaryTotal" class="trx-summary-total">${selectedProduct.priceFormatted}</span>
           </div>
         </div>
       </div>
 
       <div class="trx-modal-footer">
-        <button type="button" class="btn-nav-outline" onclick="closeTransactionModal()">Batal</button>
-        <button type="submit" class="btn-primary" id="btnFisikPay">
-          <span>Checkout &amp; Pesan Produk</span>
-          <span class="material-symbols-outlined" style="font-size: 1.1rem;">arrow_forward</span>
+        <button type="button" class="trx-btn-cancel" onclick="closeTransactionModal()">Batal</button>
+        <button type="submit" class="trx-btn-submit" id="btnFisikPay">
+          <span>Pesan Sekarang</span>
+          <span class="material-symbols-outlined" style="font-size: 1rem;">arrow_forward</span>
         </button>
       </div>
     </form>
   `;
 }
 
-function selectShippingTile(tile, cost, name) {
-  const group = tile.closest('.trx-tile-group');
-  group.querySelectorAll('.trx-tile').forEach(t => t.classList.remove('selected'));
-  tile.classList.add('selected');
-  tile.querySelector('input[type="radio"]').checked = true;
+function handleShippingDropdownChange(select) {
+  const selectedOption = select.options[select.selectedIndex];
+  const cost = parseInt(selectedOption.getAttribute('data-cost')) || 0;
+  const name = selectedOption.getAttribute('data-name') || selectedOption.text;
 
   selectedShippingCost = cost;
   selectedShippingName = name;
@@ -904,7 +934,7 @@ function updateFisikTotal() {
   if (summarySubtotal) summarySubtotal.innerText = 'Rp ' + subtotal.toLocaleString('id-ID');
   if (summaryShippingName) {
     summaryShippingName.innerText = selectedShippingCost === 0
-      ? 'Ambil Langsung di TeFa (Gratis)'
+      ? 'Ambil di TeFa (Gratis)'
       : `${selectedShippingName} (+ Rp ${selectedShippingCost.toLocaleString('id-ID')})`;
   }
   if (summaryTotal) summaryTotal.innerText = 'Rp ' + total.toLocaleString('id-ID');
@@ -916,17 +946,18 @@ function handleFisikSubmit(e) {
   const phone = document.getElementById('fisikPhone').value;
   const qty = document.getElementById('fisikQty').value;
   const variant = document.getElementById('fisikVariant').value;
+  const payMethod = document.getElementById('fisikPayMethod').value;
   const btn = document.getElementById('btnFisikPay');
 
   btn.disabled = true;
-  btn.innerHTML = `<span class="material-symbols-outlined" style="animation: spin 1s linear infinite;">sync</span> <span>Membuat Pesanan TeFa...</span>`;
+  btn.innerHTML = `<span class="material-symbols-outlined" style="animation: spin 1s linear infinite; font-size: 1rem;">sync</span> <span>Memproses...</span>`;
 
   setTimeout(() => {
-    showFisikSuccess(name, phone, qty, variant);
-  }, 1200);
+    showFisikSuccess(name, phone, qty, variant, payMethod);
+  }, 900);
 }
 
-function showFisikSuccess(name, phone, qty, variant) {
+function showFisikSuccess(name, phone, qty, variant, payMethod) {
   const container = document.getElementById('trxModalContent');
   const trxCode = 'TEFA-TRX-' + Math.floor(100000 + Math.random() * 900000);
   const subtotal = selectedProduct.price * parseInt(qty);
@@ -939,12 +970,12 @@ function showFisikSuccess(name, phone, qty, variant) {
           <span class="material-symbols-outlined">receipt</span>
         </div>
         <div>
-          <h3 class="trx-modal-title">Pesanan TeFa Berhasil!</h3>
+          <h3 class="trx-modal-title">Pesanan Diterima!</h3>
           <p class="trx-modal-subtitle">${trxCode}</p>
         </div>
       </div>
-      <button class="trx-modal-close" onclick="closeTransactionModal()">
-        <span class="material-symbols-outlined">close</span>
+      <button type="button" class="trx-modal-close" onclick="closeTransactionModal()" title="Tutup">
+        <span class="material-symbols-outlined" style="font-size: 1.15rem;">close</span>
       </button>
     </div>
 
@@ -953,60 +984,64 @@ function showFisikSuccess(name, phone, qty, variant) {
         <div class="trx-success-icon">
           <span class="material-symbols-outlined">check_circle</span>
         </div>
-        <h3 style="font-family: var(--font-heading); font-size: 1.35rem; color: var(--on-surface);">Pesanan Dikonfirmasi!</h3>
-        <p style="color: var(--secondary); font-size: 0.9rem; max-width: 440px; margin-top: 0.35rem;">
-          Terima kasih <strong>${name}</strong>, pesanan produk fisik Anda telah masuk ke sistem Teaching Factory SMKN 2 Karanganyar.
+        <h3 class="trx-success-title">Pesanan Dikonfirmasi!</h3>
+        <p class="trx-success-desc">
+          Terima kasih <strong>${name}</strong>, pesanan Anda telah masuk ke sistem TeFa SMKN 2 Karanganyar.
         </p>
 
         <div class="trx-ticket-card">
           <div class="trx-ticket-row">
-            <span style="color: var(--secondary);">Nomor Pesanan</span>
+            <span>No. Pesanan</span>
             <strong>${trxCode}</strong>
           </div>
           <div class="trx-ticket-row">
-            <span style="color: var(--secondary);">Produk & Varian</span>
+            <span>Produk</span>
             <span>${selectedProduct.title} (${variant}, ${qty} pcs)</span>
           </div>
           <div class="trx-ticket-row">
-            <span style="color: var(--secondary);">Opsi Pemenuhan</span>
+            <span>Pengiriman</span>
             <span style="font-weight: 700; color: var(--primary-dark);">${selectedShippingName}</span>
           </div>
           <div class="trx-ticket-row">
-            <span style="color: var(--secondary);">Total Pembayaran</span>
-            <strong style="color: var(--primary-dark); font-size: 1.05rem;">Rp ${total.toLocaleString('id-ID')}</strong>
+            <span>Pembayaran</span>
+            <span>${payMethod || 'QRIS Instan'}</span>
           </div>
-          <div style="margin-top: 1rem;">
-            <span style="font-size: 0.78rem; color: var(--secondary); font-weight: 600; text-transform: uppercase;">Kode Pengambilan / Lacak Resi:</span>
+          <div class="trx-ticket-row">
+            <span>Total</span>
+            <strong style="color: var(--primary-dark); font-size: 0.95rem;">Rp ${total.toLocaleString('id-ID')}</strong>
+          </div>
+          <div style="margin-top: 0.35rem; border-top: 1px dashed var(--outline-variant); padding-top: 0.35rem;">
+            <span style="font-size: 0.72rem; color: var(--secondary); font-weight: 700; text-transform: uppercase;">Kode Pengambilan / Resi:</span>
             <div class="trx-code-box">
               <span id="trxResiCode">${trxCode}</span>
-              <button class="trx-copy-btn" onclick="copyText('trxResiCode', this)" title="Salin Kode">
-                <span class="material-symbols-outlined" style="font-size: 1.15rem;">content_copy</span>
+              <button type="button" class="trx-copy-btn" onclick="copyText('trxResiCode', this)" title="Salin Kode">
+                <span class="material-symbols-outlined" style="font-size: 1rem;">content_copy</span>
               </button>
             </div>
             ${selectedShippingCost === 0 ? `
-              <div class="trx-alert trx-alert-success" style="margin-top: 0.75rem;">
+              <div class="trx-alert trx-alert-success" style="margin-top: 0.45rem;">
                 <span class="material-symbols-outlined">storefront</span>
                 <div>
-                  <strong>Lokasi Pengambilan:</strong> Tunjukkan kode pesanan ini di Kasir/Unit Produksi Teaching Factory SMKN 2 Karanganyar (Gedung B) pada jam operasional sekolah (08.00 - 15.30 WIB).
+                  Tunjukkan kode ini di Kasir TeFa Gedung B (08.00 - 15.30 WIB).
                 </div>
               </div>
             ` : `
-              <div class="trx-alert trx-alert-info" style="margin-top: 0.75rem;">
+              <div class="trx-alert trx-alert-info" style="margin-top: 0.45rem;">
                 <span class="material-symbols-outlined">local_shipping</span>
                 <div>
-                  Pesanan akan segera dikemas dan dikirimkan ke alamat Anda. Konfirmasi resi pengiriman juga dikirim via WhatsApp ke <strong>${phone}</strong>.
+                  Pesanan segera dikemas. Update resi dikirim via WhatsApp ke <strong>${phone}</strong>.
                 </div>
               </div>
             `}
           </div>
         </div>
 
-        <div style="display: flex; gap: 0.75rem; width: 100%;">
-          <button class="btn-primary" style="flex: 1; justify-content: center;" onclick="window.print()">
-            <span class="material-symbols-outlined">print</span>
-            <span>Cetak Invoice / Bukti Ambil</span>
+        <div style="display: flex; gap: 0.5rem; width: 100%;">
+          <button type="button" class="trx-btn-submit" style="flex: 1; justify-content: center;" onclick="window.print()">
+            <span class="material-symbols-outlined" style="font-size: 1rem;">print</span>
+            <span>Cetak Invoice</span>
           </button>
-          <button class="btn-nav-outline" style="flex: 1; justify-content: center;" onclick="closeTransactionModal()">
+          <button type="button" class="trx-btn-cancel" style="flex: 1; justify-content: center;" onclick="closeTransactionModal()">
             <span>Selesai</span>
           </button>
         </div>
@@ -1019,7 +1054,6 @@ function showFisikSuccess(name, phone, qty, variant) {
 // 3. FLOW BOOKING SERVIS: OTOTRONIK & MESIN (APPOINTMENT & BAYAR DI TEMPAT)
 // -------------------------------------------------------------
 function renderBookingFlow(container) {
-  // Hitung tanggal besok sebagai tanggal default minimal
   const today = new Date();
   today.setDate(today.getDate() + 1);
   const minDate = today.toISOString().split('T')[0];
@@ -1031,12 +1065,12 @@ function renderBookingFlow(container) {
           <span class="material-symbols-outlined">calendar_month</span>
         </div>
         <div>
-          <h3 class="trx-modal-title">Booking Jadwal Servis Bengkel</h3>
+          <h3 class="trx-modal-title">Booking Servis Bengkel</h3>
           <p class="trx-modal-subtitle">${selectedProduct.jurusanName}</p>
         </div>
       </div>
-      <button class="trx-modal-close" onclick="closeTransactionModal()">
-        <span class="material-symbols-outlined">close</span>
+      <button type="button" class="trx-modal-close" onclick="closeTransactionModal()" title="Tutup">
+        <span class="material-symbols-outlined" style="font-size: 1.15rem;">close</span>
       </button>
     </div>
 
@@ -1045,60 +1079,56 @@ function renderBookingFlow(container) {
         <div class="trx-alert trx-alert-warning">
           <span class="material-symbols-outlined">payments</span>
           <div>
-            <strong>Alur Pembayaran Servis:</strong> Tanpa biaya di muka! Pelanggan memesan slot jadwal online, datang ke bengkel sekolah sesuai jadwal, lalu <strong>melakukan pembayaran di kasir TeFa setelah servis selesai</strong>.
+            Tanpa biaya di muka. Pembayaran dilakukan di kasir setelah servis selesai.
           </div>
         </div>
 
-        <div style="background: var(--surface-container-low); padding: 1rem 1.25rem; border-radius: 16px; border: 1px solid var(--outline-variant); display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <h4 style="font-size: 1rem; color: var(--on-surface); font-family: var(--font-heading); margin-bottom: 0.2rem;">${selectedProduct.title}</h4>
-            <span style="font-size: 0.8rem; color: var(--secondary);">${selectedProduct.category}</span>
+        <div class="trx-prod-preview-compact">
+          <div class="trx-pp-info">
+            <span class="trx-pp-cat">${selectedProduct.category}</span>
+            <h4 class="trx-pp-name">${selectedProduct.title}</h4>
+            <span class="trx-pp-sub">Jasa Servis TeFa</span>
           </div>
-          <div style="font-size: 1.15rem; font-weight: 800; color: var(--primary-dark);">
-            ${selectedProduct.priceFormatted}
-          </div>
+          <div class="trx-pp-price">${selectedProduct.priceFormatted}</div>
         </div>
 
-        <!-- Pemilihan Jadwal -->
         <div class="trx-field">
-          <label class="trx-label">Pilih Tanggal Booking <span style="color:var(--error)">*</span></label>
+          <label class="trx-label">Tanggal Booking <span style="color:var(--error)">*</span></label>
           <input type="date" class="trx-input" id="bookDate" min="${minDate}" value="${minDate}" required>
         </div>
 
         <div class="trx-field">
-          <label class="trx-label">Pilih Sesi Jam / Slot Waktu Kedatangan <span style="color:var(--error)">*</span></label>
+          <label class="trx-label">Sesi Kedatangan <span style="color:var(--error)">*</span></label>
           <div class="trx-slots-grid">
             <button type="button" class="trx-slot-btn selected" onclick="selectSlotBtn(this, '08:30 - 10:00 WIB')">
-              08:30 - 10:00 WIB<br><small style="color:inherit; opacity:0.8;">(Sesi Pagi 1)</small>
+              08:30 - 10:00 WIB<br><small style="color:inherit; opacity:0.8;">(Pagi 1)</small>
             </button>
             <button type="button" class="trx-slot-btn" onclick="selectSlotBtn(this, '10:30 - 12:00 WIB')">
-              10:30 - 12:00 WIB<br><small style="color:inherit; opacity:0.8;">(Sesi Pagi 2)</small>
+              10:30 - 12:00 WIB<br><small style="color:inherit; opacity:0.8;">(Pagi 2)</small>
             </button>
             <button type="button" class="trx-slot-btn" onclick="selectSlotBtn(this, '13:00 - 14:30 WIB')">
-              13:00 - 14:30 WIB<br><small style="color:inherit; opacity:0.8;">(Sesi Siang)</small>
+              13:00 - 14:30 WIB<br><small style="color:inherit; opacity:0.8;">(Siang)</small>
             </button>
             <button type="button" class="trx-slot-btn" onclick="selectSlotBtn(this, '14:30 - 16:00 WIB')">
-              14:30 - 16:00 WIB<br><small style="color:inherit; opacity:0.8;">(Sesi Sore)</small>
+              14:30 - 16:00 WIB<br><small style="color:inherit; opacity:0.8;">(Sore)</small>
             </button>
           </div>
         </div>
 
-        <!-- Data Kendaraan / Alat -->
         <div class="trx-grid-2">
           <div class="trx-field">
-            <label class="trx-label">Tipe Kendaraan / Mesin <span style="color:var(--error)">*</span></label>
-            <input type="text" class="trx-input" id="bookVehicle" placeholder="Cth: Honda Vario 160 / Avanza 2021" required>
+            <label class="trx-label">Kendaraan / Mesin <span style="color:var(--error)">*</span></label>
+            <input type="text" class="trx-input" id="bookVehicle" placeholder="Cth: Vario 160 / Avanza" required>
           </div>
           <div class="trx-field">
-            <label class="trx-label">Nomor Polisi / Seri Alat <span style="color:var(--error)">*</span></label>
-            <input type="text" class="trx-input" id="bookPlate" placeholder="Cth: AD 5678 BZ" required>
+            <label class="trx-label">Plat Nomor / Seri <span style="color:var(--error)">*</span></label>
+            <input type="text" class="trx-input" id="bookPlate" placeholder="Cth: AD 1234 BZ" required>
           </div>
         </div>
 
-        <!-- Data Pelanggan -->
         <div class="trx-grid-2">
           <div class="trx-field">
-            <label class="trx-label">Nama Pemilik / Pelanggan <span style="color:var(--error)">*</span></label>
+            <label class="trx-label">Nama Pemesan <span style="color:var(--error)">*</span></label>
             <input type="text" class="trx-input" id="bookCustomer" placeholder="Nama Anda" required>
           </div>
           <div class="trx-field">
@@ -1108,31 +1138,31 @@ function renderBookingFlow(container) {
         </div>
 
         <div class="trx-field">
-          <label class="trx-label">Keluhan atau Catatan Tambahan</label>
-          <textarea class="trx-textarea" id="bookComplaint" rows="2" placeholder="Cth: Tarikan motor tersendat di RPM rendah, AC kurang dingin, dll"></textarea>
+          <label class="trx-label">Keluhan Singkat (Opsional)</label>
+          <input type="text" class="trx-input" id="bookComplaint" placeholder="Keluhan atau perbaikan yang diinginkan (opsional)">
         </div>
 
         <div class="trx-summary-box">
           <div class="trx-summary-row">
-            <span>Estimasi Biaya Jasa Servis</span>
-            <span>${selectedProduct.priceFormatted}</span>
+            <span>Estimasi Biaya Servis</span>
+            <span class="trx-summary-val">${selectedProduct.priceFormatted}</span>
           </div>
           <div class="trx-summary-row">
-            <span>Metode Pembayaran</span>
-            <span style="font-weight: 700; color: #006e2f;">Bayar Setelah Servis Selesai di Bengkel</span>
+            <span>Metode Bayar</span>
+            <span class="trx-summary-val" style="font-weight: 600; color: #006e2f;">Bayar Selesai Servis di Bengkel</span>
           </div>
           <div class="trx-summary-row total">
             <span>Biaya Booking Online</span>
-            <span style="color: var(--primary-dark); font-weight: 800;">GRATIS (Rp 0)</span>
+            <span class="trx-summary-total" style="font-size: 0.95rem;">GRATIS (Rp 0)</span>
           </div>
         </div>
       </div>
 
       <div class="trx-modal-footer">
-        <button type="button" class="btn-nav-outline" onclick="closeTransactionModal()">Batal</button>
-        <button type="submit" class="btn-primary" id="btnBookSubmit" style="background: #dc2626;">
-          <span>Konfirmasi Booking Jadwal</span>
-          <span class="material-symbols-outlined" style="font-size: 1.1rem;">event_available</span>
+        <button type="button" class="trx-btn-cancel" onclick="closeTransactionModal()">Batal</button>
+        <button type="submit" class="trx-btn-submit" id="btnBookSubmit" style="background: #dc2626; color: #ffffff;">
+          <span>Konfirmasi Booking</span>
+          <span class="material-symbols-outlined" style="font-size: 1rem;">event_available</span>
         </button>
       </div>
     </form>
@@ -1156,11 +1186,118 @@ function handleBookingSubmit(e) {
   const btn = document.getElementById('btnBookSubmit');
 
   btn.disabled = true;
-  btn.innerHTML = `<span class="material-symbols-outlined" style="animation: spin 1s linear infinite;">sync</span> <span>Menerbitkan E-Tiket Booking...</span>`;
+  btn.innerHTML = `<span class="material-symbols-outlined" style="animation: spin 1s linear infinite; font-size: 1rem;">sync</span> <span>Memproses...</span>`;
 
   setTimeout(() => {
     showBookingSuccess(customer, phone, vehicle, plate, date);
-  }, 1200);
+  }, 900);
+}
+
+function showBookingSuccess(customer, phone, vehicle, plate, date) {
+  const container = document.getElementById('trxModalContent');
+  const bookingCode = 'BOOK-OTO-' + Math.floor(100000 + Math.random() * 900000);
+
+  const dObj = new Date(date);
+  const dateFormatted = dObj.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  container.innerHTML = `
+    <div class="trx-modal-header">
+      <div class="trx-modal-title-wrap">
+        <div class="trx-modal-icon" style="background: rgba(34, 197, 94, 0.15); color: #006e2f;">
+          <span class="material-symbols-outlined">confirmation_number</span>
+        </div>
+        <div>
+          <h3 class="trx-modal-title">E-Tiket Booking Terbit!</h3>
+          <p class="trx-modal-subtitle">${bookingCode}</p>
+        </div>
+      </div>
+      <button type="button" class="trx-modal-close" onclick="closeTransactionModal()" title="Tutup">
+        <span class="material-symbols-outlined" style="font-size: 1.15rem;">close</span>
+      </button>
+    </div>
+
+    <div class="trx-modal-body">
+      <div class="trx-success-wrap">
+        <div class="trx-success-icon" style="background: rgba(34, 197, 94, 0.15); color: #006e2f;">
+          <span class="material-symbols-outlined">event_available</span>
+        </div>
+        <h3 class="trx-success-title">Jadwal Servis Dikonfirmasi!</h3>
+        <p class="trx-success-desc">
+          Halo <strong>${customer}</strong>, jadwal servis Anda telah terdaftar di Bengkel TeFa SMKN 2 Karanganyar.
+        </p>
+
+        <div class="trx-ticket-card">
+          <div class="trx-ticket-row">
+            <span>Kode Booking</span>
+            <strong style="color: var(--primary-dark);">${bookingCode}</strong>
+          </div>
+          <div class="trx-ticket-row">
+            <span>Layanan</span>
+            <span>${selectedProduct.title}</span>
+          </div>
+          <div class="trx-ticket-row">
+            <span>Jadwal</span>
+            <strong style="color: var(--on-surface);">${dateFormatted}</strong>
+          </div>
+          <div class="trx-ticket-row">
+            <span>Sesi Kedatangan</span>
+            <span style="font-weight: 700; color: #dc2626;">${selectedSlot}</span>
+          </div>
+          <div class="trx-ticket-row">
+            <span>Kendaraan</span>
+            <span>${vehicle} (${plate})</span>
+          </div>
+          <div class="trx-ticket-row">
+            <span>Pembayaran</span>
+            <span style="font-weight: 700; color: #006e2f;">Bayar Selesai Servis</span>
+          </div>
+
+          <div style="margin-top: 0.35rem; border-top: 1px dashed var(--outline-variant); padding-top: 0.35rem;">
+            <div class="trx-alert trx-alert-info">
+              <span class="material-symbols-outlined">pin_drop</span>
+              <div>
+                Datang 10 menit sebelum jadwal ke Bengkel TeFa dan tunjukkan kode booking ini.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; width: 100%;">
+          <button type="button" class="trx-btn-submit" style="flex: 1; justify-content: center;" onclick="window.print()">
+            <span class="material-symbols-outlined" style="font-size: 1rem;">print</span>
+            <span>Cetak E-Tiket</span>
+          </button>
+          <button type="button" class="trx-btn-cancel" style="flex: 1; justify-content: center;" onclick="closeTransactionModal()">
+            <span>Selesai</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function selectSlotBtn(btn, slotText) {
+  const parent = btn.parentElement;
+  parent.querySelectorAll('.trx-slot-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedSlot = slotText;
+}
+
+function handleBookingSubmit(e) {
+  e.preventDefault();
+  const customer = document.getElementById('bookCustomer').value;
+  const phone = document.getElementById('bookPhone').value;
+  const vehicle = document.getElementById('bookVehicle').value;
+  const plate = document.getElementById('bookPlate').value;
+  const date = document.getElementById('bookDate').value;
+  const btn = document.getElementById('btnBookSubmit');
+
+  btn.disabled = true;
+  btn.innerHTML = `<span class="material-symbols-outlined" style="animation: spin 1s linear infinite; font-size: 1.05rem;">sync</span> <span>Menerbitkan E-Tiket...</span>`;
+
+  setTimeout(() => {
+    showBookingSuccess(customer, phone, vehicle, plate, date);
+  }, 1000);
 }
 
 function showBookingSuccess(customer, phone, vehicle, plate, date) {
@@ -1182,8 +1319,8 @@ function showBookingSuccess(customer, phone, vehicle, plate, date) {
           <p class="trx-modal-subtitle">${bookingCode}</p>
         </div>
       </div>
-      <button class="trx-modal-close" onclick="closeTransactionModal()">
-        <span class="material-symbols-outlined">close</span>
+      <button type="button" class="trx-modal-close" onclick="closeTransactionModal()" title="Tutup">
+        <span class="material-symbols-outlined" style="font-size: 1.15rem;">close</span>
       </button>
     </div>
 
@@ -1192,53 +1329,53 @@ function showBookingSuccess(customer, phone, vehicle, plate, date) {
         <div class="trx-success-icon" style="background: rgba(34, 197, 94, 0.15); color: #006e2f;">
           <span class="material-symbols-outlined">event_available</span>
         </div>
-        <h3 style="font-family: var(--font-heading); font-size: 1.35rem; color: var(--on-surface);">Jadwal Servis Dikonfirmasi!</h3>
-        <p style="color: var(--secondary); font-size: 0.9rem; max-width: 440px; margin-top: 0.35rem;">
-          Halo <strong>${customer}</strong>, jadwal servis Anda telah terdaftar pada sistem Bengkel TeFa SMKN 2 Karanganyar.
+        <h3 class="trx-success-title">Jadwal Servis Dikonfirmasi!</h3>
+        <p class="trx-success-desc">
+          Halo <strong>${customer}</strong>, jadwal servis Anda telah terdaftar di Bengkel TeFa SMKN 2 Karanganyar.
         </p>
 
         <div class="trx-ticket-card">
           <div class="trx-ticket-row">
-            <span style="color: var(--secondary);">Kode Booking</span>
+            <span>Kode Booking</span>
             <strong style="color: var(--primary-dark);">${bookingCode}</strong>
           </div>
           <div class="trx-ticket-row">
-            <span style="color: var(--secondary);">Layanan Servis</span>
+            <span>Layanan Servis</span>
             <span>${selectedProduct.title}</span>
           </div>
           <div class="trx-ticket-row">
-            <span style="color: var(--secondary);">Hari &amp; Tanggal</span>
+            <span>Hari &amp; Tanggal</span>
             <strong style="color: var(--on-surface);">${dateFormatted}</strong>
           </div>
           <div class="trx-ticket-row">
-            <span style="color: var(--secondary);">Slot Jam Kedatangan</span>
+            <span>Slot Jam Kedatangan</span>
             <span style="font-weight: 700; color: #dc2626;">${selectedSlot}</span>
           </div>
           <div class="trx-ticket-row">
-            <span style="color: var(--secondary);">Kendaraan / Plat No</span>
+            <span>Kendaraan</span>
             <span>${vehicle} (${plate})</span>
           </div>
           <div class="trx-ticket-row">
-            <span style="color: var(--secondary);">Status Pembayaran</span>
-            <span style="font-weight: 700; color: #006e2f;">Bayar di Bengkel Selesai Servis</span>
+            <span>Status Bayar</span>
+            <span style="font-weight: 700; color: #006e2f;">Bayar Selesai Servis</span>
           </div>
 
-          <div style="margin-top: 1rem;">
+          <div style="margin-top: 0.4rem; border-top: 1px dashed var(--outline-variant); padding-top: 0.4rem;">
             <div class="trx-alert trx-alert-info">
               <span class="material-symbols-outlined">pin_drop</span>
               <div>
-                <strong>Petunjuk Kedatangan:</strong> Datang 10 menit sebelum slot waktu ke Bengkel Teaching Factory SMKN 2 Karanganyar (Jl. Raya Karanganyar No. 123). Tunjukkan E-Tiket ini kepada petugas service advisor.
+                <strong>Petunjuk:</strong> Datang 10 menit sebelum jadwal ke Bengkel TeFa SMKN 2 Karanganyar dan tunjukkan kode booking ini.
               </div>
             </div>
           </div>
         </div>
 
-        <div style="display: flex; gap: 0.75rem; width: 100%;">
-          <button class="btn-primary" style="flex: 1; justify-content: center;" onclick="window.print()">
-            <span class="material-symbols-outlined">print</span>
-            <span>Cetak / Simpan E-Tiket</span>
+        <div style="display: flex; gap: 0.5rem; width: 100%;">
+          <button type="button" class="trx-btn-submit" style="flex: 1; justify-content: center;" onclick="window.print()">
+            <span class="material-symbols-outlined" style="font-size: 1.05rem;">print</span>
+            <span>Cetak E-Tiket</span>
           </button>
-          <button class="btn-nav-outline" style="flex: 1; justify-content: center;" onclick="closeTransactionModal()">
+          <button type="button" class="trx-btn-cancel" style="flex: 1; justify-content: center;" onclick="closeTransactionModal()">
             <span>Selesai</span>
           </button>
         </div>

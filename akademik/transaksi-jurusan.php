@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Produk & Transaksi Jurusan | SMKN 2 Karanganyar</title>
   <link rel="stylesheet" href="../css/style.css?v=3">
-  <link rel="stylesheet" href="../css/transaksi.css">
+  <link rel="stylesheet" href="../css/transaksi.css?v=4">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -206,7 +206,7 @@
   <?php include '../components/backtotop.html'; ?>
 
   <script src="../js/include.js?v=2"></script>
-  <script src="../js/transaksi.js?v=1"></script>
+  <script src="../js/transaksi.js?v=4"></script>
   <script>
     initPage();
 
