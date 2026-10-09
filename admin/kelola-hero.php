@@ -207,9 +207,14 @@ include __DIR__ . '/components/sidebar.php';
             <h5 class="fw-bold mb-1">Angka Counter Statistik Sekolah</h5>
             <p class="text-muted fs-xs mb-0">Angka ini langsung ditampilkan pada baris counter setelah slider banner di halaman depan (Home).</p>
           </div>
-          <button type="button" class="btn btn-success btn-sm" onclick="alert('Statistik diperbarui!')">
-            <i class="bi bi-save me-1"></i> Simpan Statistik
-          </button>
+          <div class="d-flex gap-2">
+            <a href="kelola-statistik.php" class="btn btn-outline-success btn-sm">
+              <i class="bi bi-box-arrow-up-right me-1"></i> Panel Statistik Lengkap
+            </a>
+            <button type="button" class="btn btn-success btn-sm" onclick="alert('Statistik diperbarui!')">
+              <i class="bi bi-save me-1"></i> Simpan
+            </button>
+          </div>
         </div>
 
         <div class="row g-4">

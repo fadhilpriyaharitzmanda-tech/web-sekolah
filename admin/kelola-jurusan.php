@@ -6,18 +6,18 @@ $pageTitle = 'Kelola Jurusan Unggulan - Admin SMKN 2 Karanganyar';
 $currentPage = 'kelola-jurusan';
 $assetsPath = 'assets/';
 
-include 'components/header.php';
-include 'components/sidebar.php';
+include __DIR__ . '/components/header.php';
+include __DIR__ . '/components/sidebar.php';
 ?>
 
 <div class="main-wrapper">
-  <?php include 'components/topbar.php'; ?>
+  <?php include __DIR__ . '/components/topbar.php'; ?>
 
   <!-- START: Page Header Banner -->
   <div class="page-header">
     <div>
       <h1 class="page-title">Kelola Jurusan Unggulan</h1>
-      <p class="page-subtitle">Manajemen kompetensi keahlian yang ditampilkan pada bagian kartu 3D di landing page dan menu akademik.</p>
+      <p class="page-subtitle">Manajemen kompetensi keahlian vokasi, kurikulum industri, kuota siswa baru, dan kartu ilustrasi 3D di landing page.</p>
     </div>
     <div class="d-flex gap-2">
       <a href="../akademik/jurusan.php" target="_blank" class="btn btn-outline-success btn-sm d-flex align-items-center gap-2">
@@ -30,254 +30,559 @@ include 'components/sidebar.php';
   </div>
   <!-- END: Page Header Banner -->
 
-  <!-- QUICK STATS -->
-  <div class="row g-3 mb-4">
-    <div class="col-md-3">
-      <div class="card p-3 mb-0 shadow-sm border-0 d-flex flex-row align-items-center gap-3">
-        <div class="rounded-circle p-3 bg-success-subtle text-success fs-4">
-          <i class="bi bi-cpu"></i>
+  <!-- REKAPITULASI QUICK STATS BAR -->
+  <div class="row g-4 mb-4">
+    <div class="col-xl-3 col-sm-6">
+      <div class="card card-stat">
+        <div class="card-header">
+          <span class="stat-label">Total Jurusan Aktif</span>
+          <div class="stat-icon-circle bg-success-subtle text-success">
+            <i class="bi bi-cpu-fill"></i>
+          </div>
         </div>
-        <div>
-          <div class="text-muted fs-xs fw-bold">Total Jurusan Aktif</div>
-          <div class="fs-4 fw-bold">4 Program</div>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card p-3 mb-0 shadow-sm border-0 d-flex flex-row align-items-center gap-3">
-        <div class="rounded-circle p-3 bg-primary-subtle text-primary fs-4">
-          <i class="bi bi-people"></i>
-        </div>
-        <div>
-          <div class="text-muted fs-xs fw-bold">Total Kuota Penerimaan</div>
-          <div class="fs-4 fw-bold">396 Siswa</div>
+        <div class="stat-value text-success">4 Program</div>
+        <div class="trend-badge trend-up">
+          <i class="bi bi-check-circle-fill"></i>
+          <span>100% Terakreditasi A</span>
         </div>
       </div>
     </div>
-    <div class="col-md-3">
-      <div class="card p-3 mb-0 shadow-sm border-0 d-flex flex-row align-items-center gap-3">
-        <div class="rounded-circle p-3 bg-warning-subtle text-warning fs-4">
-          <i class="bi bi-patch-check"></i>
+    <div class="col-xl-3 col-sm-6">
+      <div class="card card-stat">
+        <div class="card-header">
+          <span class="stat-label">Total Kuota Baru</span>
+          <div class="stat-icon-circle bg-primary-subtle text-primary">
+            <i class="bi bi-people-fill"></i>
+          </div>
         </div>
-        <div>
-          <div class="text-muted fs-xs fw-bold">Akreditasi</div>
-          <div class="fs-4 fw-bold">100% Terakreditasi A</div>
+        <div class="stat-value text-primary">396 Siswa</div>
+        <div class="trend-badge text-primary">
+          <i class="bi bi-grid-fill"></i>
+          <span>11 Rombel Total</span>
         </div>
       </div>
     </div>
-    <div class="col-md-3">
-      <div class="card p-3 mb-0 shadow-sm border-0 d-flex flex-row align-items-center gap-3">
-        <div class="rounded-circle p-3 bg-info-subtle text-info fs-4">
-          <i class="bi bi-building-check"></i>
+    <div class="col-xl-3 col-sm-6">
+      <div class="card card-stat">
+        <div class="card-header">
+          <span class="stat-label">Akreditasi BAN-SM</span>
+          <div class="stat-icon-circle bg-warning-subtle text-warning">
+            <i class="bi bi-patch-check-fill"></i>
+          </div>
         </div>
-        <div>
-          <div class="text-muted fs-xs fw-bold">Mitra Industri</div>
-          <div class="fs-4 fw-bold">45+ Perusahaan</div>
+        <div class="stat-value text-warning">Predikat A</div>
+        <div class="trend-badge text-warning">
+          <i class="bi bi-star-fill"></i>
+          <span>Skor Unggul Paripurna</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+      <div class="card card-stat">
+        <div class="card-header">
+          <span class="stat-label">Mitra Industri Terikat</span>
+          <div class="stat-icon-circle bg-info-subtle text-info">
+            <i class="bi bi-building-check"></i>
+          </div>
+        </div>
+        <div class="stat-value text-info">45+ DUDI</div>
+        <div class="trend-badge text-info">
+          <i class="bi bi-shield-check"></i>
+          <span>Kelas Industri &amp; PKL</span>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- CONTROL SEARCH BAR -->
+  <div class="table-card-custom mb-4 p-3 d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div class="table-search-box flex-grow-1" style="max-width: 480px;">
+      <i class="bi bi-search table-search-icon"></i>
+      <input type="text" class="table-search-input" id="searchJurusanInput" placeholder="Cari nama jurusan, singkatan, atau kaprodi..." onkeyup="filterJurusanCards()">
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <span class="fs-xs text-muted-green fw-semibold"><i class="bi bi-grid me-1"></i> Tampilan: 4 Jurusan Unggulan</span>
+    </div>
+  </div>
+
   <!-- JURUSAN GRID LIST -->
-  <div class="row g-4 mb-4">
+  <div class="row g-4 mb-4" id="jurusanCardContainer">
     <!-- Card 1: RPL -->
-    <div class="col-lg-6">
-      <div class="card h-100 shadow-sm border-0">
-        <div class="d-flex align-items-start justify-content-between mb-3">
-          <div class="d-flex align-items-center gap-3">
-            <div class="p-2 rounded-3" style="background: rgba(74, 222, 128, 0.15); width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
-              <img src="../images/3d-rpl.png" alt="RPL" style="max-width: 48px; max-height: 48px;" onerror="this.src='../logo/smkn2kra.png'">
+    <div class="col-xl-6 jurusan-item">
+      <div class="card p-4 h-100 shadow-sm border-0 d-flex flex-column justify-content-between" style="border-radius: var(--radius-xl); border: 1px solid rgba(11, 19, 15, 0.06) !important;">
+        <div>
+          <!-- Header Card -->
+          <div class="d-flex align-items-start justify-content-between mb-3 pb-3 border-bottom">
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-3 p-2" style="background: rgba(74, 222, 128, 0.15); width: 62px; height: 62px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(74, 222, 128, 0.3);">
+                <img src="../images/3d-rpl.png" alt="RPL" style="max-width: 46px; max-height: 46px; object-fit: contain;" onerror="this.src='../logo/smkn2kra.png'">
+              </div>
+              <div>
+                <span class="badge bg-success-subtle text-success mb-1" style="font-size: 0.72rem; letter-spacing: 0.03em;">RPL &bull; TERAKREDITASI A</span>
+                <h5 class="fw-bold mb-1 text-main" style="font-size: 1.15rem;">Rekayasa Perangkat Lunak</h5>
+                <div class="text-muted fs-xs d-flex align-items-center gap-1">
+                  <i class="bi bi-person-badge text-success"></i> Kaprodi: <strong>Bpk. Eko Prasetyo, S.Kom., M.Cs.</strong>
+                </div>
+              </div>
             </div>
-            <div>
-              <span class="badge bg-success-subtle text-success mb-1">RPL &bull; Terakreditasi A</span>
-              <h5 class="fw-bold mb-0">Rekayasa Perangkat Lunak</h5>
-              <div class="text-muted fs-xs">Kaprodi: Bpk. Eko Prasetyo, S.Kom</div>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="width: 34px; height: 34px; padding: 0;">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="editJurusan('Rekayasa Perangkat Lunak', 'RPL', '#4ADE80', '108', 'Bpk. Eko Prasetyo, S.Kom., M.Cs.', 'Mempelajari pengembangan aplikasi web modern, pemrograman perangkat bergerak (mobile apps), database arsitektur, dan sistem informasi perusahaan.')"><i class="bi bi-pencil me-2 text-primary"></i> Edit Jurusan</a></li>
+                <li><a class="dropdown-item" href="../akademik/jurusan.php" target="_blank"><i class="bi bi-eye me-2 text-success"></i> Lihat di Website</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="nonaktifkanJurusan('Rekayasa Perangkat Lunak')"><i class="bi bi-slash-circle me-2"></i> Nonaktifkan</a></li>
+              </ul>
             </div>
           </div>
-          <div class="dropdown">
-            <button class="btn btn-sm btn-light rounded-circle" type="button" data-bs-toggle="dropdown">
-              <i class="bi bi-three-dots-vertical"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i> Edit Jurusan</a></li>
-              <li><a class="dropdown-item" href="#"><i class="bi bi-image me-2"></i> Ganti Ilustrasi 3D</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i> Nonaktifkan</a></li>
-            </ul>
+
+          <!-- Description -->
+          <p class="text-muted fs-sm mb-3" style="line-height: 1.6; min-height: 48px;">
+            Mempelajari tentang siklus lengkap rekayasa perangkat lunak modern, pengembangan aplikasi web fullstack, mobile apps Android/iOS, basis data relasional, dan integrasi IoT skala industri.
+          </p>
+
+          <!-- Competencies pills -->
+          <div class="d-flex flex-wrap gap-1 mb-3">
+            <span class="badge bg-light text-dark border fs-xs">Web Dev</span>
+            <span class="badge bg-light text-dark border fs-xs">Mobile Flutter</span>
+            <span class="badge bg-light text-dark border fs-xs">Cloud Computing</span>
+            <span class="badge bg-light text-dark border fs-xs">UI/UX Design</span>
           </div>
         </div>
-        <p class="text-muted fs-sm mb-3">Mempelajari tentang pengembangan perangkat lunak termasuk pembuatan, pemeliharaan, dan manajemen organisasi berbasis web dan mobile.</p>
-        <div class="d-flex justify-content-between align-items-center pt-3 border-top fs-xs">
-          <div><span class="text-muted">Kuota:</span> <strong>108 Siswa</strong> (3 Rombel)</div>
-          <div><span class="text-muted">Aksen Warna:</span> <span class="badge" style="background:#4ade80; color:#000;">#4ADE80</span></div>
-          <div><span class="badge bg-success">Tampil di Landing Page</span></div>
+
+        <!-- Footer Card -->
+        <div class="pt-3 border-top">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2 fs-xs">
+            <div><span class="text-muted">Kuota Penerimaan:</span> <strong class="text-main">108 Siswa</strong> <span class="text-muted">(3 Rombel)</span></div>
+            <div class="d-flex align-items-center gap-1">
+              <span class="text-muted">Aksen Warna:</span>
+              <span class="badge d-inline-flex align-items-center gap-1" style="background:#4ade80; color:#072F1F; font-weight:700;">
+                <span style="display:inline-block; width:8px; height:8px; background:#072F1F; border-radius:50%;"></span> #4ADE80
+              </span>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center pt-2">
+            <span class="badge bg-success-subtle text-success d-inline-flex align-items-center gap-1">
+              <i class="bi bi-check-circle-fill"></i> Tampil di Landing Page
+            </span>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary" onclick="editJurusan('Rekayasa Perangkat Lunak', 'RPL', '#4ADE80', '108', 'Bpk. Eko Prasetyo, S.Kom., M.Cs.', 'Mempelajari pengembangan aplikasi web modern, pemrograman perangkat bergerak (mobile apps), database arsitektur, dan sistem informasi perusahaan.')">
+                <i class="bi bi-pencil me-1"></i> Edit
+              </button>
+              <a href="../akademik/jurusan.php" target="_blank" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-eye"></i>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Card 2: Mesin -->
-    <div class="col-lg-6">
-      <div class="card h-100 shadow-sm border-0">
-        <div class="d-flex align-items-start justify-content-between mb-3">
-          <div class="d-flex align-items-center gap-3">
-            <div class="p-2 rounded-3" style="background: rgba(96, 165, 250, 0.15); width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
-              <img src="../images/3d-mesin.png" alt="Mesin" style="max-width: 48px; max-height: 48px;" onerror="this.src='../logo/smkn2kra.png'">
+    <div class="col-xl-6 jurusan-item">
+      <div class="card p-4 h-100 shadow-sm border-0 d-flex flex-column justify-content-between" style="border-radius: var(--radius-xl); border: 1px solid rgba(11, 19, 15, 0.06) !important;">
+        <div>
+          <!-- Header Card -->
+          <div class="d-flex align-items-start justify-content-between mb-3 pb-3 border-bottom">
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-3 p-2" style="background: rgba(96, 165, 250, 0.15); width: 62px; height: 62px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(96, 165, 250, 0.3);">
+                <img src="../images/3d-mesin.png" alt="Mesin" style="max-width: 46px; max-height: 46px; object-fit: contain;" onerror="this.src='../logo/smkn2kra.png'">
+              </div>
+              <div>
+                <span class="badge bg-primary-subtle text-primary mb-1" style="font-size: 0.72rem; letter-spacing: 0.03em;">TPM &bull; TERAKREDITASI A</span>
+                <h5 class="fw-bold mb-1 text-main" style="font-size: 1.15rem;">Teknik Pemesinan</h5>
+                <div class="text-muted fs-xs d-flex align-items-center gap-1">
+                  <i class="bi bi-person-badge text-primary"></i> Kaprodi: <strong>Bpk. Bambang Sutrisno, S.T., M.T.</strong>
+                </div>
+              </div>
             </div>
-            <div>
-              <span class="badge bg-primary-subtle text-primary mb-1">TPM &bull; Terakreditasi A</span>
-              <h5 class="fw-bold mb-0">Teknik Pemesinan</h5>
-              <div class="text-muted fs-xs">Kaprodi: Bpk. Bambang Sutrisno, M.T.</div>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="width: 34px; height: 34px; padding: 0;">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="editJurusan('Teknik Pemesinan', 'TPM', '#60A5FA', '144', 'Bpk. Bambang Sutrisno, S.T., M.T.', 'Mempelajari fabrikasi logam presisi, permesinan konvensional (bubut, frais, gerinda), serta pemrograman mesin CNC modern berstandar industri internasional.')"><i class="bi bi-pencil me-2 text-primary"></i> Edit Jurusan</a></li>
+                <li><a class="dropdown-item" href="../akademik/jurusan.php" target="_blank"><i class="bi bi-eye me-2 text-success"></i> Lihat di Website</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="nonaktifkanJurusan('Teknik Pemesinan')"><i class="bi bi-slash-circle me-2"></i> Nonaktifkan</a></li>
+              </ul>
             </div>
           </div>
-          <div class="dropdown">
-            <button class="btn btn-sm btn-light rounded-circle" type="button" data-bs-toggle="dropdown">
-              <i class="bi bi-three-dots-vertical"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i> Edit Jurusan</a></li>
-              <li><a class="dropdown-item" href="#"><i class="bi bi-image me-2"></i> Ganti Ilustrasi 3D</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i> Nonaktifkan</a></li>
-            </ul>
+
+          <!-- Description -->
+          <p class="text-muted fs-sm mb-3" style="line-height: 1.6; min-height: 48px;">
+            Mempelajari tentang cara memproduksi komponen manufaktur teknik menggunakan mesin perkakas konvensional maupun CNC Computer Numerical Control canggih sesuai standar manufaktur global.
+          </p>
+
+          <!-- Competencies pills -->
+          <div class="d-flex flex-wrap gap-1 mb-3">
+            <span class="badge bg-light text-dark border fs-xs">CNC Milling</span>
+            <span class="badge bg-light text-dark border fs-xs">Bubut Presisi</span>
+            <span class="badge bg-light text-dark border fs-xs">CAD / CAM SolidWorks</span>
+            <span class="badge bg-light text-dark border fs-xs">Quality Inspection</span>
           </div>
         </div>
-        <p class="text-muted fs-sm mb-3">Mempelajari tentang cara memproduksi barang teknik dan menggunakan mesin konvensional maupun CNC tingkat lanjut sesuai standar industri permesinan modern.</p>
-        <div class="d-flex justify-content-between align-items-center pt-3 border-top fs-xs">
-          <div><span class="text-muted">Kuota:</span> <strong>144 Siswa</strong> (4 Rombel)</div>
-          <div><span class="text-muted">Aksen Warna:</span> <span class="badge" style="background:#60a5fa; color:#000;">#60A5FA</span></div>
-          <div><span class="badge bg-success">Tampil di Landing Page</span></div>
+
+        <!-- Footer Card -->
+        <div class="pt-3 border-top">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2 fs-xs">
+            <div><span class="text-muted">Kuota Penerimaan:</span> <strong class="text-main">144 Siswa</strong> <span class="text-muted">(4 Rombel)</span></div>
+            <div class="d-flex align-items-center gap-1">
+              <span class="text-muted">Aksen Warna:</span>
+              <span class="badge d-inline-flex align-items-center gap-1" style="background:#60a5fa; color:#0B130F; font-weight:700;">
+                <span style="display:inline-block; width:8px; height:8px; background:#0B130F; border-radius:50%;"></span> #60A5FA
+              </span>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center pt-2">
+            <span class="badge bg-success-subtle text-success d-inline-flex align-items-center gap-1">
+              <i class="bi bi-check-circle-fill"></i> Tampil di Landing Page
+            </span>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary" onclick="editJurusan('Teknik Pemesinan', 'TPM', '#60A5FA', '144', 'Bpk. Bambang Sutrisno, S.T., M.T.', 'Mempelajari fabrikasi logam presisi, permesinan konvensional (bubut, frais, gerinda), serta pemrograman mesin CNC modern berstandar industri internasional.')">
+                <i class="bi bi-pencil me-1"></i> Edit
+              </button>
+              <a href="../akademik/jurusan.php" target="_blank" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-eye"></i>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Card 3: Tekstil -->
-    <div class="col-lg-6">
-      <div class="card h-100 shadow-sm border-0">
-        <div class="d-flex align-items-start justify-content-between mb-3">
-          <div class="d-flex align-items-center gap-3">
-            <div class="p-2 rounded-3" style="background: rgba(251, 146, 60, 0.15); width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
-              <img src="../images/3d-tekstil.png" alt="Tekstil" style="max-width: 48px; max-height: 48px;" onerror="this.src='../logo/smkn2kra.png'">
+    <div class="col-xl-6 jurusan-item">
+      <div class="card p-4 h-100 shadow-sm border-0 d-flex flex-column justify-content-between" style="border-radius: var(--radius-xl); border: 1px solid rgba(11, 19, 15, 0.06) !important;">
+        <div>
+          <!-- Header Card -->
+          <div class="d-flex align-items-start justify-content-between mb-3 pb-3 border-bottom">
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-3 p-2" style="background: rgba(251, 146, 60, 0.15); width: 62px; height: 62px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(251, 146, 60, 0.3);">
+                <img src="../images/3d-tekstil.png" alt="Tekstil" style="max-width: 46px; max-height: 46px; object-fit: contain;" onerror="this.src='../logo/smkn2kra.png'">
+              </div>
+              <div>
+                <span class="badge bg-warning-subtle text-warning mb-1" style="font-size: 0.72rem; letter-spacing: 0.03em;">TPK &bull; TERAKREDITASI A</span>
+                <h5 class="fw-bold mb-1 text-main" style="font-size: 1.15rem;">Teknik Pembuatan Kain</h5>
+                <div class="text-muted fs-xs d-flex align-items-center gap-1">
+                  <i class="bi bi-person-badge text-warning"></i> Kaprodi: <strong>Ibu Sri Wahyuni, S.T.</strong>
+                </div>
+              </div>
             </div>
-            <div>
-              <span class="badge bg-warning-subtle text-warning mb-1">TPK &bull; Terakreditasi A</span>
-              <h5 class="fw-bold mb-0">Teknik Pembuatan Kain</h5>
-              <div class="text-muted fs-xs">Kaprodi: Ibu Sri Wahyuni, S.T.</div>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="width: 34px; height: 34px; padding: 0;">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="editJurusan('Teknik Pembuatan Kain', 'TPK', '#FB923C', '72', 'Ibu Sri Wahyuni, S.T.', 'Mempelajari konstruksi dan desain tenun, operasional mesin tenun berkecepatan tinggi, proses finishing kain, dan laboratorium uji standar mutu tekstil ekspor.')"><i class="bi bi-pencil me-2 text-primary"></i> Edit Jurusan</a></li>
+                <li><a class="dropdown-item" href="../akademik/jurusan.php" target="_blank"><i class="bi bi-eye me-2 text-success"></i> Lihat di Website</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="nonaktifkanJurusan('Teknik Pembuatan Kain')"><i class="bi bi-slash-circle me-2"></i> Nonaktifkan</a></li>
+              </ul>
             </div>
           </div>
-          <div class="dropdown">
-            <button class="btn btn-sm btn-light rounded-circle" type="button" data-bs-toggle="dropdown">
-              <i class="bi bi-three-dots-vertical"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i> Edit Jurusan</a></li>
-              <li><a class="dropdown-item" href="#"><i class="bi bi-image me-2"></i> Ganti Ilustrasi 3D</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i> Nonaktifkan</a></li>
-            </ul>
+
+          <!-- Description -->
+          <p class="text-muted fs-sm mb-3" style="line-height: 1.6; min-height: 48px;">
+            Mempelajari tentang desain tenun tekstil modern, mesin pembuatan kain shuttleless otomatis, perawatan preventif mesin industri tekstil, dan jaminan mutu kain kualitas ekspor.
+          </p>
+
+          <!-- Competencies pills -->
+          <div class="d-flex flex-wrap gap-1 mb-3">
+            <span class="badge bg-light text-dark border fs-xs">Desain Tenun</span>
+            <span class="badge bg-light text-dark border fs-xs">Mesin Air Jet Loom</span>
+            <span class="badge bg-light text-dark border fs-xs">Quality Control Kain</span>
+            <span class="badge bg-light text-dark border fs-xs">Manajemen Garmen</span>
           </div>
         </div>
-        <p class="text-muted fs-sm mb-3">Mempelajari tentang desain tenun, mesin pembuatan kain otomatis, pemeliharaan, perawatan, dan pengendalian mutu tekstil skala ekspor.</p>
-        <div class="d-flex justify-content-between align-items-center pt-3 border-top fs-xs">
-          <div><span class="text-muted">Kuota:</span> <strong>72 Siswa</strong> (2 Rombel)</div>
-          <div><span class="text-muted">Aksen Warna:</span> <span class="badge" style="background:#fb923c; color:#000;">#FB923C</span></div>
-          <div><span class="badge bg-success">Tampil di Landing Page</span></div>
+
+        <!-- Footer Card -->
+        <div class="pt-3 border-top">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2 fs-xs">
+            <div><span class="text-muted">Kuota Penerimaan:</span> <strong class="text-main">72 Siswa</strong> <span class="text-muted">(2 Rombel)</span></div>
+            <div class="d-flex align-items-center gap-1">
+              <span class="text-muted">Aksen Warna:</span>
+              <span class="badge d-inline-flex align-items-center gap-1" style="background:#fb923c; color:#0B130F; font-weight:700;">
+                <span style="display:inline-block; width:8px; height:8px; background:#0B130F; border-radius:50%;"></span> #FB923C
+              </span>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center pt-2">
+            <span class="badge bg-success-subtle text-success d-inline-flex align-items-center gap-1">
+              <i class="bi bi-check-circle-fill"></i> Tampil di Landing Page
+            </span>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary" onclick="editJurusan('Teknik Pembuatan Kain', 'TPK', '#FB923C', '72', 'Ibu Sri Wahyuni, S.T.', 'Mempelajari konstruksi dan desain tenun, operasional mesin tenun berkecepatan tinggi, proses finishing kain, dan laboratorium uji standar mutu tekstil ekspor.')">
+                <i class="bi bi-pencil me-1"></i> Edit
+              </button>
+              <a href="../akademik/jurusan.php" target="_blank" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-eye"></i>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Card 4: Ototronik -->
-    <div class="col-lg-6">
-      <div class="card h-100 shadow-sm border-0">
-        <div class="d-flex align-items-start justify-content-between mb-3">
-          <div class="d-flex align-items-center gap-3">
-            <div class="p-2 rounded-3" style="background: rgba(248, 113, 113, 0.15); width: 64px; height: 64px; display: flex; align-items: center; justify-content: center;">
-              <img src="../images/3d-oto.png" alt="Ototronik" style="max-width: 48px; max-height: 48px;" onerror="this.src='../logo/smkn2kra.png'">
+    <div class="col-xl-6 jurusan-item">
+      <div class="card p-4 h-100 shadow-sm border-0 d-flex flex-column justify-content-between" style="border-radius: var(--radius-xl); border: 1px solid rgba(11, 19, 15, 0.06) !important;">
+        <div>
+          <!-- Header Card -->
+          <div class="d-flex align-items-start justify-content-between mb-3 pb-3 border-bottom">
+            <div class="d-flex align-items-center gap-3">
+              <div class="rounded-3 p-2" style="background: rgba(248, 113, 113, 0.15); width: 62px; height: 62px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(248, 113, 113, 0.3);">
+                <img src="../images/3d-oto.png" alt="Ototronik" style="max-width: 46px; max-height: 46px; object-fit: contain;" onerror="this.src='../logo/smkn2kra.png'">
+              </div>
+              <div>
+                <span class="badge bg-danger-subtle text-danger mb-1" style="font-size: 0.72rem; letter-spacing: 0.03em;">TOT &bull; TERAKREDITASI A</span>
+                <h5 class="fw-bold mb-1 text-main" style="font-size: 1.15rem;">Teknik Ototronik</h5>
+                <div class="text-muted fs-xs d-flex align-items-center gap-1">
+                  <i class="bi bi-person-badge text-danger"></i> Kaprodi: <strong>Bpk. Hendra Gunawan, S.Pd.</strong>
+                </div>
+              </div>
             </div>
-            <div>
-              <span class="badge bg-danger-subtle text-danger mb-1">TOT &bull; Terakreditasi A</span>
-              <h5 class="fw-bold mb-0">Teknik Ototronik</h5>
-              <div class="text-muted fs-xs">Kaprodi: Bpk. Hendra Gunawan, S.Pd</div>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="width: 34px; height: 34px; padding: 0;">
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                <li><a class="dropdown-item" href="javascript:void(0)" onclick="editJurusan('Teknik Ototronik', 'TOT', '#F87171', '72', 'Bpk. Hendra Gunawan, S.Pd.', 'Mempelajari diagnosa kelistrikan otomotif berbasis ECU, engine management system, scanner diagnosa OBD-II, dan teknologi mutakhir kendaraan listrik (EV).')"><i class="bi bi-pencil me-2 text-primary"></i> Edit Jurusan</a></li>
+                <li><a class="dropdown-item" href="../akademik/jurusan.php" target="_blank"><i class="bi bi-eye me-2 text-success"></i> Lihat di Website</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="nonaktifkanJurusan('Teknik Ototronik')"><i class="bi bi-slash-circle me-2"></i> Nonaktifkan</a></li>
+              </ul>
             </div>
           </div>
-          <div class="dropdown">
-            <button class="btn btn-sm btn-light rounded-circle" type="button" data-bs-toggle="dropdown">
-              <i class="bi bi-three-dots-vertical"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" href="#"><i class="bi bi-pencil me-2"></i> Edit Jurusan</a></li>
-              <li><a class="dropdown-item" href="#"><i class="bi bi-image me-2"></i> Ganti Ilustrasi 3D</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-trash me-2"></i> Nonaktifkan</a></li>
-            </ul>
+
+          <!-- Description -->
+          <p class="text-muted fs-sm mb-3" style="line-height: 1.6; min-height: 48px;">
+            Mempelajari teknologi otomotif mutakhir dengan penguasaan sistem elektronik, kontrol modul ECU, diagnosa scanner komputer OBD-II, dan sistem baterai kendaraan listrik modern.
+          </p>
+
+          <!-- Competencies pills -->
+          <div class="d-flex flex-wrap gap-1 mb-3">
+            <span class="badge bg-light text-dark border fs-xs">ECU Diagnostik</span>
+            <span class="badge bg-light text-dark border fs-xs">Sistem Injeksi EFI</span>
+            <span class="badge bg-light text-dark border fs-xs">Kendaraan Listrik EV</span>
+            <span class="badge bg-light text-dark border fs-xs">Kelistrikan Body Otomotif</span>
           </div>
         </div>
-        <p class="text-muted fs-sm mb-3">Mempelajari teknologi otomotif mutakhir dengan penguasaan sistem elektronik, kontrol ECU, diagnosa komputer, dan sistem kendaraan listrik ramah lingkungan.</p>
-        <div class="d-flex justify-content-between align-items-center pt-3 border-top fs-xs">
-          <div><span class="text-muted">Kuota:</span> <strong>72 Siswa</strong> (2 Rombel)</div>
-          <div><span class="text-muted">Aksen Warna:</span> <span class="badge" style="background:#f87171; color:#000;">#F87171</span></div>
-          <div><span class="badge bg-success">Tampil di Landing Page</span></div>
+
+        <!-- Footer Card -->
+        <div class="pt-3 border-top">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2 fs-xs">
+            <div><span class="text-muted">Kuota Penerimaan:</span> <strong class="text-main">72 Siswa</strong> <span class="text-muted">(2 Rombel)</span></div>
+            <div class="d-flex align-items-center gap-1">
+              <span class="text-muted">Aksen Warna:</span>
+              <span class="badge d-inline-flex align-items-center gap-1" style="background:#f87171; color:#0B130F; font-weight:700;">
+                <span style="display:inline-block; width:8px; height:8px; background:#0B130F; border-radius:50%;"></span> #F87171
+              </span>
+            </div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center pt-2">
+            <span class="badge bg-success-subtle text-success d-inline-flex align-items-center gap-1">
+              <i class="bi bi-check-circle-fill"></i> Tampil di Landing Page
+            </span>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary" onclick="editJurusan('Teknik Ototronik', 'TOT', '#F87171', '72', 'Bpk. Hendra Gunawan, S.Pd.', 'Mempelajari diagnosa kelistrikan otomotif berbasis ECU, engine management system, scanner diagnosa OBD-II, dan teknologi mutakhir kendaraan listrik (EV).')">
+                <i class="bi bi-pencil me-1"></i> Edit
+              </button>
+              <a href="../akademik/jurusan.php" target="_blank" class="btn btn-sm btn-outline-success">
+                <i class="bi bi-eye"></i>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
+</div>
+<!-- END: .main-wrapper -->
+
 <!-- Modal Tambah Jurusan -->
-<div class="modal fade" id="modalTambahJurusan" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade" id="modalTambahJurusan" tabindex="-1" aria-labelledby="modalTambahJurusanLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title fw-bold">Tambah Program Keahlian / Jurusan</h5>
+        <h5 class="modal-title fw-bold" id="modalTambahJurusanLabel">
+          <i class="bi bi-cpu-fill text-success"></i> Tambah Program Keahlian / Jurusan
+        </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form>
-          <div class="mb-3">
-            <label class="form-label fs-xs fw-bold">Nama Lengkap Jurusan</label>
-            <input type="text" class="form-control" placeholder="Contoh: Teknik Komputer dan Jaringan">
-          </div>
-          <div class="row g-2 mb-3">
-            <div class="col-6">
-              <label class="form-label fs-xs fw-bold">Singkatan / Kode</label>
-              <input type="text" class="form-control" placeholder="TKJ">
+        <form id="formTambahJurusan">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label-custom" for="tambahNamaJurusan">Nama Lengkap Program Keahlian</label>
+              <input type="text" class="form-control-custom" id="tambahNamaJurusan" placeholder="Contoh: Rekayasa Perangkat Lunak" required>
+              <div class="form-text-custom">Nama resmi kurikulum vokasi SMK Pusat Keunggulan.</div>
             </div>
-            <div class="col-6">
-              <label class="form-label fs-xs fw-bold">Aksen Warna HEX</label>
-              <input type="color" class="form-control form-control-color w-100" value="#4ade80">
+            <div class="col-md-4">
+              <label class="form-label-custom" for="tambahKodeJurusan">Singkatan / Kode</label>
+              <input type="text" class="form-control-custom" id="tambahKodeJurusan" placeholder="RPL" required>
             </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label fs-xs fw-bold">Deskripsi Ringkas</label>
-            <textarea class="form-control" rows="3" placeholder="Deskripsi kurikulum dan kompetensi jurusan..."></textarea>
-          </div>
-          <div class="row g-2 mb-3">
-            <div class="col-6">
-              <label class="form-label fs-xs fw-bold">Kuota Siswa Baru</label>
-              <input type="number" class="form-control" value="72">
+
+            <div class="col-md-6">
+              <label class="form-label-custom" for="tambahKaprodiJurusan">Nama Ketua Program Keahlian (Kaprodi)</label>
+              <input type="text" class="form-control-custom" id="tambahKaprodiJurusan" placeholder="Contoh: Budi Santoso, M.Kom">
             </div>
-            <div class="col-6">
-              <label class="form-label fs-xs fw-bold">Akreditasi</label>
-              <select class="form-select">
+            <div class="col-md-3">
+              <label class="form-label-custom" for="tambahKuotaJurusan">Kuota Siswa Baru</label>
+              <input type="number" class="form-control-custom" id="tambahKuotaJurusan" value="72">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label-custom" for="tambahAkreditasiJurusan">Akreditasi</label>
+              <select class="form-select-custom" id="tambahAkreditasiJurusan">
                 <option value="A" selected>Terakreditasi A</option>
                 <option value="B">Terakreditasi B</option>
               </select>
             </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label fs-xs fw-bold">File Gambar Ilustrasi 3D</label>
-            <input type="file" class="form-control form-control-sm">
-          </div>
-          <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" id="checkTampil" checked>
-            <label class="form-check-label fs-xs" for="checkTampil">Tampilkan langsung pada Landing Page</label>
+
+            <div class="col-12">
+              <label class="form-label-custom" for="tambahDeskripsiJurusan">Deskripsi Ringkas Kompetensi</label>
+              <textarea class="form-control-custom" id="tambahDeskripsiJurusan" rows="3" placeholder="Jelaskan fokus keahlian, teknologi yang dipelajari, dan prospek karir lulusan..."></textarea>
+            </div>
+
+            <div class="col-md-8">
+              <label class="form-label-custom">File Gambar Ilustrasi / Banner Jurusan</label>
+              <input type="file" class="form-control-custom" accept="image/*">
+              <div class="form-text-custom">Format JPG, PNG atau WebP (Rasio 16:9 direkomendasikan).</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label-custom" for="tambahWarnaJurusan">Aksen Warna Tema</label>
+              <input type="color" class="form-control-custom w-100 p-1" id="tambahWarnaJurusan" value="#22c55e" style="height: 42px;">
+            </div>
+
+            <div class="col-12">
+              <div class="form-switch-custom">
+                <input class="form-switch-input-custom" type="checkbox" id="checkTampil" checked>
+                <label class="form-label-custom mb-0" for="checkTampil">Tampilkan langsung pada Landing Page Website</label>
+              </div>
+            </div>
           </div>
         </form>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
-        <button type="button" class="btn btn-success btn-sm" onclick="alert('Jurusan berhasil disimpan!');" data-bs-dismiss="modal">Simpan Jurusan</button>
+        <button type="button" class="btn btn-success btn-sm d-flex align-items-center gap-2" onclick="simpanTambahJurusan()">
+          <i class="bi bi-check-circle-fill"></i> Simpan Jurusan
+        </button>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Modal Edit Jurusan -->
+<div class="modal fade" id="modalEditJurusan" tabindex="-1" aria-labelledby="modalEditJurusanLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="modalEditJurusanLabel">
+          <i class="bi bi-pencil-square text-success"></i> Edit Program Keahlian / Jurusan
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formEditJurusan">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label-custom" for="editNamaJurusan">Nama Lengkap Jurusan</label>
+              <input type="text" class="form-control-custom" id="editNamaJurusan" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label-custom" for="editKodeJurusan">Singkatan / Kode</label>
+              <input type="text" class="form-control-custom" id="editKodeJurusan" required>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label-custom" for="editKaprodiJurusan">Nama Ketua Program (Kaprodi)</label>
+              <input type="text" class="form-control-custom" id="editKaprodiJurusan">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label-custom" for="editKuotaJurusan">Kuota Siswa Baru</label>
+              <input type="number" class="form-control-custom" id="editKuotaJurusan">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label-custom" for="editStatusTayang">Status Publikasi</label>
+              <select class="form-select-custom" id="editStatusTayang">
+                <option value="1" selected>Tampil di Home</option>
+                <option value="0">Sembunyikan</option>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label-custom" for="editDeskripsiJurusan">Deskripsi Ringkas</label>
+              <textarea class="form-control-custom" id="editDeskripsiJurusan" rows="3"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-success btn-sm d-flex align-items-center gap-2" onclick="simpanEditJurusan()">
+          <i class="bi bi-save-fill"></i> Perbarui Jurusan
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function editJurusan(nama, kode, warna, kuota, kaprodi, deskripsi) {
+  document.getElementById('editNamaJurusan').value = nama;
+  document.getElementById('editKodeJurusan').value = kode;
+  document.getElementById('editWarnaJurusan').value = warna;
+  document.getElementById('editKuotaJurusan').value = kuota;
+  document.getElementById('editKaprodiJurusan').value = kaprodi;
+  document.getElementById('editDeskripsiJurusan').value = deskripsi;
+
+  const modalEl = document.getElementById('modalEditJurusan');
+  const modal = new bootstrap.Modal(modalEl);
+  modal.show();
+}
+
+function simpanTambahJurusan() {
+  const nama = document.getElementById('tambahNamaJurusan').value;
+  if (!nama) {
+    alert('Silakan masukkan nama jurusan!');
+    return;
+  }
+  const modalEl = document.getElementById('modalTambahJurusan');
+  const modal = bootstrap.Modal.getInstance(modalEl);
+  if (modal) modal.hide();
+  alert('Jurusan "' + nama + '" berhasil disimpan!');
+}
+
+function simpanEditJurusan() {
+  const nama = document.getElementById('editNamaJurusan').value;
+  const modalEl = document.getElementById('modalEditJurusan');
+  const modal = bootstrap.Modal.getInstance(modalEl);
+  if (modal) modal.hide();
+  alert('Perubahan data jurusan "' + nama + '" berhasil diperbarui!');
+}
+
+function nonaktifkanJurusan(nama) {
+  if (confirm('Nonaktifkan jurusan ' + nama + ' dari landing page?')) {
+    alert('Jurusan ' + nama + ' berhasil dinonaktifkan.');
+  }
+}
+
+function filterJurusanCards() {
+  const query = (document.getElementById('searchJurusanInput').value || '').toLowerCase();
+  const items = document.querySelectorAll('.jurusan-item');
+  items.forEach(item => {
+    const text = item.textContent.toLowerCase();
+    if (!query || text.includes(query)) {
+      item.style.display = '';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+</script>
 
 <?php include __DIR__ . '/components/footer.php'; ?>

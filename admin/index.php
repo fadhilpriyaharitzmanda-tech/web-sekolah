@@ -91,28 +91,32 @@ include __DIR__ . '/components/sidebar.php';
           </div>
         </div>
 
-        <!-- Stat Card 3: Total Return / Guru & Tenaga Pendidik -->
+        <!-- Stat Card 3: Guru & Tenaga Pendidik -->
         <div class="col-md-4">
-          <div class="card card-stat d-flex flex-column justify-content-between">
+          <div class="card card-stat d-flex flex-column justify-content-between position-relative">
             <div>
               <div class="card-header">
-                <span class="stat-label">Guru &amp; Tenaga Pendidik</span>
-                <div class="dropdown">
+                <a href="kelola-guru.php" class="text-decoration-none text-muted-green">
+                  <span class="stat-label">Guru &amp; Tenaga Pendidik</span>
+                </a>
+                <div class="dropdown" style="z-index: 5;">
                   <button class="card-more-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false"
                     aria-label="More Options" id="btn-more-return">
                     <i class="bi bi-three-dots"></i>
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom">
-                    <li><a class="dropdown-item" href="kelola-guru.php"><i class="bi bi-people"></i> Kelola Guru</a></li>
+                    <li><a class="dropdown-item" href="kelola-guru.php"><i class="bi bi-people"></i> Kelola Guru &amp; Staff</a></li>
                     <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-arrow-down"></i> Ekspor Data</a></li>
                   </ul>
                 </div>
               </div>
-              <div class="stat-value">132</div>
-              <div class="trend-badge trend-up">
-                <i class="bi bi-arrow-up-right"></i>
-                <span>100% Sertifikasi Kompetensi</span>
-              </div>
+              <a href="kelola-guru.php" class="text-decoration-none d-block">
+                <div class="stat-value text-main">132</div>
+                <div class="trend-badge trend-up">
+                  <i class="bi bi-arrow-up-right"></i>
+                  <span>100% Sertifikasi Kompetensi</span>
+                </div>
+              </a>
             </div>
             <div class="sparkline-container sparkline-card-footer">
               <div id="return-sparkline"></div>
@@ -170,8 +174,8 @@ include __DIR__ . '/components/sidebar.php';
                 </div>
                 <p class="text-muted fs-xs mb-3">2500+ Siswa Aktif, 45+ Partner Industri, 100% Kurikulum Industri, dan 7+ Eskul Prestasi.</p>
               </div>
-              <a href="kelola-hero.php#section-stats" class="btn btn-sm btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-1">
-                <span>Ubah Angka Statistik</span> <i class="bi bi-arrow-right fs-xs"></i>
+              <a href="kelola-statistik.php" class="btn btn-sm btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-1">
+                <span>Kelola Statistik Sekolah</span> <i class="bi bi-arrow-right fs-xs"></i>
               </a>
             </div>
           </div>

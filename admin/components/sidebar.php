@@ -47,7 +47,7 @@ $assetsPath = $assetsPath ?? 'assets/';
           </a>
         </li>
         <li class="sidebar-menu-item">
-          <a href="kelola-hero.php#section-stats" class="sidebar-menu-link <?= ($currentPage === 'kelola-stats') ? 'active' : '' ?>" id="menu-stats" title="Statistik & Counter Landing Page">
+          <a href="kelola-statistik.php" class="sidebar-menu-link <?= ($currentPage === 'kelola-stats') ? 'active' : '' ?>" id="menu-stats" title="Statistik & Counter Landing Page">
             <i class="bi bi-bar-chart-fill"></i>
             <span>Statistik Sekolah</span>
           </a>
