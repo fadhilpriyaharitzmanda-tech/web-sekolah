@@ -68,6 +68,7 @@
         <div class="footer-bottom-links">
           <a href="#">Kebijakan Privasi</a>
           <a href="#">Syarat &amp; Ketentuan</a>
+          <a href="<?= $bf ?>admin/page-login.php" class="text-success"><span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle;">admin_panel_settings</span> Portal Admin</a>
         </div>
       </div>
     </div>
