@@ -26,14 +26,17 @@ $assetsPath = $assetsPath ?? 'assets/';
         <span>Tambah</span>
       </button>
       <ul class="dropdown-menu dropdown-menu-quick-action" aria-labelledby="quick-actions-dropdown">
-        <li class="dropdown-header">Aksi Cepat</li>
-        <li><a class="dropdown-item" href="#"><i class="bi bi-newspaper"></i> Berita / Artikel Baru</a></li>
-        <li><a class="dropdown-item" href="#"><i class="bi bi-person-plus"></i> Tambah Guru & Staff</a></li>
-        <li><a class="dropdown-item" href="#"><i class="bi bi-images"></i> Unggah Foto Galeri</a></li>
+        <li class="dropdown-header">Aksi Cepat Admin</li>
+        <li><a class="dropdown-item" href="kelola-hero.php"><i class="bi bi-aspect-ratio"></i> Kelola Banner Hero</a></li>
+        <li><a class="dropdown-item" href="kelola-berita.php"><i class="bi bi-newspaper"></i> Tulis Berita Baru</a></li>
+        <li><a class="dropdown-item" href="kelola-jurusan.php"><i class="bi bi-cpu"></i> Kelola Jurusan</a></li>
+        <li><a class="dropdown-item" href="kelola-testimoni.php"><i class="bi bi-chat-heart"></i> Testimoni Alumni</a></li>
+        <li><a class="dropdown-item" href="kelola-ppdb.php"><i class="bi bi-person-check"></i> Verifikasi PPDB</a></li>
+        <li><a class="dropdown-item" href="kelola-galeri.php"><i class="bi bi-images"></i> Unggah Galeri</a></li>
         <li>
           <hr class="dropdown-divider">
         </li>
-        <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Pengaturan Website</a></li>
+        <li><a class="dropdown-item" href="../index.php" target="_blank"><i class="bi bi-globe2"></i> Ke Website Utama</a></li>
       </ul>
     </div>
   </div>

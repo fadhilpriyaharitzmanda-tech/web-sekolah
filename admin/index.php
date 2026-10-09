@@ -7,8 +7,8 @@ $pageTitle = 'Dashboard - Admin SMKN 2 Karanganyar';
 $currentPage = 'dashboard';
 $assetsPath = 'assets/';
 
-include 'components/header.php';
-include 'components/sidebar.php';
+include __DIR__ . '/components/header.php';
+include __DIR__ . '/components/sidebar.php';
 ?>
 
 <!-- ==========================================
@@ -16,7 +16,7 @@ include 'components/sidebar.php';
      ========================================== -->
 <div class="main-wrapper">
 
-  <?php include 'components/topbar.php'; ?>
+  <?php include __DIR__ . '/components/topbar.php'; ?>
 
   <!-- START: Dashboard Header Banner -->
   <div class="page-header">
@@ -42,12 +42,12 @@ include 'components/sidebar.php';
         <div class="col-md-4">
           <div class="card alert-green-card">
             <div class="position-relative z-index-2">
-              <span class="alert-green-badge">Pembaruan</span>
+              <span class="alert-green-badge">Pembaruan Landing Page</span>
               <div class="alert-green-date">Tahun Ajaran 2026/2027</div>
-              <div class="alert-green-text">Pendaftaran PPDB online meningkat 40% dalam 1 minggu</div>
+              <div class="alert-green-text">Pendaftaran PPDB online meningkat 40% &bull; 642 calon siswa terdaftar</div>
             </div>
-            <a href="tables-basic.php" class="alert-green-link z-index-2" id="alert-link-statistics">
-              <span>Lihat Data Siswa</span>
+            <a href="kelola-ppdb.php" class="alert-green-link z-index-2" id="alert-link-statistics">
+              <span>Kelola PPDB Online</span>
               <i class="bi bi-arrow-right"></i>
             </a>
 
@@ -62,31 +62,27 @@ include 'components/sidebar.php';
           </div>
         </div>
 
-        <!-- Stat Card 2: Net Income / Kunjungan & Siswa Aktif -->
+        <!-- Stat Card 2: Pendaftar PPDB Online -->
         <div class="col-md-4">
           <div class="card card-stat d-flex flex-column justify-content-between">
             <div>
               <div class="card-header">
-                <span class="stat-label">Total Siswa Aktif</span>
+                <span class="stat-label">Pendaftar PPDB Masuk</span>
                 <div class="dropdown">
                   <button class="card-more-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false"
                     aria-label="More Options" id="btn-more-income">
                     <i class="bi bi-three-dots"></i>
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom">
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-arrow-repeat"></i> Segarkan</a></li>
+                    <li><a class="dropdown-item" href="kelola-ppdb.php"><i class="bi bi-eye"></i> Lihat Data PPDB</a></li>
                     <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-arrow-down"></i> Ekspor Laporan</a></li>
-                    <li>
-                      <hr class="dropdown-divider">
-                    </li>
-                    <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-eye-slash"></i> Sembunyikan</a></li>
                   </ul>
                 </div>
               </div>
-              <div class="stat-value">1,960</div>
+              <div class="stat-value">642 Calon</div>
               <div class="trend-badge trend-up">
                 <i class="bi bi-arrow-up-right"></i>
-                <span>+12% dibanding semester lalu</span>
+                <span>+40% dibanding minggu lalu</span>
               </div>
             </div>
             <div class="sparkline-container sparkline-card-footer">
@@ -107,12 +103,8 @@ include 'components/sidebar.php';
                     <i class="bi bi-three-dots"></i>
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom">
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-arrow-repeat"></i> Segarkan</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-arrow-down"></i> Ekspor Laporan</a></li>
-                    <li>
-                      <hr class="dropdown-divider">
-                    </li>
-                    <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-eye-slash"></i> Sembunyikan</a></li>
+                    <li><a class="dropdown-item" href="kelola-guru.php"><i class="bi bi-people"></i> Kelola Guru</a></li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-arrow-down"></i> Ekspor Data</a></li>
                   </ul>
                 </div>
               </div>
@@ -124,6 +116,139 @@ include 'components/sidebar.php';
             </div>
             <div class="sparkline-container sparkline-card-footer">
               <div id="return-sparkline"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PUSAT KONTROL LANDING PAGE SECTION -->
+    <div class="col-12">
+      <div class="card mb-0 shadow-sm border-0">
+        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom flex-wrap gap-2">
+          <div>
+            <h2 class="card-title d-flex align-items-center gap-2 mb-1">
+              <i class="bi bi-sliders text-success"></i> Pusat Kontrol Landing Page
+            </h2>
+            <p class="text-muted-green fs-xs mb-0">Kelola semua elemen visual, teks, dan data dinamis yang tampil di halaman utama (Home) website.</p>
+          </div>
+          <a href="../index.php" target="_blank" class="btn btn-outline-success btn-sm d-flex align-items-center gap-2">
+            <i class="bi bi-globe2"></i> Pratinjau Website Langsung
+          </a>
+        </div>
+
+        <div class="row g-3">
+          <!-- Modul 1: Hero Carousel -->
+          <div class="col-xl-4 col-md-6">
+            <div class="p-3 rounded-3 border bg-light bg-opacity-50 h-100 d-flex flex-column justify-content-between">
+              <div>
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle p-2 bg-success text-white" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center;"><i class="bi bi-aspect-ratio fs-xs"></i></div>
+                    <span class="fw-bold fs-sm">Hero &amp; Banner Slider</span>
+                  </div>
+                  <span class="badge bg-success-subtle text-success fs-xs">3 Slide Aktif</span>
+                </div>
+                <p class="text-muted fs-xs mb-3">Kelola teks judul, slogan, foto latar belakang, dan tombol aksi pada banner utama slider.</p>
+              </div>
+              <a href="kelola-hero.php" class="btn btn-sm btn-outline-success w-100 d-flex align-items-center justify-content-center gap-1">
+                <span>Kelola Slider Hero</span> <i class="bi bi-arrow-right fs-xs"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Modul 2: Statistik Counter -->
+          <div class="col-xl-4 col-md-6">
+            <div class="p-3 rounded-3 border bg-light bg-opacity-50 h-100 d-flex flex-column justify-content-between">
+              <div>
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle p-2 bg-primary text-white" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center;"><i class="bi bi-bar-chart-fill fs-xs"></i></div>
+                    <span class="fw-bold fs-sm">Angka &amp; Statistik Capaian</span>
+                  </div>
+                  <span class="badge bg-primary-subtle text-primary fs-xs">4 Indikator</span>
+                </div>
+                <p class="text-muted fs-xs mb-3">2500+ Siswa Aktif, 45+ Partner Industri, 100% Kurikulum Industri, dan 7+ Eskul Prestasi.</p>
+              </div>
+              <a href="kelola-hero.php#section-stats" class="btn btn-sm btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-1">
+                <span>Ubah Angka Statistik</span> <i class="bi bi-arrow-right fs-xs"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Modul 3: Jurusan Unggulan -->
+          <div class="col-xl-4 col-md-6">
+            <div class="p-3 rounded-3 border bg-light bg-opacity-50 h-100 d-flex flex-column justify-content-between">
+              <div>
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle p-2 bg-warning text-dark" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center;"><i class="bi bi-cpu fs-xs"></i></div>
+                    <span class="fw-bold fs-sm">Jurusan Unggulan (3D)</span>
+                  </div>
+                  <span class="badge bg-warning-subtle text-warning fs-xs">4 Program</span>
+                </div>
+                <p class="text-muted fs-xs mb-3">RPL, Teknik Pemesinan, Teknik Pembuatan Kain, dan Teknik Ototronik (Akreditasi &amp; Kuota).</p>
+              </div>
+              <a href="kelola-jurusan.php" class="btn btn-sm btn-outline-warning w-100 d-flex align-items-center justify-content-center gap-1 text-dark">
+                <span>Kelola Data Jurusan</span> <i class="bi bi-arrow-right fs-xs"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Modul 4: Warta & Berita -->
+          <div class="col-xl-4 col-md-6">
+            <div class="p-3 rounded-3 border bg-light bg-opacity-50 h-100 d-flex flex-column justify-content-between">
+              <div>
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle p-2 bg-info text-white" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center;"><i class="bi bi-newspaper fs-xs"></i></div>
+                    <span class="fw-bold fs-sm">Warta &amp; Berita Terbaru</span>
+                  </div>
+                  <span class="badge bg-info-subtle text-info fs-xs">3 Berita Tayang</span>
+                </div>
+                <p class="text-muted fs-xs mb-3">Update informasi kejuaraan LKS, nota kesepahaman MoU industri, dan agenda workshop guru.</p>
+              </div>
+              <a href="kelola-berita.php" class="btn btn-sm btn-outline-info w-100 d-flex align-items-center justify-content-center gap-1">
+                <span>Kelola Warta Berita</span> <i class="bi bi-arrow-right fs-xs"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Modul 5: Testimoni Alumni -->
+          <div class="col-xl-4 col-md-6">
+            <div class="p-3 rounded-3 border bg-light bg-opacity-50 h-100 d-flex flex-column justify-content-between">
+              <div>
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle p-2 bg-danger text-white" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center;"><i class="bi bi-chat-heart-fill fs-xs"></i></div>
+                    <span class="fw-bold fs-sm">Testimoni Alumni</span>
+                  </div>
+                  <span class="badge bg-danger-subtle text-danger fs-xs">3 Ulasan Aktif</span>
+                </div>
+                <p class="text-muted fs-xs mb-3">Ulasan alumni sukses di industri teknologi, otomotif Astra, dan manufaktur tekstil Sritex.</p>
+              </div>
+              <a href="kelola-testimoni.php" class="btn btn-sm btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-1">
+                <span>Kelola Testimoni</span> <i class="bi bi-arrow-right fs-xs"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Modul 6: Layanan PPDB Online -->
+          <div class="col-xl-4 col-md-6">
+            <div class="p-3 rounded-3 border bg-light bg-opacity-50 h-100 d-flex flex-column justify-content-between">
+              <div>
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle p-2 bg-dark text-lime" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center;"><i class="bi bi-mortarboard-fill fs-xs"></i></div>
+                    <span class="fw-bold fs-sm">PPDB Online &amp; CTA</span>
+                  </div>
+                  <span class="badge bg-success fs-xs">Pendaftaran Buka</span>
+                </div>
+                <p class="text-muted fs-xs mb-3">Pantau calon siswa pendaftar baru dari tombol CTA landing page dan verifikasi kelengkapan berkas.</p>
+              </div>
+              <a href="kelola-ppdb.php" class="btn btn-sm btn-dark w-100 d-flex align-items-center justify-content-center gap-1 text-lime">
+                <span>Buka Panel PPDB</span> <i class="bi bi-arrow-right fs-xs"></i>
+              </a>
             </div>
           </div>
         </div>
@@ -180,49 +305,49 @@ include 'components/sidebar.php';
 
             <!-- Transaction Items List -->
             <div class="transaction-list">
-              <div class="transaction-item">
+              <a href="kelola-ppdb.php" class="transaction-item text-decoration-none">
                 <div class="transaction-icon bg-forest-light text-lime">
                   <i class="bi bi-person-plus"></i>
                 </div>
                 <div class="transaction-info">
-                  <div class="transaction-name">Pendaftaran PPDB Baru</div>
+                  <div class="transaction-name">Pendaftaran PPDB Baru: Ahmad Farhan</div>
                   <div class="transaction-date">Hari ini • 12:40 WIB</div>
                 </div>
                 <div class="transaction-amount text-success">Verifikasi OK</div>
-              </div>
+              </a>
 
-              <div class="transaction-item">
+              <a href="kelola-berita.php" class="transaction-item text-decoration-none">
                 <div class="transaction-icon bg-forest-light text-lime">
                   <i class="bi bi-file-earmark-text"></i>
                 </div>
                 <div class="transaction-info">
-                  <div class="transaction-name">Publikasi Berita Prestasi</div>
+                  <div class="transaction-name">Publikasi Warta: Juara 1 LKS Robotika</div>
                   <div class="transaction-date">Kemarin • 08:15 WIB</div>
                 </div>
                 <div class="transaction-amount text-main">Diterbitkan</div>
-              </div>
+              </a>
 
-              <div class="transaction-item">
+              <a href="kelola-pengaduan.php" class="transaction-item text-decoration-none">
                 <div class="transaction-icon bg-forest-light text-lime">
                   <i class="bi bi-chat-dots"></i>
                 </div>
                 <div class="transaction-info">
-                  <div class="transaction-name">Pengaduan Layanan Sekolah</div>
+                  <div class="transaction-name">Pengaduan Layanan: Penerangan Parkir</div>
                   <div class="transaction-date">08 Okt 2026 • 16:30 WIB</div>
                 </div>
                 <div class="transaction-amount text-warning">Menunggu Respon</div>
-              </div>
+              </a>
 
-              <div class="transaction-item">
+              <a href="kelola-galeri.php" class="transaction-item text-decoration-none">
                 <div class="transaction-icon bg-forest-light text-lime">
                   <i class="bi bi-images"></i>
                 </div>
                 <div class="transaction-info">
-                  <div class="transaction-name">Upload Galeri Wisuda &amp; Expo</div>
+                  <div class="transaction-name">Upload Galeri: Wisuda &amp; Expo Industri</div>
                   <div class="transaction-date">07 Okt 2026 • 09:20 WIB</div>
                 </div>
                 <div class="transaction-amount text-main">12 Foto Baru</div>
-              </div>
+              </a>
             </div>
 
           </div>
@@ -358,4 +483,4 @@ include 'components/sidebar.php';
   </div>
   <!-- END: Main Layout Grid -->
 
-  <?php include 'components/footer.php'; ?>
+  <?php include __DIR__ . '/components/footer.php'; ?>

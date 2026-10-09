@@ -9,8 +9,8 @@ $loadDashboardJs = $loadDashboardJs ?? true;
     <!-- START: Footer Component -->
     <footer class="footer-custom">
       <div class="footer-left">
-        <span class="footer-logo">
-          <i class="bi bi-mortarboard-fill text-lime"></i> SMKN 2 Karanganyar
+        <span class="footer-logo d-flex align-items-center gap-2">
+          <img src="<?= $assetsPath ?>images/smkn2kra.png" alt="SMKN 2 Kra" style="width: 20px; height: 20px; object-fit: contain;" onerror="this.src='../logo/smkn2kra.png'"> SMKN 2 Karanganyar
         </span>
         <span class="footer-separator">|</span>
         <span class="footer-copy">&copy; <?= date('Y') ?> Panel Administrasi Sekolah &bull; All Rights Reserved</span>

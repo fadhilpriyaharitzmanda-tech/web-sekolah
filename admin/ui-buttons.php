@@ -6,12 +6,12 @@ $pageTitle = 'Tombol & Alert - Admin SMKN 2 Karanganyar';
 $currentPage = 'buttons';
 $assetsPath = 'assets/';
 
-include 'components/header.php';
-include 'components/sidebar.php';
+include __DIR__ . '/components/header.php';
+include __DIR__ . '/components/sidebar.php';
 ?>
 
 <div class="main-wrapper">
-  <?php include 'components/topbar.php'; ?>
+  <?php include __DIR__ . '/components/topbar.php'; ?>
 
   <!-- START: Page Header Banner -->
   <div class="page-header">
@@ -131,4 +131,4 @@ include 'components/sidebar.php';
   </div>
   <!-- END: Main Components Grid Layout -->
 
-  <?php include 'components/footer.php'; ?>
+  <?php include __DIR__ . '/components/footer.php'; ?>

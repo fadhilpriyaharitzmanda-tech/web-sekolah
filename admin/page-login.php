@@ -38,8 +38,8 @@ $assetsPath = 'assets/';
     <div class="login-card">
 
       <!-- Brand Identity -->
-      <a href="index.php" class="login-brand text-decoration-none">
-        <i class="bi bi-mortarboard-fill text-lime"></i>
+      <a href="index.php" class="login-brand text-decoration-none d-flex align-items-center justify-content-center gap-2">
+        <img src="<?= $assetsPath ?>images/smkn2kra.png" alt="SMKN 2 Karanganyar" style="width: 36px; height: 36px; object-fit: contain;" onerror="this.src='../logo/smkn2kra.png'">
         <span>SMKN 2 Karanganyar</span>
       </a>
 
