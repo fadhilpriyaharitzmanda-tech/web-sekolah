@@ -113,18 +113,17 @@ $assetsPath = $assetsPath ?? 'assets/';
         aria-expanded="false" id="profile-dropdown">
         <img src="<?= $assetsPath ?>images/avatar.png" alt="Profile Image" class="navbar-profile-img"
           onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop'">
-        <span class="navbar-profile-name d-none d-md-inline">Administrator</span>
+        <span class="navbar-profile-name d-none d-md-inline"><?= htmlspecialchars($_SESSION['admin_nama'] ?? 'Administrator') ?></span>
         <i class="bi bi-chevron-down navbar-profile-caret"></i>
       </button>
       <ul class="dropdown-menu dropdown-menu-end dropdown-menu-profile" aria-labelledby="profile-dropdown">
-        <li class="dropdown-header">Selamat Datang!</li>
-        <li><a class="dropdown-item" href="#"><i class="bi bi-person"></i> Akun Saya</a></li>
-        <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Pengaturan</a></li>
+        <li class="dropdown-header">Selamat Datang, <?= htmlspecialchars($_SESSION['admin_username'] ?? 'Admin') ?>!</li>
+        <li><a class="dropdown-item" href="index.php"><i class="bi bi-person"></i> Akun Saya</a></li>
         <li><a class="dropdown-item" href="../index.php" target="_blank"><i class="bi bi-globe2"></i> Ke Website</a></li>
         <li>
           <hr class="dropdown-divider">
         </li>
-        <li><a class="dropdown-item text-danger" href="page-login.php"><i class="bi bi-box-arrow-right"></i> Keluar</a></li>
+        <li><a class="dropdown-item text-danger" href="logout.php"><i class="bi bi-box-arrow-right"></i> Keluar</a></li>
       </ul>
     </div>
   </div>

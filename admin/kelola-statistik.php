@@ -24,9 +24,6 @@ include __DIR__ . '/components/sidebar.php';
       <a href="../index.php#statistik" target="_blank" class="btn btn-outline-success btn-sm d-flex align-items-center gap-2">
         <i class="bi bi-eye"></i> Pratinjau di Website
       </a>
-      <button type="button" class="btn btn-success btn-sm d-flex align-items-center gap-2" id="btnSimpanSemuaStatistik" onclick="simpanStatistikGlobal()">
-        <i class="bi bi-cloud-arrow-up"></i> Simpan Statistik
-      </button>
     </div>
   </div>
   <!-- END: Page Header Banner -->

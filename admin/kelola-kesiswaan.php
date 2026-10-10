@@ -3,9 +3,9 @@
  * Kelola Prestasi & Ekstrakurikuler Kesiswaan - Admin SMKN 2 Karanganyar
  */
 $pageTitle = 'Kelola Kesiswaan - Admin SMKN 2 Karanganyar';
-$currentPage = 'kelola-prestasi';
-$assetsPath = 'assets/';
 $activeTab = $_GET['tab'] ?? 'prestasi';
+$currentPage = ($activeTab === 'ekskul') ? 'kelola-ekskul' : 'kelola-prestasi';
+$assetsPath = 'assets/';
 
 include __DIR__ . '/components/header.php';
 include __DIR__ . '/components/sidebar.php';
@@ -226,35 +226,37 @@ include __DIR__ . '/components/sidebar.php';
 
     <!-- TAB EKSKUL -->
     <div class="tab-pane fade <?= ($activeTab === 'ekskul') ? 'show active' : '' ?>" id="tab-ekskul" role="tabpanel">
-      <div class="row g-4 mb-4">
+      <div class="row g-4 mb-4" id="ekskulGridContainer">
         <!-- Eskul 1: Robotik -->
-        <div class="col-md-4">
+        <div class="col-md-4 ekskul-card-col" id="ekskul-card-1">
           <div class="card p-4 shadow-sm border-0 h-100 d-flex flex-column justify-content-between" style="border-radius: var(--radius-xl); border: 1px solid rgba(11, 19, 15, 0.06) !important;">
             <div>
               <div class="d-flex align-items-center justify-content-between mb-3">
                 <div class="d-flex align-items-center gap-3">
-                  <div class="rounded-3 bg-success-subtle text-success p-3 fs-3" style="width: 52px; height: 52px; display:flex; align-items:center; justify-content:center;">
+                  <div class="rounded-3 bg-success-subtle text-success p-3 fs-3 ekskul-icon-box" style="width: 52px; height: 52px; display:flex; align-items:center; justify-content:center;">
                     <i class="bi bi-cpu"></i>
                   </div>
                   <div>
-                    <h6 class="fw-bold mb-0 text-main">Robotik &amp; IoT Club</h6>
-                    <div class="text-muted fs-xs">Pembina: Eko Prasetyo, S.Kom</div>
+                    <h6 class="fw-bold mb-0 text-main ekskul-title">Robotik &amp; IoT Club</h6>
+                    <div class="text-muted fs-xs ekskul-pembina">Pembina: Eko Prasetyo, S.Kom</div>
                   </div>
                 </div>
-                <span class="badge bg-success-subtle text-success fw-bold">Aktif</span>
+                <button type="button" class="btn btn-sm py-1 px-2.5 rounded-pill fw-bold border-0 btn-status-ekskul bg-success-subtle text-success" onclick="toggleStatusEkskul(this, 'Robotik &amp; IoT Club')" title="Klik untuk beralih status Aktif / Nonaktif">
+                  <i class="bi bi-check-circle-fill me-1"></i> <span class="status-label">Aktif</span>
+                </button>
               </div>
-              <p class="text-muted fs-sm mb-3" style="line-height: 1.55;">Wadah inovasi teknologi robotika, mikrokontroler Arduino/ESP32, dan otomasi industri.</p>
+              <p class="text-muted fs-sm mb-3 ekskul-desc" style="line-height: 1.55;">Wadah inovasi teknologi robotika, mikrokontroler Arduino/ESP32, dan otomasi industri.</p>
             </div>
             <div class="pt-3 border-top">
               <div class="d-flex justify-content-between align-items-center mb-3 fs-xs text-muted">
-                <span>Anggota: <strong class="text-main">48 Siswa</strong></span>
-                <span>Jadwal: <strong class="text-main">Rabu &amp; Jumat</strong></span>
+                <span>Anggota: <strong class="text-main ekskul-anggota">48 Siswa</strong></span>
+                <span>Jadwal: <strong class="text-main ekskul-jadwal">Rabu &amp; Jumat</strong></span>
               </div>
               <div class="d-flex justify-content-end gap-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="editEkskul('Robotik & IoT Club', 'Eko Prasetyo, S.Kom', '48 Siswa', 'Rabu & Jumat')">
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="bukaModalEditEkskul('ekskul-card-1', 'Robotik &amp; IoT Club', 'Eko Prasetyo, S.Kom', '48 Siswa', 'Rabu &amp; Jumat', 'Wadah inovasi teknologi robotika, mikrokontroler Arduino/ESP32, dan otomasi industri.', 'bi-cpu', 'Aktif')">
                   <i class="bi bi-pencil me-1"></i> Edit
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-danger" onclick="hapusEkskul(this, 'Robotik & IoT Club')">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="bukaModalHapusEkskul('ekskul-card-1', 'Robotik &amp; IoT Club')">
                   <i class="bi bi-trash"></i>
                 </button>
               </div>
@@ -263,33 +265,35 @@ include __DIR__ . '/components/sidebar.php';
         </div>
 
         <!-- Eskul 2: PMR -->
-        <div class="col-md-4">
+        <div class="col-md-4 ekskul-card-col" id="ekskul-card-2">
           <div class="card p-4 shadow-sm border-0 h-100 d-flex flex-column justify-content-between" style="border-radius: var(--radius-xl); border: 1px solid rgba(11, 19, 15, 0.06) !important;">
             <div>
               <div class="d-flex align-items-center justify-content-between mb-3">
                 <div class="d-flex align-items-center gap-3">
-                  <div class="rounded-3 bg-danger-subtle text-danger p-3 fs-3" style="width: 52px; height: 52px; display:flex; align-items:center; justify-content:center;">
+                  <div class="rounded-3 bg-danger-subtle text-danger p-3 fs-3 ekskul-icon-box" style="width: 52px; height: 52px; display:flex; align-items:center; justify-content:center;">
                     <i class="bi bi-heart-pulse"></i>
                   </div>
                   <div>
-                    <h6 class="fw-bold mb-0 text-main">PMR Wira (Palang Merah)</h6>
-                    <div class="text-muted fs-xs">Pembina: Dra. Haryati</div>
+                    <h6 class="fw-bold mb-0 text-main ekskul-title">PMR Wira (Palang Merah)</h6>
+                    <div class="text-muted fs-xs ekskul-pembina">Pembina: Dra. Haryati</div>
                   </div>
                 </div>
-                <span class="badge bg-success-subtle text-success fw-bold">Aktif</span>
+                <button type="button" class="btn btn-sm py-1 px-2.5 rounded-pill fw-bold border-0 btn-status-ekskul bg-success-subtle text-success" onclick="toggleStatusEkskul(this, 'PMR Wira (Palang Merah)')" title="Klik untuk beralih status Aktif / Nonaktif">
+                  <i class="bi bi-check-circle-fill me-1"></i> <span class="status-label">Aktif</span>
+                </button>
               </div>
-              <p class="text-muted fs-sm mb-3" style="line-height: 1.55;">Kegiatan pertolongan pertama, donor darah sukarela, mitigasi bencana, dan bakti sosial kemanusiaan.</p>
+              <p class="text-muted fs-sm mb-3 ekskul-desc" style="line-height: 1.55;">Kegiatan pertolongan pertama, donor darah sukarela, mitigasi bencana, dan bakti sosial kemanusiaan.</p>
             </div>
             <div class="pt-3 border-top">
               <div class="d-flex justify-content-between align-items-center mb-3 fs-xs text-muted">
-                <span>Anggota: <strong class="text-main">65 Siswa</strong></span>
-                <span>Jadwal: <strong class="text-main">Kamis</strong></span>
+                <span>Anggota: <strong class="text-main ekskul-anggota">65 Siswa</strong></span>
+                <span>Jadwal: <strong class="text-main ekskul-jadwal">Kamis</strong></span>
               </div>
               <div class="d-flex justify-content-end gap-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="editEkskul('PMR Wira (Palang Merah)', 'Dra. Haryati', '65 Siswa', 'Kamis')">
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="bukaModalEditEkskul('ekskul-card-2', 'PMR Wira (Palang Merah)', 'Dra. Haryati', '65 Siswa', 'Kamis', 'Kegiatan pertolongan pertama, donor darah sukarela, mitigasi bencana, dan bakti sosial kemanusiaan.', 'bi-heart-pulse', 'Aktif')">
                   <i class="bi bi-pencil me-1"></i> Edit
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-danger" onclick="hapusEkskul(this, 'PMR Wira')">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="bukaModalHapusEkskul('ekskul-card-2', 'PMR Wira (Palang Merah)')">
                   <i class="bi bi-trash"></i>
                 </button>
               </div>
@@ -298,33 +302,35 @@ include __DIR__ . '/components/sidebar.php';
         </div>
 
         <!-- Eskul 3: Paskibraka -->
-        <div class="col-md-4">
+        <div class="col-md-4 ekskul-card-col" id="ekskul-card-3">
           <div class="card p-4 shadow-sm border-0 h-100 d-flex flex-column justify-content-between" style="border-radius: var(--radius-xl); border: 1px solid rgba(11, 19, 15, 0.06) !important;">
             <div>
               <div class="d-flex align-items-center justify-content-between mb-3">
                 <div class="d-flex align-items-center gap-3">
-                  <div class="rounded-3 bg-primary-subtle text-primary p-3 fs-3" style="width: 52px; height: 52px; display:flex; align-items:center; justify-content:center;">
+                  <div class="rounded-3 bg-primary-subtle text-primary p-3 fs-3 ekskul-icon-box" style="width: 52px; height: 52px; display:flex; align-items:center; justify-content:center;">
                     <i class="bi bi-flag"></i>
                   </div>
                   <div>
-                    <h6 class="fw-bold mb-0 text-main">Paskibraka Sekolah</h6>
-                    <div class="text-muted fs-xs">Pembina: Hendra Gunawan, S.Pd</div>
+                    <h6 class="fw-bold mb-0 text-main ekskul-title">Paskibraka Sekolah</h6>
+                    <div class="text-muted fs-xs ekskul-pembina">Pembina: Hendra Gunawan, S.Pd</div>
                   </div>
                 </div>
-                <span class="badge bg-success-subtle text-success fw-bold">Aktif</span>
+                <button type="button" class="btn btn-sm py-1 px-2.5 rounded-pill fw-bold border-0 btn-status-ekskul bg-success-subtle text-success" onclick="toggleStatusEkskul(this, 'Paskibraka Sekolah')" title="Klik untuk beralih status Aktif / Nonaktif">
+                  <i class="bi bi-check-circle-fill me-1"></i> <span class="status-label">Aktif</span>
+                </button>
               </div>
-              <p class="text-muted fs-sm mb-3" style="line-height: 1.55;">Pembinaan baris-berbaris presisi, kedisiplinan mental, kepemimpinan karakter, dan upacara kenegaraan.</p>
+              <p class="text-muted fs-sm mb-3 ekskul-desc" style="line-height: 1.55;">Pembinaan baris-berbaris presisi, kedisiplinan mental, kepemimpinan karakter, dan upacara kenegaraan.</p>
             </div>
             <div class="pt-3 border-top">
               <div class="d-flex justify-content-between align-items-center mb-3 fs-xs text-muted">
-                <span>Anggota: <strong class="text-main">55 Siswa</strong></span>
-                <span>Jadwal: <strong class="text-main">Selasa &amp; Sabtu</strong></span>
+                <span>Anggota: <strong class="text-main ekskul-anggota">55 Siswa</strong></span>
+                <span>Jadwal: <strong class="text-main ekskul-jadwal">Selasa &amp; Sabtu</strong></span>
               </div>
               <div class="d-flex justify-content-end gap-2">
-                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="editEkskul('Paskibraka Sekolah', 'Hendra Gunawan, S.Pd', '55 Siswa', 'Selasa & Sabtu')">
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="bukaModalEditEkskul('ekskul-card-3', 'Paskibraka Sekolah', 'Hendra Gunawan, S.Pd', '55 Siswa', 'Selasa &amp; Sabtu', 'Pembinaan baris-berbaris presisi, kedisiplinan mental, kepemimpinan karakter, dan upacara kenegaraan.', 'bi-flag', 'Aktif')">
                   <i class="bi bi-pencil me-1"></i> Edit
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-danger" onclick="hapusEkskul(this, 'Paskibraka Sekolah')">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="bukaModalHapusEkskul('ekskul-card-3', 'Paskibraka Sekolah')">
                   <i class="bi bi-trash"></i>
                 </button>
               </div>
@@ -451,14 +457,195 @@ include __DIR__ . '/components/sidebar.php';
   </div>
 </div>
 
+<!-- Modal Tambah Ekstrakurikuler -->
+<div class="modal fade" id="modalTambahEkskul" tabindex="-1" aria-labelledby="modalTambahEkskulLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="modalTambahEkskulLabel">
+          <i class="bi bi-stars text-success"></i> Tambah Ekstrakurikuler Baru
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formTambahEkskul">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label-custom" for="tambahNamaEkskul">Nama Ekstrakurikuler</label>
+              <input type="text" class="form-control-custom" id="tambahNamaEkskul" placeholder="Contoh: English Conversation Club" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label-custom" for="tambahStatusEkskul">Status Awal</label>
+              <select class="form-select-custom" id="tambahStatusEkskul">
+                <option value="Aktif" selected>Aktif</option>
+                <option value="Nonaktif">Nonaktif</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-custom" for="tambahPembinaEkskul">Guru Pembina</label>
+              <input type="text" class="form-control-custom" id="tambahPembinaEkskul" placeholder="Contoh: Dra. Sri Wahyuni" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label-custom" for="tambahAnggotaEkskul">Jumlah Anggota</label>
+              <input type="text" class="form-control-custom" id="tambahAnggotaEkskul" placeholder="Contoh: 35 Siswa" value="30 Siswa">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label-custom" for="tambahJadwalEkskul">Jadwal Latihan</label>
+              <input type="text" class="form-control-custom" id="tambahJadwalEkskul" placeholder="Contoh: Jumat Sore" value="Sabtu Pagi">
+            </div>
+            <div class="col-12">
+              <label class="form-label-custom" for="tambahDeskripsiEkskul">Deskripsi Kegiatan</label>
+              <textarea class="form-control-custom" id="tambahDeskripsiEkskul" rows="3" placeholder="Tulis deskripsi visi, fokus kegiatan, dan capaian ekstrakurikuler..."></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-success btn-sm d-flex align-items-center gap-2" onclick="simpanTambahEkskul()">
+          <i class="bi bi-check-circle-fill"></i> Simpan Ekstrakurikuler
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Edit Ekstrakurikuler -->
+<div class="modal fade" id="modalEditEkskul" tabindex="-1" aria-labelledby="modalEditEkskulLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="modalEditEkskulLabel">
+          <i class="bi bi-pencil-square text-success"></i> Edit Data Ekstrakurikuler
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formEditEkskul">
+          <input type="hidden" id="editEkskulTargetCardId">
+          <div class="row g-3">
+            <div class="col-md-8">
+              <label class="form-label-custom" for="editNamaEkskul">Nama Ekstrakurikuler</label>
+              <input type="text" class="form-control-custom" id="editNamaEkskul" required>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label-custom" for="editStatusEkskul">Status</label>
+              <select class="form-select-custom" id="editStatusEkskul">
+                <option value="Aktif">Aktif</option>
+                <option value="Nonaktif">Nonaktif</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-custom" for="editPembinaEkskul">Guru Pembina</label>
+              <input type="text" class="form-control-custom" id="editPembinaEkskul" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label-custom" for="editAnggotaEkskul">Jumlah Anggota</label>
+              <input type="text" class="form-control-custom" id="editAnggotaEkskul">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label-custom" for="editJadwalEkskul">Jadwal Latihan</label>
+              <input type="text" class="form-control-custom" id="editJadwalEkskul">
+            </div>
+            <div class="col-12">
+              <label class="form-label-custom" for="editDeskripsiEkskul">Deskripsi Kegiatan</label>
+              <textarea class="form-control-custom" id="editDeskripsiEkskul" rows="3"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-success btn-sm d-flex align-items-center gap-2" onclick="simpanEditEkskul()">
+          <i class="bi bi-save-fill"></i> Perbarui Ekstrakurikuler
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Hapus Ekstrakurikuler -->
+<div class="modal fade" id="modalHapusEkskul" tabindex="-1" aria-labelledby="modalHapusEkskulLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold text-danger" id="modalHapusEkskulLabel">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i> Konfirmasi Hapus
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body py-3">
+        <input type="hidden" id="hapusEkskulTargetCardId">
+        <p class="mb-1">Apakah Anda yakin ingin menghapus ekstrakurikuler <strong id="hapusEkskulNamaText"></strong>?</p>
+        <div class="text-muted fs-xs">Data kegiatan dan keanggotaan ekstrakurikuler ini akan dihapus dari sistem.</div>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-danger btn-sm" onclick="konfirmasiHapusEkskul()">
+          <i class="bi bi-trash-fill me-1"></i> Hapus Ekstrakurikuler
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
+// Tab sync with sidebar & URL
+document.addEventListener('DOMContentLoaded', function() {
+  const ekskulTabBtn = document.getElementById('ekskul-tab');
+  const prestasiTabBtn = document.getElementById('prestasi-tab');
+  const menuEkskul = document.getElementById('menu-ekskul');
+  const menuPrestasi = document.getElementById('menu-prestasi');
+
+  if (ekskulTabBtn) {
+    ekskulTabBtn.addEventListener('shown.bs.tab', function () {
+      if (menuPrestasi) menuPrestasi.classList.remove('active');
+      if (menuEkskul) menuEkskul.classList.add('active');
+      window.history.replaceState(null, null, '?tab=ekskul');
+    });
+  }
+
+  if (prestasiTabBtn) {
+    prestasiTabBtn.addEventListener('shown.bs.tab', function () {
+      if (menuEkskul) menuEkskul.classList.remove('active');
+      if (menuPrestasi) menuPrestasi.classList.add('active');
+      window.history.replaceState(null, null, '?tab=prestasi');
+    });
+  }
+});
+
+// Toggle Status button on Ekskul card (Aktif / Nonaktif)
+function toggleStatusEkskul(btn, nama) {
+  const isAktif = btn.classList.contains('bg-success-subtle');
+  const statusLabel = btn.querySelector('.status-label');
+  const icon = btn.querySelector('i');
+
+  if (isAktif) {
+    btn.classList.remove('bg-success-subtle', 'text-success');
+    btn.classList.add('bg-secondary-subtle', 'text-secondary');
+    if (statusLabel) statusLabel.textContent = 'Nonaktif';
+    if (icon) {
+      icon.className = 'bi bi-slash-circle me-1';
+    }
+    alert('Status ' + nama + ' diubah menjadi Nonaktif.');
+  } else {
+    btn.classList.remove('bg-secondary-subtle', 'text-secondary');
+    btn.classList.add('bg-success-subtle', 'text-success');
+    if (statusLabel) statusLabel.textContent = 'Aktif';
+    if (icon) {
+      icon.className = 'bi bi-check-circle-fill me-1';
+    }
+    alert('Status ' + nama + ' diubah menjadi Aktif.');
+  }
+}
+
+// Open modal tambah depending on active tab
 function bukaModalTambahKesiswaan() {
   const isEkskul = document.getElementById('tab-ekskul').classList.contains('active');
   if (isEkskul) {
-    const nama = prompt('Masukkan nama ekstrakurikuler baru:');
-    if (nama) {
-      alert('Ekstrakurikuler "' + nama + '" berhasil ditambahkan.');
-    }
+    const modalEl = document.getElementById('modalTambahEkskul');
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
   } else {
     const modalEl = document.getElementById('modalTambahPrestasi');
     const modal = new bootstrap.Modal(modalEl);
@@ -466,6 +653,166 @@ function bukaModalTambahKesiswaan() {
   }
 }
 
+// Ekskul Edit Modal
+function bukaModalEditEkskul(cardId, nama, pembina, anggota, jadwal, deskripsi, status) {
+  document.getElementById('editEkskulTargetCardId').value = cardId;
+  document.getElementById('editNamaEkskul').value = nama;
+  document.getElementById('editPembinaEkskul').value = pembina.replace('Pembina: ', '');
+  document.getElementById('editAnggotaEkskul').value = anggota;
+  document.getElementById('editJadwalEkskul').value = jadwal;
+  document.getElementById('editDeskripsiEkskul').value = deskripsi;
+  document.getElementById('editStatusEkskul').value = status;
+
+  const modalEl = document.getElementById('modalEditEkskul');
+  const modal = new bootstrap.Modal(modalEl);
+  modal.show();
+}
+
+function simpanEditEkskul() {
+  const cardId = document.getElementById('editEkskulTargetCardId').value;
+  const nama = document.getElementById('editNamaEkskul').value.trim();
+  const pembina = document.getElementById('editPembinaEkskul').value.trim();
+  const anggota = document.getElementById('editAnggotaEkskul').value.trim();
+  const jadwal = document.getElementById('editJadwalEkskul').value.trim();
+  const deskripsi = document.getElementById('editDeskripsiEkskul').value.trim();
+  const status = document.getElementById('editStatusEkskul').value;
+
+  if (!nama) {
+    alert('Nama ekstrakurikuler wajib diisi!');
+    return;
+  }
+
+  const card = document.getElementById(cardId);
+  if (card) {
+    const titleEl = card.querySelector('.ekskul-title');
+    const pembinaEl = card.querySelector('.ekskul-pembina');
+    const descEl = card.querySelector('.ekskul-desc');
+    const anggotaEl = card.querySelector('.ekskul-anggota');
+    const jadwalEl = card.querySelector('.ekskul-jadwal');
+    const statusBtn = card.querySelector('.btn-status-ekskul');
+
+    if (titleEl) titleEl.textContent = nama;
+    if (pembinaEl) pembinaEl.textContent = 'Pembina: ' + pembina;
+    if (descEl) descEl.textContent = deskripsi;
+    if (anggotaEl) anggotaEl.textContent = anggota;
+    if (jadwalEl) jadwalEl.textContent = jadwal;
+
+    if (statusBtn) {
+      const statusLabel = statusBtn.querySelector('.status-label');
+      const icon = statusBtn.querySelector('i');
+      if (status === 'Aktif') {
+        statusBtn.className = 'btn btn-sm py-1 px-2.5 rounded-pill fw-bold border-0 btn-status-ekskul bg-success-subtle text-success';
+        if (statusLabel) statusLabel.textContent = 'Aktif';
+        if (icon) icon.className = 'bi bi-check-circle-fill me-1';
+      } else {
+        statusBtn.className = 'btn btn-sm py-1 px-2.5 rounded-pill fw-bold border-0 btn-status-ekskul bg-secondary-subtle text-secondary';
+        if (statusLabel) statusLabel.textContent = 'Nonaktif';
+        if (icon) icon.className = 'bi bi-slash-circle me-1';
+      }
+    }
+  }
+
+  const modalEl = document.getElementById('modalEditEkskul');
+  const modal = bootstrap.Modal.getInstance(modalEl);
+  if (modal) modal.hide();
+  alert('Ekstrakurikuler "' + nama + '" berhasil diperbarui!');
+}
+
+// Ekskul Tambah Modal
+function simpanTambahEkskul() {
+  const nama = document.getElementById('tambahNamaEkskul').value.trim();
+  const pembina = document.getElementById('tambahPembinaEkskul').value.trim();
+  const anggota = document.getElementById('tambahAnggotaEkskul').value.trim() || '25 Siswa';
+  const jadwal = document.getElementById('tambahJadwalEkskul').value.trim() || 'Sabtu';
+  const deskripsi = document.getElementById('tambahDeskripsiEkskul').value.trim() || 'Kegiatan ekstrakurikuler pengembangan bakat minat siswa.';
+  const status = document.getElementById('tambahStatusEkskul').value;
+
+  if (!nama || !pembina) {
+    alert('Nama ekstrakurikuler dan guru pembina wajib diisi!');
+    return;
+  }
+
+  const container = document.getElementById('ekskulGridContainer');
+  const newId = 'ekskul-card-' + Date.now();
+  const isAktif = status === 'Aktif';
+
+  const col = document.createElement('div');
+  col.className = 'col-md-4 ekskul-card-col';
+  col.id = newId;
+  col.innerHTML = `
+    <div class="card p-4 shadow-sm border-0 h-100 d-flex flex-column justify-content-between" style="border-radius: var(--radius-xl); border: 1px solid rgba(11, 19, 15, 0.06) !important;">
+      <div>
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="d-flex align-items-center gap-3">
+            <div class="rounded-3 bg-primary-subtle text-primary p-3 fs-3 ekskul-icon-box" style="width: 52px; height: 52px; display:flex; align-items:center; justify-content:center;">
+              <i class="bi bi-star-fill"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-0 text-main ekskul-title">${nama}</h6>
+              <div class="text-muted fs-xs ekskul-pembina">Pembina: ${pembina}</div>
+            </div>
+          </div>
+          <button type="button" class="btn btn-sm py-1 px-2.5 rounded-pill fw-bold border-0 btn-status-ekskul ${isAktif ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary'}" onclick="toggleStatusEkskul(this, '${nama}')" title="Klik untuk beralih status Aktif / Nonaktif">
+            <i class="bi ${isAktif ? 'bi-check-circle-fill' : 'bi-slash-circle'} me-1"></i> <span class="status-label">${status}</span>
+          </button>
+        </div>
+        <p class="text-muted fs-sm mb-3 ekskul-desc" style="line-height: 1.55;">${deskripsi}</p>
+      </div>
+      <div class="pt-3 border-top">
+        <div class="d-flex justify-content-between align-items-center mb-3 fs-xs text-muted">
+          <span>Anggota: <strong class="text-main ekskul-anggota">${anggota}</strong></span>
+          <span>Jadwal: <strong class="text-main ekskul-jadwal">${jadwal}</strong></span>
+        </div>
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="bukaModalEditEkskul('${newId}', '${nama}', '${pembina}', '${anggota}', '${jadwal}', '${deskripsi}', '${status}')">
+            <i class="bi bi-pencil me-1"></i> Edit
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-danger" onclick="bukaModalHapusEkskul('${newId}', '${nama}')">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  container.prepend(col);
+
+  const modalEl = document.getElementById('modalTambahEkskul');
+  const modal = bootstrap.Modal.getInstance(modalEl);
+  if (modal) modal.hide();
+  document.getElementById('formTambahEkskul').reset();
+  alert('Ekstrakurikuler "' + nama + '" berhasil ditambahkan!');
+}
+
+// Ekskul Hapus Modal
+function bukaModalHapusEkskul(cardId, nama) {
+  document.getElementById('hapusEkskulTargetCardId').value = cardId;
+  document.getElementById('hapusEkskulNamaText').textContent = nama;
+  const modalEl = document.getElementById('modalHapusEkskul');
+  const modal = new bootstrap.Modal(modalEl);
+  modal.show();
+}
+
+function konfirmasiHapusEkskul() {
+  const cardId = document.getElementById('hapusEkskulTargetCardId').value;
+  const nama = document.getElementById('hapusEkskulNamaText').textContent;
+  const modalEl = document.getElementById('modalHapusEkskul');
+  const modal = bootstrap.Modal.getInstance(modalEl);
+  if (modal) modal.hide();
+
+  const card = document.getElementById(cardId);
+  if (card) {
+    card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    card.style.opacity = '0';
+    card.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+      card.remove();
+      alert('Ekstrakurikuler "' + nama + '" berhasil dihapus.');
+    }, 300);
+  }
+}
+
+// Prestasi functions
 function editPrestasi(lomba, tingkat, peringkat, siswa, kelas, tahun) {
   document.getElementById('editNamaLomba').value = lomba;
   document.getElementById('editTingkatLomba').value = tingkat;
@@ -507,23 +854,6 @@ function hapusPrestasi(btn, lomba) {
       setTimeout(() => {
         row.remove();
         alert('Prestasi ' + lomba + ' berhasil dihapus.');
-      }, 250);
-    }
-  }
-}
-
-function editEkskul(nama, pembina, anggota, jadwal) {
-  alert('Edit Ekstrakurikuler: ' + nama + '\nPembina: ' + pembina + '\nAnggota: ' + anggota + '\nJadwal: ' + jadwal);
-}
-
-function hapusEkskul(btn, nama) {
-  if (confirm('Nonaktifkan ekstrakurikuler ' + nama + '?')) {
-    const card = btn.closest('.col-md-4');
-    if (card) {
-      card.style.opacity = '0.3';
-      setTimeout(() => {
-        card.remove();
-        alert('Ekstrakurikuler ' + nama + ' berhasil dihapus.');
       }, 250);
     }
   }

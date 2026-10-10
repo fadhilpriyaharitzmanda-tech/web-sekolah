@@ -1,8 +1,14 @@
 <?php
-/**
- * Header Component - Admin SMKN 2 Karanganyar
- * Contains DOCTYPE, meta tags, and stylesheet imports.
- */
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Proteksi Autentikasi Admin
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    header('Location: page-login.php');
+    exit;
+}
+
 $pageTitle = $pageTitle ?? 'Admin Panel - SMKN 2 Karanganyar';
 $assetsPath = $assetsPath ?? 'assets/';
 ?>

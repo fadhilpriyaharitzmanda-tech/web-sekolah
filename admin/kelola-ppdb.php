@@ -23,9 +23,7 @@ include __DIR__ . '/components/sidebar.php';
       <a href="../layanan/ppdb.php" target="_blank" class="btn btn-outline-success btn-sm d-flex align-items-center gap-2">
         <i class="bi bi-eye"></i> Form PPDB Website
       </a>
-      <button type="button" class="btn btn-success btn-sm d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalTambahPendaftar">
-        <i class="bi bi-person-plus-fill"></i> Tambah Pendaftar
-      </button>
+
       <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2" onclick="alert('Data pendaftar PPDB berhasil diekspor ke Excel!')">
         <i class="bi bi-file-earmark-excel"></i> Ekspor Excel
       </button>
@@ -258,80 +256,7 @@ include __DIR__ . '/components/sidebar.php';
 </div>
 <!-- END: .main-wrapper -->
 
-<!-- Modal Tambah Pendaftar PPDB -->
-<div class="modal fade" id="modalTambahPendaftar" tabindex="-1" aria-labelledby="modalTambahPendaftarLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title fw-bold" id="modalTambahPendaftarLabel">
-          <i class="bi bi-person-plus-fill text-success"></i> Tambah Registrasi Calon Siswa (PPDB)
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form id="formTambahPpdb">
-          <div class="row g-3">
-            <div class="col-md-7">
-              <label class="form-label-custom" for="tambahNamaSiswaPpdb">Nama Lengkap Calon Siswa</label>
-              <input type="text" class="form-control-custom" id="tambahNamaSiswaPpdb" placeholder="Contoh: Muhammad Rizky Pratama" required>
-              <div class="form-text-custom">Sesuai nama yang tertera di Akta Kelahiran dan Ijazah SMP.</div>
-            </div>
-            <div class="col-md-5">
-              <label class="form-label-custom" for="tambahNisnPpdb">Nomor Induk Siswa Nasional (NISN)</label>
-              <input type="text" class="form-control-custom is-valid-custom" id="tambahNisnPpdb" placeholder="0081234567" value="0089201925" required>
-              <div class="form-feedback-custom valid-custom">
-                <i class="bi bi-check-circle-fill"></i> NISN valid &amp; sinkron dengan Dapodik Kemendikbud
-              </div>
-            </div>
 
-            <div class="col-md-6">
-              <label class="form-label-custom" for="tambahSmpPpdb">Asal Sekolah (SMP / MTs)</label>
-              <input type="text" class="form-control-custom" id="tambahSmpPpdb" placeholder="Contoh: SMP Negeri 1 Karanganyar" required>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label-custom" for="tambahJurusanPpdb">Pilihan Program Keahlian</label>
-              <select class="form-select-custom" id="tambahJurusanPpdb">
-                <option value="RPL" selected>Rekayasa Perangkat Lunak (RPL)</option>
-                <option value="TPM">Teknik Pemesinan (TPM)</option>
-                <option value="TPK">Teknik Pembuatan Kain (TPK)</option>
-                <option value="TOT">Teknik Ototronik (TOT)</option>
-              </select>
-            </div>
-
-            <div class="col-md-4">
-              <label class="form-label-custom" for="tambahNilaiPpdb">Nilai Rata-rata Raport (Smt 1-5)</label>
-              <input type="number" step="0.01" class="form-control-custom" id="tambahNilaiPpdb" placeholder="88.50" value="88.50" required>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label-custom" for="tambahWaPpdb">No. WhatsApp / HP Wali Murid</label>
-              <input type="tel" class="form-control-custom" id="tambahWaPpdb" placeholder="081234567890" required>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label-custom" for="tambahStatusPpdb">Status Verifikasi Awal</label>
-              <select class="form-select-custom" id="tambahStatusPpdb">
-                <option value="Terverifikasi" selected>Terverifikasi Lengkap</option>
-                <option value="Menunggu">Menunggu Verifikasi</option>
-                <option value="Perbaikan">Perlu Perbaikan</option>
-              </select>
-            </div>
-
-            <div class="col-12">
-              <label class="form-label-custom">Unggah Berkas Raport &amp; Kartu Keluarga (PDF / ZIP)</label>
-              <input type="file" class="form-control-custom" accept=".pdf,.zip,.rar">
-              <div class="form-text-custom">Format dokumen PDF gabungan maksimal ukuran berkas 10MB.</div>
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
-        <button type="button" class="btn btn-success btn-sm d-flex align-items-center gap-2" onclick="simpanTambahPpdb()">
-          <i class="bi bi-check-circle-fill"></i> Daftarkan Calon Siswa
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- Modal Detail Calon Siswa -->
 <div class="modal fade" id="modalDetailPpdb" tabindex="-1" aria-labelledby="modalDetailPpdbLabel" aria-hidden="true">
@@ -400,17 +325,7 @@ function detailPpdb(nama, noreg, jurusan, smp, nilai, status) {
   modal.show();
 }
 
-function simpanTambahPpdb() {
-  const nama = document.getElementById('tambahNamaSiswaPpdb').value;
-  if (!nama) {
-    alert('Harap isi nama lengkap calon siswa!');
-    return;
-  }
-  alert('Calon siswa ' + nama + ' berhasil didaftarkan ke sistem PPDB!');
-  const modalEl = document.getElementById('modalTambahPendaftar');
-  const modal = bootstrap.Modal.getInstance(modalEl);
-  if (modal) modal.hide();
-}
+
 
 function filterPpdbTable() {
   const query = (document.getElementById('searchPpdbInput').value || '').toLowerCase();

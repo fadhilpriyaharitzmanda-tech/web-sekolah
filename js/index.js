@@ -1,51 +1,123 @@
-(function(){
-  var carouselSlides = document.querySelectorAll('.hero-slide');
-  var carouselDots = document.querySelectorAll('.hero-dot');
-  var currentSlide = 0;
-  var slideInterval = setInterval(nextSlide, 5000);
-  var isTransitioning = false;
+/**
+ * Carousel Hero & Beranda Interactions - SMKN 2 Karanganyar
+ * Auto-rotation slide banner hero, dots indicator, and arrow navigation.
+ */
+(function() {
+  function initHeroCarousel() {
+    var carouselSlides = document.querySelectorAll('.hero-slide');
+    var carouselDots = document.querySelectorAll('.hero-dot');
+    var heroSection = document.getElementById('heroCarousel');
 
-  window.goToSlide = function(index) {
-    if (isTransitioning) return;
-    isTransitioning = true;
-    carouselSlides.forEach(function(s) { s.classList.remove('active'); });
-    carouselDots.forEach(function(d) { d.classList.remove('active'); });
-    carouselSlides[index].classList.add('active');
-    carouselDots[index].classList.add('active');
-    currentSlide = index;
-    setTimeout(function() { isTransitioning = false; }, 800);
-  };
+    if (!carouselSlides || carouselSlides.length === 0) {
+      return;
+    }
 
-  window.nextSlide = function() {
-    goToSlide((currentSlide + 1) % carouselSlides.length);
-  };
+    var currentSlide = 0;
+    var isTransitioning = false;
+    var slideInterval = null;
 
-  window.prevSlide = function() {
-    goToSlide((currentSlide - 1 + carouselSlides.length) % carouselSlides.length);
-  };
+    // Fungsi ganti ke slide tertentu
+    function goToSlide(index) {
+      if (isTransitioning) return;
+      if (index < 0 || index >= carouselSlides.length) return;
 
-  var rightArrow = document.querySelector('.hero-arrow-right');
-  var leftArrow = document.querySelector('.hero-arrow-left');
-  if (rightArrow) {
-    rightArrow.addEventListener('click', function() {
-      clearInterval(slideInterval);
-      nextSlide();
-      slideInterval = setInterval(nextSlide, 5000);
+      isTransitioning = true;
+      carouselSlides.forEach(function(s) { s.classList.remove('active'); });
+      carouselDots.forEach(function(d) { d.classList.remove('active'); });
+
+      if (carouselSlides[index]) {
+        carouselSlides[index].classList.add('active');
+      }
+      if (carouselDots[index]) {
+        carouselDots[index].classList.add('active');
+      }
+
+      currentSlide = index;
+      setTimeout(function() {
+        isTransitioning = false;
+      }, 800);
+    }
+
+    // Fungsi slide berikutnya
+    function nextSlide() {
+      if (carouselSlides.length <= 1) return;
+      var nextIndex = (currentSlide + 1) % carouselSlides.length;
+      goToSlide(nextIndex);
+    }
+
+    // Fungsi slide sebelumnya
+    function prevSlide() {
+      if (carouselSlides.length <= 1) return;
+      var prevIndex = (currentSlide - 1 + carouselSlides.length) % carouselSlides.length;
+      goToSlide(prevIndex);
+    }
+
+    // Timer interval otomatis
+    function startAutoSlide() {
+      stopAutoSlide();
+      if (carouselSlides.length > 1) {
+        slideInterval = setInterval(nextSlide, 5000);
+      }
+    }
+
+    function stopAutoSlide() {
+      if (slideInterval) {
+        clearInterval(slideInterval);
+        slideInterval = null;
+      }
+    }
+
+    // Event listener tombol panah kanan
+    var rightArrow = document.querySelector('.hero-arrow-right');
+    if (rightArrow) {
+      rightArrow.addEventListener('click', function(e) {
+        e.preventDefault();
+        stopAutoSlide();
+        nextSlide();
+        startAutoSlide();
+      });
+    }
+
+    // Event listener tombol panah kiri
+    var leftArrow = document.querySelector('.hero-arrow-left');
+    if (leftArrow) {
+      leftArrow.addEventListener('click', function(e) {
+        e.preventDefault();
+        stopAutoSlide();
+        prevSlide();
+        startAutoSlide();
+      });
+    }
+
+    // Event listener dots indikator
+    carouselDots.forEach(function(dot, i) {
+      dot.addEventListener('click', function(e) {
+        e.preventDefault();
+        stopAutoSlide();
+        goToSlide(i);
+        startAutoSlide();
+      });
     });
+
+    // Pause saat hover agar nyaman membaca teks slide
+    if (heroSection) {
+      heroSection.addEventListener('mouseenter', stopAutoSlide);
+      heroSection.addEventListener('mouseleave', startAutoSlide);
+    }
+
+    // Expose fungsi ke window jika dibutuhkan dari script eksternal
+    window.goToSlide = goToSlide;
+    window.nextSlide = nextSlide;
+    window.prevSlide = prevSlide;
+
+    // Mulai auto-slide
+    startAutoSlide();
   }
-  if (leftArrow) {
-    leftArrow.addEventListener('click', function() {
-      clearInterval(slideInterval);
-      prevSlide();
-      slideInterval = setInterval(nextSlide, 5000);
-    });
-  }
-  carouselDots.forEach(function(dot, i) {
-    dot.addEventListener('click', function() {
-      clearInterval(slideInterval);
-      goToSlide(i);
-      slideInterval = setInterval(nextSlide, 5000);
-    });
-  });
 
+  // Jalankan ketika DOM sudah siap
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHeroCarousel);
+  } else {
+    initHeroCarousel();
+  }
 })();

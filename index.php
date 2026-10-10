@@ -1,3 +1,14 @@
+<?php
+require_once __DIR__ . '/config/database.php';
+try {
+    $pdo = getDbConnection();
+    $heroSlides = $pdo->query("SELECT * FROM hero_banners WHERE status = 'Aktif' ORDER BY urutan ASC, id ASC")->fetchAll(PDO::FETCH_ASSOC);
+    $ctaBanner = $pdo->query("SELECT * FROM cta_banners LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $heroSlides = [];
+    $ctaBanner = null;
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 
@@ -85,62 +96,62 @@
     <!-- HERO CAROUSEL -->
     <section class="hero" id="heroCarousel">
       <div class="hero-slides">
-        <!-- Slide 1 -->
-        <div class="hero-slide active">
-          <div class="hero-bg">
-            <img src="https://lh3.googleusercontent.com/aida/AP1WRLvevxdfR6XhlXMEbZsdNFg10EUtUpgrltceK3RxVnLUp4je9-02tpF3KxuC3_lR99RDkzIFrCtl9gtDzZsUxtiXJ2gRJZrzQfIXDQeJr01oC09gcuwlzpf7_icfVnrxiwqIM4tNwHV4haL6_qaADuG3Tixo9rWsjHiV107oBe-djyjj5fpl30PhtbVne_-_hz5dbYgA33qFDs3Z3wM_cFYn3jnaRUrCheQVAOcB9uUdAcBdvEC_oYf-G_Q" alt="Gedung SMKN 2 Karanganyar">
-          </div>
-          <div class="hero-content">
-            <div class="hero-text">
-              <span class="hero-tag">Growth &amp; Precision</span>
-              <h1 class="hero-title">Pusat Unggulan Pendidikan Vokasi</h1>
-              <p class="hero-desc">Membentuk tenaga kerja profesional, kompeten, dan siap bersaing di era industri global melalui kurikulum berbasis teknologi.</p>
-              <div class="hero-actions">
-                <button class="btn-primary">
-                  Explore Programs
-                  <span class="material-symbols-outlined icon-sm">arrow_forward</span>
-                </button>
-                <button class="btn-outline-light">About Us</button>
+        <?php if (!empty($heroSlides)): ?>
+          <?php foreach ($heroSlides as $idx => $slide): ?>
+            <div class="hero-slide <?= ($idx === 0) ? 'active' : '' ?>">
+              <div class="hero-bg">
+                <?php 
+                  $imgSrc = $slide['gambar'];
+                  if (empty($imgSrc)) {
+                    $imgSrc = 'images/gedung.jpg';
+                  } elseif (strpos($imgSrc, 'http://') !== 0 && strpos($imgSrc, 'https://') !== 0) {
+                    $imgSrc = ltrim($imgSrc, '/');
+                  }
+                ?>
+                <img src="<?= htmlspecialchars($imgSrc) ?>" alt="<?= htmlspecialchars($slide['judul']) ?>" onerror="this.onerror=null; this.src='images/gedung.jpg'">
+              </div>
+              <div class="hero-content">
+                <div class="hero-text">
+                  <?php if (!empty($slide['tagline'])): ?>
+                    <span class="hero-tag"><?= htmlspecialchars($slide['tagline']) ?></span>
+                  <?php endif; ?>
+                  <h1 class="hero-title"><?= htmlspecialchars($slide['judul']) ?></h1>
+                  <p class="hero-desc"><?= htmlspecialchars($slide['deskripsi']) ?></p>
+                  <div class="hero-actions">
+                    <a href="#program" class="btn-primary text-decoration-none">
+                      Explore Programs
+                      <span class="material-symbols-outlined icon-sm">arrow_forward</span>
+                    </a>
+                    <a href="#profil" class="btn-outline-light text-decoration-none">
+                      About Us
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <!-- Fallback Slide 1 -->
+          <div class="hero-slide active">
+            <div class="hero-bg">
+              <img src="https://lh3.googleusercontent.com/aida/AP1WRLvevxdfR6XhlXMEbZsdNFg10EUtUpgrltceK3RxVnLUp4je9-02tpF3KxuC3_lR99RDkzIFrCtl9gtDzZsUxtiXJ2gRJZrzQfIXDQeJr01oC09gcuwlzpf7_icfVnrxiwqIM4tNwHV4haL6_qaADuG3Tixo9rWsjHiV107oBe-djyjj5fpl30PhtbVne_-_hz5dbYgA33qFDs3Z3wM_cFYn3jnaRUrCheQVAOcB9uUdAcBdvEC_oYf-G_Q" alt="Gedung SMKN 2 Karanganyar">
+            </div>
+            <div class="hero-content">
+              <div class="hero-text">
+                <span class="hero-tag">Growth &amp; Precision</span>
+                <h1 class="hero-title">Pusat Unggulan Pendidikan Vokasi</h1>
+                <p class="hero-desc">Membentuk tenaga kerja profesional, kompeten, dan siap bersaing di era industri global melalui kurikulum berbasis teknologi.</p>
+                <div class="hero-actions">
+                  <button class="btn-primary">
+                    Explore Programs
+                    <span class="material-symbols-outlined icon-sm">arrow_forward</span>
+                  </button>
+                  <button class="btn-outline-light">About Us</button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        <!-- Slide 2 -->
-        <div class="hero-slide">
-          <div class="hero-bg">
-            <img src="https://lh3.googleusercontent.com/aida/AP1WRLvNjZjTymzvjomDhdvzZwEZWcHKGVE7MfQ3adcAHODMKesKkoLCzIcV1FGJ-8-UiGtaDUoyoG8crqqIslaCGaqOrh95g7fRMHq2YxyQdc0AkfT5Gd6J6yqwj45D1KwqVOQK4-6uJK5P_A7rEDi0SnDZj0FhkclJPWGqH5QnTj3Ek1cb585I7_NCKwPAOqRFjDpAEPobwDwTJbDX0iXPH148pX8O5y47_m4VBx7KPdqkXj7uQUnGs7W0Ag" alt="Workshop SMKN 2 Karanganyar">
-          </div>
-          <div class="hero-content">
-            <div class="hero-text">
-              <span class="hero-tag">Link &amp; Match</span>
-              <h1 class="hero-title">Pembelajaran Berbasis Industri</h1>
-              <p class="hero-desc">Kurikulum yang dirancang bersama mitra industri terkemuka untuk memastikan lulusan siap kerja dan berdaya saing global.</p>
-              <div class="hero-actions">
-                <button class="btn-primary">Lihat Program</button>
-                <button class="btn-outline-light">Mitra Industri</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Slide 3 -->
-        <div class="hero-slide">
-          <div class="hero-bg">
-            <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1oQITlQxReSzB_iV4d4_8TBuxQ-GZNqW_LJJjMb_ludZiWGYQuAMtmFGechN-618UO8F3DFV6DcXRbgUvE-AnSJQnbZDfzclQ94bXkvN_3t7lu8TUhGv55Xu_CsZ_Ar0Vw6clauRRop2rUJrgG-VTc7TO6_82q_kpoZOOEqAcPzBkeEJH0XbCwWYblItMIRtd7q-3Nv0W8JNn_HKY_qbW_CTlPqmTo2GMs6Crt0mEt2A-jlIe7TQ8ARPYrLJoPajF0a56BpFTX8M" alt="Prestasi SMKN 2 Karanganyar">
-          </div>
-          <div class="hero-content">
-            <div class="hero-text">
-              <span class="hero-tag">Prestasi</span>
-              <h1 class="hero-title">Raih Prestasi Bersama Kami</h1>
-              <p class="hero-desc">Bergabunglah dengan ribuan siswa berprestasi yang telah mengharumkan nama sekolah di kancah nasional dan internasional.</p>
-              <div class="hero-actions">
-                <button class="btn-primary">Daftar SPMB</button>
-                <button class="btn-outline-light">Galeri Prestasi</button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <?php endif; ?>
       </div>
 
       <!-- Carousel Controls -->
@@ -152,9 +163,12 @@
       </button>
 
       <div class="hero-dots">
-        <button class="hero-dot active" aria-label="Slide 1"></button>
-        <button class="hero-dot" aria-label="Slide 2"></button>
-        <button class="hero-dot" aria-label="Slide 3"></button>
+        <?php 
+          $slideCount = !empty($heroSlides) ? count($heroSlides) : 3;
+          for ($d = 0; $d < $slideCount; $d++): 
+        ?>
+          <button class="hero-dot <?= ($d === 0) ? 'active' : '' ?>" aria-label="Slide <?= $d + 1 ?>"></button>
+        <?php endfor; ?>
       </div>
     </section>
 
@@ -347,11 +361,15 @@
       <div class="cta-glow-1"></div>
       <div class="cta-glow-2"></div>
       <div class="cta-content">
-        <h2 class="cta-title">Siap Meniti Karir Masa Depan?</h2>
-        <p class="cta-desc">Daftarkan diri Anda sekarang dan bergabunglah dengan ribuan alumni sukses yang telah berkarir di berbagai industri nasional dan internasional.</p>
+        <h2 class="cta-title"><?= htmlspecialchars($ctaBanner['judul'] ?? 'Siap Meniti Karir Masa Depan?') ?></h2>
+        <p class="cta-desc"><?= htmlspecialchars($ctaBanner['deskripsi'] ?? 'Daftarkan diri Anda sekarang dan bergabunglah dengan ribuan alumni sukses yang telah berkarir di berbagai industri nasional dan internasional.') ?></p>
         <div class="cta-actions">
-          <button class="btn-white">Daftar SPMB 2026/2027</button>
-          <button class="btn-outline-white">Download Brosur</button>
+          <a href="<?= htmlspecialchars($ctaBanner['tombol1_link'] ?? 'layanan/ppdb.php') ?>" class="btn-white text-decoration-none">
+            <?= htmlspecialchars($ctaBanner['tombol1_teks'] ?? 'Daftar SPMB 2026/2027') ?>
+          </a>
+          <a href="<?= htmlspecialchars($ctaBanner['tombol2_link'] ?? 'assets/brosur-smkn2kra.pdf') ?>" class="btn-outline-white text-decoration-none" target="_blank">
+            <?= htmlspecialchars($ctaBanner['tombol2_teks'] ?? 'Download Brosur') ?>
+          </a>
         </div>
       </div>
     </section>

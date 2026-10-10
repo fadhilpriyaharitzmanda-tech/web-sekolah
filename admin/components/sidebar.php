@@ -131,31 +131,7 @@ $assetsPath = $assetsPath ?? 'assets/';
       </ul>
     </div>
 
-    <!-- Group: UI Template & Referensi -->
-    <div class="sidebar-menu-section">
-      <div class="sidebar-menu-title">Template &amp; Tautan</div>
-      <ul class="sidebar-menu-list">
-        <li class="sidebar-menu-item">
-          <a href="tables-basic.php" class="sidebar-menu-link <?= ($currentPage === 'tables') ? 'active' : '' ?>" id="menu-basictables" title="Contoh Tabel">
-            <i class="bi bi-table"></i>
-            <span>Tabel Data</span>
-          </a>
-        </li>
-        <li class="sidebar-menu-item">
-          <a href="ui-forms.php" class="sidebar-menu-link <?= ($currentPage === 'forms') ? 'active' : '' ?>" id="menu-uiforms" title="Contoh Form">
-            <i class="bi bi-input-cursor-text"></i>
-            <span>Form &amp; Input</span>
-          </a>
-        </li>
-        <li class="sidebar-menu-item">
-          <a href="../index.php" target="_blank" class="sidebar-menu-link" id="menu-website" title="Kunjungi Website Utama">
-            <i class="bi bi-globe2"></i>
-            <span>Lihat Website</span>
-            <i class="bi bi-box-arrow-up-right ms-auto fs-xs text-muted"></i>
-          </a>
-        </li>
-      </ul>
-    </div>
+
   </div>
 
   <!-- Sidebar Profile Card (Dynamic Footer) -->
@@ -163,8 +139,8 @@ $assetsPath = $assetsPath ?? 'assets/';
     <img src="<?= $assetsPath ?>images/avatar.png" alt="Administrator" class="sidebar-profile-img"
       onerror="this.src='https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256&auto=format&fit=crop'">
     <div class="sidebar-profile-info">
-      <div class="sidebar-profile-name">Administrator</div>
-      <div class="sidebar-profile-email">admin@smkn2kra.sch.id</div>
+      <div class="sidebar-profile-name"><?= htmlspecialchars($_SESSION['admin_nama'] ?? 'Administrator') ?></div>
+      <div class="sidebar-profile-email"><?= htmlspecialchars($_SESSION['admin_email'] ?? 'admin@smkn2kra.sch.id') ?></div>
     </div>
   </div>
 </div>

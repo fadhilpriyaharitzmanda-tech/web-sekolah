@@ -3,6 +3,16 @@
  * Admin Dashboard - SMKN 2 Karanganyar
  * Modular implementation utilizing header, sidebar, topbar, and footer components.
  */
+require_once __DIR__ . '/../config/database.php';
+try {
+    $pdo = getDbConnection();
+    $heroCountActive = (int) $pdo->query("SELECT COUNT(*) FROM hero_banners WHERE status = 'Aktif'")->fetchColumn();
+    $heroCountTotal = (int) $pdo->query("SELECT COUNT(*) FROM hero_banners")->fetchColumn();
+} catch (Exception $e) {
+    $heroCountActive = 0;
+    $heroCountTotal = 0;
+}
+
 $pageTitle = 'Dashboard - Admin SMKN 2 Karanganyar';
 $currentPage = 'dashboard';
 $assetsPath = 'assets/';
@@ -22,13 +32,17 @@ include __DIR__ . '/components/sidebar.php';
   <div class="page-header">
     <div>
       <h1 class="page-title">Dashboard</h1>
-      <p class="page-subtitle">Panel Pengelolaan & Administrasi SMKN 2 Karanganyar.</p>
+      <p class="page-subtitle">Selamat datang kembali, <strong><?= htmlspecialchars($_SESSION['admin_nama'] ?? 'Administrator') ?></strong>! Panel Pengelolaan &amp; Administrasi SMKN 2 Karanganyar.</p>
     </div>
-    <button class="btn-date-picker" type="button" id="date-picker-trigger">
-      <i class="bi bi-calendar4-event"></i>
-      <span id="selected-date-range">January 12, 2026 - January 23, 2026</span>
-      <i class="bi bi-chevron-down ms-1"></i>
-    </button>
+    <div class="d-flex align-items-center gap-2">
+      <a href="../index.php" target="_blank" class="btn btn-outline-success btn-sm d-flex align-items-center gap-1.5">
+        <i class="bi bi-globe2"></i> <span>Lihat Website</span>
+      </a>
+      <button class="btn-date-picker" type="button" id="date-picker-trigger">
+        <i class="bi bi-calendar4-event"></i>
+        <span id="selected-date-range"><?= date('d F Y') ?></span>
+      </button>
+    </div>
   </div>
   <!-- END: Dashboard Header Banner -->
 
@@ -38,16 +52,16 @@ include __DIR__ . '/components/sidebar.php';
     <!-- TOP AREA: Quick Info Stat Cards Row (Full Width) -->
     <div class="col-12">
       <div class="row g-4">
-        <!-- Stat Card 1: Green Alert Banner -->
+        <!-- Stat Card 1: Green Alert Banner (Hero & Banner Landing Page) -->
         <div class="col-md-4">
           <div class="card alert-green-card">
             <div class="position-relative z-index-2">
-              <span class="alert-green-badge">Pembaruan Landing Page</span>
-              <div class="alert-green-date">Tahun Ajaran 2026/2027</div>
-              <div class="alert-green-text">Pendaftaran PPDB online meningkat 40% &bull; 642 calon siswa terdaftar</div>
+              <span class="alert-green-badge">Status Landing Page</span>
+              <div class="alert-green-date"><?= $heroCountActive ?> Banner Aktif Tayang</div>
+              <div class="alert-green-text">Carousel beranda utama terhubung &bull; <?= $heroCountTotal ?> total slide banner</div>
             </div>
-            <a href="kelola-ppdb.php" class="alert-green-link z-index-2" id="alert-link-statistics">
-              <span>Kelola PPDB Online</span>
+            <a href="kelola-hero.php" class="alert-green-link z-index-2" id="alert-link-statistics">
+              <span>Kelola Hero &amp; Banner</span>
               <i class="bi bi-arrow-right"></i>
             </a>
 
@@ -126,138 +140,7 @@ include __DIR__ . '/components/sidebar.php';
       </div>
     </div>
 
-    <!-- PUSAT KONTROL LANDING PAGE SECTION -->
-    <div class="col-12">
-      <div class="card mb-0 shadow-sm border-0">
-        <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom flex-wrap gap-2">
-          <div>
-            <h2 class="card-title d-flex align-items-center gap-2 mb-1">
-              <i class="bi bi-sliders text-success"></i> Pusat Kontrol Landing Page
-            </h2>
-            <p class="text-muted-green fs-xs mb-0">Kelola semua elemen visual, teks, dan data dinamis yang tampil di halaman utama (Home) website.</p>
-          </div>
-          <a href="../index.php" target="_blank" class="btn btn-outline-success btn-sm d-flex align-items-center gap-2">
-            <i class="bi bi-globe2"></i> Pratinjau Website Langsung
-          </a>
-        </div>
 
-        <div class="row g-3">
-          <!-- Modul 1: Hero Carousel -->
-          <div class="col-xl-4 col-md-6">
-            <div class="p-3 rounded-3 border bg-light bg-opacity-50 h-100 d-flex flex-column justify-content-between">
-              <div>
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                  <div class="d-flex align-items-center gap-2">
-                    <div class="rounded-circle p-2 bg-success text-white" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center;"><i class="bi bi-aspect-ratio fs-xs"></i></div>
-                    <span class="fw-bold fs-sm">Hero &amp; Banner Slider</span>
-                  </div>
-                  <span class="badge bg-success-subtle text-success fs-xs">3 Slide Aktif</span>
-                </div>
-                <p class="text-muted fs-xs mb-3">Kelola teks judul, slogan, foto latar belakang, dan tombol aksi pada banner utama slider.</p>
-              </div>
-              <a href="kelola-hero.php" class="btn btn-sm btn-outline-success w-100 d-flex align-items-center justify-content-center gap-1">
-                <span>Kelola Slider Hero</span> <i class="bi bi-arrow-right fs-xs"></i>
-              </a>
-            </div>
-          </div>
-
-          <!-- Modul 2: Statistik Counter -->
-          <div class="col-xl-4 col-md-6">
-            <div class="p-3 rounded-3 border bg-light bg-opacity-50 h-100 d-flex flex-column justify-content-between">
-              <div>
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                  <div class="d-flex align-items-center gap-2">
-                    <div class="rounded-circle p-2 bg-primary text-white" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center;"><i class="bi bi-bar-chart-fill fs-xs"></i></div>
-                    <span class="fw-bold fs-sm">Angka &amp; Statistik Capaian</span>
-                  </div>
-                  <span class="badge bg-primary-subtle text-primary fs-xs">4 Indikator</span>
-                </div>
-                <p class="text-muted fs-xs mb-3">2500+ Siswa Aktif, 45+ Partner Industri, 100% Kurikulum Industri, dan 7+ Eskul Prestasi.</p>
-              </div>
-              <a href="kelola-statistik.php" class="btn btn-sm btn-outline-primary w-100 d-flex align-items-center justify-content-center gap-1">
-                <span>Kelola Statistik Sekolah</span> <i class="bi bi-arrow-right fs-xs"></i>
-              </a>
-            </div>
-          </div>
-
-          <!-- Modul 3: Jurusan Unggulan -->
-          <div class="col-xl-4 col-md-6">
-            <div class="p-3 rounded-3 border bg-light bg-opacity-50 h-100 d-flex flex-column justify-content-between">
-              <div>
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                  <div class="d-flex align-items-center gap-2">
-                    <div class="rounded-circle p-2 bg-warning text-dark" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center;"><i class="bi bi-cpu fs-xs"></i></div>
-                    <span class="fw-bold fs-sm">Jurusan Unggulan (3D)</span>
-                  </div>
-                  <span class="badge bg-warning-subtle text-warning fs-xs">4 Program</span>
-                </div>
-                <p class="text-muted fs-xs mb-3">RPL, Teknik Pemesinan, Teknik Pembuatan Kain, dan Teknik Ototronik (Akreditasi &amp; Kuota).</p>
-              </div>
-              <a href="kelola-jurusan.php" class="btn btn-sm btn-outline-warning w-100 d-flex align-items-center justify-content-center gap-1 text-dark">
-                <span>Kelola Data Jurusan</span> <i class="bi bi-arrow-right fs-xs"></i>
-              </a>
-            </div>
-          </div>
-
-          <!-- Modul 4: Warta & Berita -->
-          <div class="col-xl-4 col-md-6">
-            <div class="p-3 rounded-3 border bg-light bg-opacity-50 h-100 d-flex flex-column justify-content-between">
-              <div>
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                  <div class="d-flex align-items-center gap-2">
-                    <div class="rounded-circle p-2 bg-info text-white" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center;"><i class="bi bi-newspaper fs-xs"></i></div>
-                    <span class="fw-bold fs-sm">Warta &amp; Berita Terbaru</span>
-                  </div>
-                  <span class="badge bg-info-subtle text-info fs-xs">3 Berita Tayang</span>
-                </div>
-                <p class="text-muted fs-xs mb-3">Update informasi kejuaraan LKS, nota kesepahaman MoU industri, dan agenda workshop guru.</p>
-              </div>
-              <a href="kelola-berita.php" class="btn btn-sm btn-outline-info w-100 d-flex align-items-center justify-content-center gap-1">
-                <span>Kelola Warta Berita</span> <i class="bi bi-arrow-right fs-xs"></i>
-              </a>
-            </div>
-          </div>
-
-          <!-- Modul 5: Testimoni Alumni -->
-          <div class="col-xl-4 col-md-6">
-            <div class="p-3 rounded-3 border bg-light bg-opacity-50 h-100 d-flex flex-column justify-content-between">
-              <div>
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                  <div class="d-flex align-items-center gap-2">
-                    <div class="rounded-circle p-2 bg-danger text-white" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center;"><i class="bi bi-chat-heart-fill fs-xs"></i></div>
-                    <span class="fw-bold fs-sm">Testimoni Alumni</span>
-                  </div>
-                  <span class="badge bg-danger-subtle text-danger fs-xs">3 Ulasan Aktif</span>
-                </div>
-                <p class="text-muted fs-xs mb-3">Ulasan alumni sukses di industri teknologi, otomotif Astra, dan manufaktur tekstil Sritex.</p>
-              </div>
-              <a href="kelola-testimoni.php" class="btn btn-sm btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-1">
-                <span>Kelola Testimoni</span> <i class="bi bi-arrow-right fs-xs"></i>
-              </a>
-            </div>
-          </div>
-
-          <!-- Modul 6: Layanan PPDB Online -->
-          <div class="col-xl-4 col-md-6">
-            <div class="p-3 rounded-3 border bg-light bg-opacity-50 h-100 d-flex flex-column justify-content-between">
-              <div>
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                  <div class="d-flex align-items-center gap-2">
-                    <div class="rounded-circle p-2 bg-dark text-lime" style="width:32px; height:32px; display:flex; align-items:center; justify-content:center;"><i class="bi bi-mortarboard-fill fs-xs"></i></div>
-                    <span class="fw-bold fs-sm">PPDB Online &amp; CTA</span>
-                  </div>
-                  <span class="badge bg-success fs-xs">Pendaftaran Buka</span>
-                </div>
-                <p class="text-muted fs-xs mb-3">Pantau calon siswa pendaftar baru dari tombol CTA landing page dan verifikasi kelengkapan berkas.</p>
-              </div>
-              <a href="kelola-ppdb.php" class="btn btn-sm btn-dark w-100 d-flex align-items-center justify-content-center gap-1 text-lime">
-                <span>Buka Panel PPDB</span> <i class="bi bi-arrow-right fs-xs"></i>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
     <!-- END: TOP AREA -->
 
     <!-- LEFT AREA: Primary Dashboard Stats & Tables -->
