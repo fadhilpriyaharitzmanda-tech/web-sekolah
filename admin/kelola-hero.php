@@ -85,20 +85,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $gambarPath = uploadHeroImage('gambar_file');
 
             // Default bawaan untuk tombol
-            $tombol1_teks = 'Explore Programs';
-            $tombol1_link = '#program';
-            $tombol2_teks = 'About Us';
-            $tombol2_link = '#profil';
+            $tombol1_teks = trim($_POST['tombol1_teks'] ?? '') ?: 'Explore Programs';
+            $tombol1_link = trim($_POST['tombol1_link'] ?? '') ?: '#program';
+            $tombol2_teks = trim($_POST['tombol2_teks'] ?? '') ?: 'About Us';
+            $tombol2_link = trim($_POST['tombol2_link'] ?? '') ?: '#profil';
 
             $maxUrutan = (int) $pdo->query("SELECT COALESCE(MAX(urutan), 0) FROM hero_banners")->fetchColumn();
-            $urutan = $maxUrutan + 1;
+            $urutanInput = trim($_POST['urutan'] ?? '');
+            $urutan = ($urutanInput !== '' && is_numeric($urutanInput) && intval($urutanInput) > 0)
+                ? intval($urutanInput)
+                : ($maxUrutan + 1);
 
             $stmt = $pdo->prepare("INSERT INTO hero_banners (judul, tagline, deskripsi, gambar, tombol1_teks, tombol1_link, tombol2_teks, tombol2_link, urutan, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$judul, $tagline, $deskripsi, $gambarPath, $tombol1_teks, $tombol1_link, $tombol2_teks, $tombol2_link, $urutan, $status]);
 
             echo json_encode([
                 'success' => true,
-                'message' => 'Slide baru berhasil disimpan dengan gambar lokal!',
+                'message' => 'Slide baru berhasil disimpan dengan urutan ke-' . $urutan . '!',
                 'id' => $pdo->lastInsertId()
             ]);
             exit;
@@ -112,6 +115,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $deskripsi = trim($_POST['deskripsi'] ?? '');
             $existingGambar = trim($_POST['existing_gambar'] ?? '');
             $status = ($_POST['status'] ?? 'Aktif') === 'Nonaktif' ? 'Nonaktif' : 'Aktif';
+            $urutan = isset($_POST['urutan']) && is_numeric($_POST['urutan']) && intval($_POST['urutan']) > 0 
+                ? intval($_POST['urutan']) 
+                : 1;
+
+            $tombol1_teks = trim($_POST['tombol1_teks'] ?? '') ?: 'Explore Programs';
+            $tombol1_link = trim($_POST['tombol1_link'] ?? '') ?: '#program';
+            $tombol2_teks = trim($_POST['tombol2_teks'] ?? '') ?: 'About Us';
+            $tombol2_link = trim($_POST['tombol2_link'] ?? '') ?: '#profil';
 
             if (!$id || empty($judul) || empty($deskripsi)) {
                 echo json_encode(['success' => false, 'message' => 'Judul dan deskripsi banner wajib diisi!']);
@@ -121,12 +132,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Jika ada file baru diupload, gunakan file baru; jika tidak, pakai file lama
             $gambarPath = uploadHeroImage('gambar_file', $existingGambar);
 
-            $stmt = $pdo->prepare("UPDATE hero_banners SET judul = ?, tagline = ?, deskripsi = ?, gambar = ?, status = ? WHERE id = ?");
-            $stmt->execute([$judul, $tagline, $deskripsi, $gambarPath, $status, $id]);
+            $stmt = $pdo->prepare("UPDATE hero_banners SET judul = ?, tagline = ?, deskripsi = ?, gambar = ?, status = ?, urutan = ?, tombol1_teks = ?, tombol1_link = ?, tombol2_teks = ?, tombol2_link = ? WHERE id = ?");
+            $stmt->execute([$judul, $tagline, $deskripsi, $gambarPath, $status, $urutan, $tombol1_teks, $tombol1_link, $tombol2_teks, $tombol2_link, $id]);
 
             echo json_encode([
                 'success' => true,
-                'message' => 'Slide banner berhasil diperbarui di database!'
+                'message' => 'Slide banner (Urutan ke-' . $urutan . ') berhasil diperbarui!'
+            ]);
+            exit;
+        }
+
+        // 2.5 TUKAR URUTAN SLIDE (UP / DOWN)
+        if ($action === 'tukar_urutan') {
+            $id = intval($_POST['id'] ?? 0);
+            $arah = $_POST['arah'] ?? ''; // 'up' or 'down'
+
+            if (!$id || !in_array($arah, ['up', 'down'])) {
+                echo json_encode(['success' => false, 'message' => 'Parameter tukar urutan tidak valid!']);
+                exit;
+            }
+
+            $allSlides = $pdo->query("SELECT id, urutan FROM hero_banners ORDER BY urutan ASC, id ASC")->fetchAll(PDO::FETCH_ASSOC);
+            $currentIndex = -1;
+            foreach ($allSlides as $idx => $s) {
+                if (intval($s['id']) === $id) {
+                    $currentIndex = $idx;
+                    break;
+                }
+            }
+
+            if ($currentIndex === -1) {
+                echo json_encode(['success' => false, 'message' => 'Slide tidak ditemukan!']);
+                exit;
+            }
+
+            if ($arah === 'up') {
+                if ($currentIndex === 0) {
+                    echo json_encode(['success' => false, 'message' => 'Slide sudah berada di posisi paling atas!']);
+                    exit;
+                }
+                $targetSlide = $allSlides[$currentIndex - 1];
+            } else {
+                if ($currentIndex >= count($allSlides) - 1) {
+                    echo json_encode(['success' => false, 'message' => 'Slide sudah berada di posisi paling bawah!']);
+                    exit;
+                }
+                $targetSlide = $allSlides[$currentIndex + 1];
+            }
+
+            $currentSlide = $allSlides[$currentIndex];
+            $curUrutan = intval($currentSlide['urutan']);
+            $tgtUrutan = intval($targetSlide['urutan']);
+
+            // Jika nilai urutan sama, beri nilai berbeda agar tersusun rapi
+            if ($curUrutan === $tgtUrutan) {
+                if ($arah === 'up') {
+                    $curUrutan = $tgtUrutan - 1;
+                } else {
+                    $curUrutan = $tgtUrutan + 1;
+                }
+                $pdo->prepare("UPDATE hero_banners SET urutan = ? WHERE id = ?")->execute([$curUrutan, $currentSlide['id']]);
+            } else {
+                // Tukar nilai urutan
+                $pdo->prepare("UPDATE hero_banners SET urutan = ? WHERE id = ?")->execute([$tgtUrutan, $currentSlide['id']]);
+                $pdo->prepare("UPDATE hero_banners SET urutan = ? WHERE id = ?")->execute([$curUrutan, $targetSlide['id']]);
+            }
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Urutan slide berhasil diperbarui!'
             ]);
             exit;
         }
@@ -285,13 +359,18 @@ include __DIR__ . '/components/sidebar.php';
           <div class="col-md-6 col-lg-4 slide-card-col" id="slide-box-<?= $slide['id'] ?>"
                data-id="<?= $slide['id'] ?>"
                data-slide-id="<?= $slideNum ?>"
-               data-badge="Slide #<?= $slideNum ?><?= $isMain ? ' (Utama)' : '' ?>"
+               data-urutan="<?= htmlspecialchars($slide['urutan']) ?>"
+               data-badge="Urutan #<?= htmlspecialchars($slide['urutan']) ?><?= $isMain ? ' (Slide Pertama)' : '' ?>"
                data-tagline="<?= htmlspecialchars($slide['tagline'] ?? '') ?>"
                data-judul="<?= htmlspecialchars($slide['judul']) ?>"
                data-deskripsi="<?= htmlspecialchars($slide['deskripsi']) ?>"
                data-image="<?= htmlspecialchars($slide['gambar']) ?>"
                data-image-preview="<?= htmlspecialchars($adminImgSrc) ?>"
-               data-status="<?= htmlspecialchars($slide['status']) ?>">
+               data-status="<?= htmlspecialchars($slide['status']) ?>"
+               data-tombol1-teks="<?= htmlspecialchars($slide['tombol1_teks'] ?? '') ?>"
+               data-tombol1-link="<?= htmlspecialchars($slide['tombol1_link'] ?? '') ?>"
+               data-tombol2-teks="<?= htmlspecialchars($slide['tombol2_teks'] ?? '') ?>"
+               data-tombol2-link="<?= htmlspecialchars($slide['tombol2_link'] ?? '') ?>">
             <div class="card p-3 p-md-4 shadow-sm border-0 h-100 d-flex flex-column justify-content-between" style="border-radius: var(--radius-xl); border: 1px solid rgba(11, 19, 15, 0.08) !important;">
               <!-- FOTO IMAGE -->
               <div class="position-relative rounded-3 overflow-hidden mb-3" style="height: 210px; background: #072f1f;">
@@ -299,7 +378,9 @@ include __DIR__ . '/components/sidebar.php';
                      alt="<?= htmlspecialchars($slide['judul']) ?>"
                      class="w-100 h-100 object-fit-cover slide-preview-img"
                      onerror="this.onerror=null; this.src='../images/gedung.jpg'">
-                <span class="badge bg-dark bg-opacity-75 position-absolute top-0 start-0 m-3 fw-semibold slide-badge-pill">Slide #<?= $slideNum ?><?= $isMain ? ' (Utama)' : '' ?></span>
+                <span class="badge bg-dark bg-opacity-75 position-absolute top-0 start-0 m-3 fw-semibold slide-badge-pill">
+                  <i class="bi bi-sort-numeric-down me-1"></i> Urutan #<?= htmlspecialchars($slide['urutan']) ?><?= $isMain ? ' (Slide Utama)' : '' ?>
+                </span>
                 <span class="badge <?= $isAktif ? 'bg-success' : 'bg-secondary' ?> position-absolute top-0 end-0 m-3 fw-semibold slide-status-pill">
                   <i class="bi <?= $isAktif ? 'bi-check-circle-fill' : 'bi-slash-circle' ?> me-1"></i> <?= htmlspecialchars($slide['status']) ?>
                 </span>
@@ -317,9 +398,17 @@ include __DIR__ . '/components/sidebar.php';
                   <p class="text-muted fs-sm mb-0 slide-deskripsi-text" style="line-height: 1.6;"><?= htmlspecialchars($slide['deskripsi']) ?></p>
                 </div>
 
-                <!-- EDIT & HAPUS MODAL TRIGGER BUTTONS -->
-                <div class="pt-3 border-top d-flex justify-content-between align-items-center gap-2">
-                  <span class="fs-xs text-muted"><i class="bi bi-images me-1"></i> Hero Banner</span>
+                <!-- EDIT & HAPUS & REORDER TRIGGER BUTTONS -->
+                <div class="pt-3 border-top d-flex justify-content-between align-items-center gap-2 flex-wrap">
+                  <div class="d-flex align-items-center gap-1">
+                    <span class="fs-xs text-muted me-1" title="Urutan Tampil">Urutan:</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-1 d-flex align-items-center" title="Geser Urutan Naik (Tampil Lebih Awal)" onclick="tukarUrutanSlide(<?= $slide['id'] ?>, 'up')" <?= ($index === 0) ? 'disabled' : '' ?>>
+                      <i class="bi bi-arrow-up"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-1 d-flex align-items-center" title="Geser Urutan Turun (Tampil Berikutnya)" onclick="tukarUrutanSlide(<?= $slide['id'] ?>, 'down')" <?= ($index === count($slides) - 1) ? 'disabled' : '' ?>>
+                      <i class="bi bi-arrow-down"></i>
+                    </button>
+                  </div>
                   <div class="d-flex gap-2">
                     <button type="button" class="btn btn-sm btn-outline-success d-flex align-items-center gap-1.5 px-3" onclick="bukaModalEditSlide('slide-box-<?= $slide['id'] ?>')">
                       <i class="bi bi-pencil-square"></i> Edit
@@ -408,9 +497,13 @@ include __DIR__ . '/components/sidebar.php';
           </div>
 
           <div class="row g-3">
-            <div class="col-md-8">
+            <div class="col-md-5">
               <label class="form-label-custom" for="editSlideJudul">Judul Utama Slide</label>
               <input type="text" class="form-control-custom fw-bold" id="editSlideJudul" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label-custom" for="editSlideUrutan"><i class="bi bi-sort-numeric-down text-success me-1"></i> No. Urut Slide</label>
+              <input type="number" class="form-control-custom fw-bold" id="editSlideUrutan" min="1" required title="Urutan slide tampil di carousel landing page">
             </div>
             <div class="col-md-4">
               <label class="form-label-custom" for="editSlideStatus">Status Slide</label>
@@ -428,6 +521,23 @@ include __DIR__ . '/components/sidebar.php';
             <div class="col-12">
               <label class="form-label-custom" for="editSlideDeskripsi">Deskripsi Singkat</label>
               <textarea class="form-control-custom" id="editSlideDeskripsi" rows="3" required></textarea>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label-custom" for="editSlideTombol1Teks">Label Tombol Utama</label>
+              <input type="text" class="form-control-custom" id="editSlideTombol1Teks" placeholder="Contoh: Explore Programs">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-custom" for="editSlideTombol1Link">Link Tombol Utama</label>
+              <input type="text" class="form-control-custom" id="editSlideTombol1Link" placeholder="Contoh: #program">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-custom" for="editSlideTombol2Teks">Label Tombol Sekunder</label>
+              <input type="text" class="form-control-custom" id="editSlideTombol2Teks" placeholder="Contoh: About Us">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-custom" for="editSlideTombol2Link">Link Tombol Sekunder</label>
+              <input type="text" class="form-control-custom" id="editSlideTombol2Link" placeholder="Contoh: #profil">
             </div>
 
             <div class="col-12">
@@ -472,9 +582,13 @@ include __DIR__ . '/components/sidebar.php';
           </div>
 
           <div class="row g-3">
-            <div class="col-md-8">
+            <div class="col-md-5">
               <label class="form-label-custom" for="tambahSlideJudul">Judul Utama Slide</label>
               <input type="text" class="form-control-custom fw-bold" id="tambahSlideJudul" placeholder="Contoh: Sambut Generasi Digital Masa Depan" required>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label-custom" for="tambahSlideUrutan"><i class="bi bi-sort-numeric-down text-success me-1"></i> No. Urut Slide</label>
+              <input type="number" class="form-control-custom fw-bold" id="tambahSlideUrutan" min="1" value="<?= count($slides) + 1 ?>" required title="Urutan slide tampil di carousel landing page">
             </div>
             <div class="col-md-4">
               <label class="form-label-custom" for="tambahSlideStatus">Status</label>
@@ -492,6 +606,23 @@ include __DIR__ . '/components/sidebar.php';
             <div class="col-12">
               <label class="form-label-custom" for="tambahSlideDeskripsi">Deskripsi Singkat</label>
               <textarea class="form-control-custom" id="tambahSlideDeskripsi" rows="3" placeholder="Tulis deskripsi 1-2 kalimat pengantar pada banner hero..." required></textarea>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label-custom" for="tambahSlideTombol1Teks">Label Tombol Utama</label>
+              <input type="text" class="form-control-custom" id="tambahSlideTombol1Teks" value="Explore Programs" placeholder="Contoh: Explore Programs">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-custom" for="tambahSlideTombol1Link">Link Tombol Utama</label>
+              <input type="text" class="form-control-custom" id="tambahSlideTombol1Link" value="#program" placeholder="Contoh: #program">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-custom" for="tambahSlideTombol2Teks">Label Tombol Sekunder</label>
+              <input type="text" class="form-control-custom" id="tambahSlideTombol2Teks" value="About Us" placeholder="Contoh: About Us">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-custom" for="tambahSlideTombol2Link">Link Tombol Sekunder</label>
+              <input type="text" class="form-control-custom" id="tambahSlideTombol2Link" value="#profil" placeholder="Contoh: #profil">
             </div>
 
             <div class="col-12">
@@ -621,6 +752,30 @@ function previewTambahUpload(input) {
   }
 }
 
+// Tukar Urutan Slide Langsung (Up / Down)
+function tukarUrutanSlide(id, arah) {
+  const formData = new FormData();
+  formData.append('action', 'tukar_urutan');
+  formData.append('id', id);
+  formData.append('arah', arah);
+
+  fetch('kelola-hero.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      location.reload();
+    } else {
+      alert(data.message || 'Gagal mengubah urutan slide');
+    }
+  })
+  .catch(err => {
+    alert('Terjadi kesalahan koneksi server: ' + err.message);
+  });
+}
+
 // Buka Modal Edit Slide
 function bukaModalEditSlide(cardId) {
   const card = document.getElementById(cardId);
@@ -630,9 +785,14 @@ function bukaModalEditSlide(cardId) {
   document.getElementById('editSlideId').value = dataset.id || '';
   document.getElementById('editSlideTargetCardId').value = cardId;
   document.getElementById('editSlideJudul').value = dataset.judul || '';
+  document.getElementById('editSlideUrutan').value = dataset.urutan || '1';
   document.getElementById('editSlideTagline').value = dataset.tagline || '';
   document.getElementById('editSlideDeskripsi').value = dataset.deskripsi || '';
   document.getElementById('editSlideStatus').value = dataset.status || 'Aktif';
+  document.getElementById('editSlideTombol1Teks').value = dataset.tombol1Teks || 'Explore Programs';
+  document.getElementById('editSlideTombol1Link').value = dataset.tombol1Link || '#program';
+  document.getElementById('editSlideTombol2Teks').value = dataset.tombol2Teks || 'About Us';
+  document.getElementById('editSlideTombol2Link').value = dataset.tombol2Link || '#profil';
 
   const previewSrc = dataset.imagePreview || dataset.image || '';
   document.getElementById('editSlideExistingImage').value = dataset.image || '';
@@ -650,10 +810,15 @@ function bukaModalEditSlide(cardId) {
 function simpanEditSlide() {
   const slideId = document.getElementById('editSlideId').value;
   const judul = document.getElementById('editSlideJudul').value.trim();
+  const urutan = document.getElementById('editSlideUrutan').value.trim() || '1';
   const tagline = document.getElementById('editSlideTagline').value.trim();
   const deskripsi = document.getElementById('editSlideDeskripsi').value.trim();
   const existingGambar = document.getElementById('editSlideExistingImage').value.trim();
   const status = document.getElementById('editSlideStatus').value;
+  const tombol1Teks = document.getElementById('editSlideTombol1Teks').value.trim();
+  const tombol1Link = document.getElementById('editSlideTombol1Link').value.trim();
+  const tombol2Teks = document.getElementById('editSlideTombol2Teks').value.trim();
+  const tombol2Link = document.getElementById('editSlideTombol2Link').value.trim();
   const fileInput = document.getElementById('editSlideFile');
 
   if (!judul || !deskripsi) {
@@ -669,10 +834,15 @@ function simpanEditSlide() {
   formData.append('action', 'edit_slide');
   formData.append('id', slideId);
   formData.append('judul', judul);
+  formData.append('urutan', urutan);
   formData.append('tagline', tagline);
   formData.append('deskripsi', deskripsi);
   formData.append('existing_gambar', existingGambar);
   formData.append('status', status);
+  formData.append('tombol1_teks', tombol1Teks);
+  formData.append('tombol1_link', tombol1Link);
+  formData.append('tombol2_teks', tombol2Teks);
+  formData.append('tombol2_link', tombol2Link);
 
   if (fileInput.files && fileInput.files[0]) {
     formData.append('gambar_file', fileInput.files[0]);
@@ -764,9 +934,14 @@ function bukaModalTambahSlide() {
 // Simpan Tambah Slide Baru via AJAX POST
 function simpanTambahSlide() {
   const judul = document.getElementById('tambahSlideJudul').value.trim();
+  const urutan = document.getElementById('tambahSlideUrutan').value.trim();
   const tagline = document.getElementById('tambahSlideTagline').value.trim() || 'SMKN 2 Karanganyar';
   const deskripsi = document.getElementById('tambahSlideDeskripsi').value.trim();
   const status = document.getElementById('tambahSlideStatus').value;
+  const tombol1Teks = document.getElementById('tambahSlideTombol1Teks').value.trim();
+  const tombol1Link = document.getElementById('tambahSlideTombol1Link').value.trim();
+  const tombol2Teks = document.getElementById('tambahSlideTombol2Teks').value.trim();
+  const tombol2Link = document.getElementById('tambahSlideTombol2Link').value.trim();
   const fileInput = document.getElementById('tambahSlideFile');
 
   if (!judul || !deskripsi) {
@@ -786,9 +961,14 @@ function simpanTambahSlide() {
   const formData = new FormData();
   formData.append('action', 'tambah_slide');
   formData.append('judul', judul);
+  formData.append('urutan', urutan);
   formData.append('tagline', tagline);
   formData.append('deskripsi', deskripsi);
   formData.append('status', status);
+  formData.append('tombol1_teks', tombol1Teks);
+  formData.append('tombol1_link', tombol1Link);
+  formData.append('tombol2_teks', tombol2Teks);
+  formData.append('tombol2_link', tombol2Link);
   formData.append('gambar_file', fileInput.files[0]);
 
   fetch('kelola-hero.php', {

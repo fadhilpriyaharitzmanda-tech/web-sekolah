@@ -1,3 +1,14 @@
+<?php
+require_once __DIR__ . '/../config/database.php';
+$pklMitraList = [];
+try {
+    $pdo = getDbConnection();
+    $stmt = $pdo->query("SELECT * FROM mitra_industri WHERE status = 'Aktif' ORDER BY id ASC");
+    $pklMitraList = $stmt->fetchAll();
+} catch (Exception $e) {
+    //
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -339,85 +350,42 @@
         </div>
 
         <div style="display:flex;flex-direction:column;gap:1rem;margin-top:2.5rem;">
-          <div class="pkl-partner-item">
-            <div class="partner-icon" style="background:rgba(34,197,94,0.08);color:var(--primary-dark);">
-              <span class="material-symbols-outlined">precision_manufacturing</span>
+          <?php if (!empty($pklMitraList)): ?>
+            <?php 
+              $icons = ['precision_manufacturing', 'texture', 'computer', 'directions_car', 'manufacturing', 'electrical_services', 'handyman'];
+              $colors = [
+                ['bg' => 'rgba(34,197,94,0.08)', 'color' => 'var(--primary-dark)'],
+                ['bg' => 'rgba(96,165,250,0.08)', 'color' => '#2563eb'],
+                ['bg' => 'rgba(251,146,60,0.08)', 'color' => '#ea580c'],
+                ['bg' => 'rgba(239,68,68,0.08)', 'color' => '#dc2626'],
+                ['bg' => 'rgba(168,85,247,0.08)', 'color' => '#7c3aed']
+              ];
+            ?>
+            <?php foreach ($pklMitraList as $idx => $pm): 
+              $theme = $colors[$idx % count($colors)];
+              $icon = $icons[$idx % count($icons)];
+            ?>
+              <div class="pkl-partner-item">
+                <div class="partner-icon" style="background:<?= $theme['bg'] ?>;color:<?= $theme['color'] ?>;">
+                  <span class="material-symbols-outlined"><?= $icon ?></span>
+                </div>
+                <div class="partner-info">
+                  <h4><?= htmlspecialchars($pm['nama_perusahaan']) ?></h4>
+                  <p><?= htmlspecialchars($pm['jurusan_terkait'] ?? 'Semua Jurusan') ?> &bull; Kuota: <?= (int)$pm['kuota_pkl'] ?> Siswa / Tahun</p>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <div class="pkl-partner-item">
+              <div class="partner-icon" style="background:rgba(34,197,94,0.08);color:var(--primary-dark);">
+                <span class="material-symbols-outlined">precision_manufacturing</span>
+              </div>
+              <div class="partner-info">
+                <h4>PT. Astra International Tbk</h4>
+                <p>Teknik Ototronik &bull; Teknik Pemesinan &bull; RPL</p>
+              </div>
             </div>
-            <div class="partner-info">
-              <h4>PT. Astra International Tbk</h4>
-              <p>Teknik Ototronik &bull; Teknik Pemesinan &bull; RPL</p>
-            </div>
-          </div>
-
-          <div class="pkl-partner-item">
-            <div class="partner-icon" style="background:rgba(96,165,250,0.08);color:#2563eb;">
-              <span class="material-symbols-outlined">texture</span>
-            </div>
-            <div class="partner-info">
-              <h4>PT. Sritex</h4>
-              <p>Teknik Pembuatan Kain &bull; Teknik Pemesinan</p>
-            </div>
-          </div>
-
-          <div class="pkl-partner-item">
-            <div class="partner-icon" style="background:rgba(251,146,60,0.08);color:#ea580c;">
-              <span class="material-symbols-outlined">computer</span>
-            </div>
-            <div class="partner-info">
-              <h4>PT. Tech Innovasi Solusindo</h4>
-              <p>Rekayasa Perangkat Lunak &bull; Multimedia</p>
-            </div>
-          </div>
-
-          <div class="pkl-partner-item">
-            <div class="partner-icon" style="background:rgba(239,68,68,0.08);color:#dc2626;">
-              <span class="material-symbols-outlined">directions_car</span>
-            </div>
-            <div class="partner-info">
-              <h4>PT. Toyota Motor Manufacturing</h4>
-              <p>Teknik Ototronik &bull; Teknik Pemesinan</p>
-            </div>
-          </div>
-
-          <div class="pkl-partner-item">
-            <div class="partner-icon" style="background:rgba(168,85,247,0.08);color:#7c3aed;">
-              <span class="material-symbols-outlined">manufacturing</span>
-            </div>
-            <div class="partner-info">
-              <h4>PT. Pindad (Persero)</h4>
-              <p>Teknik Pemesinan &bull; Teknik Ototronik</p>
-            </div>
-          </div>
-
-          <div class="pkl-partner-item">
-            <div class="partner-icon" style="background:rgba(52,211,153,0.08);color:#059669;">
-              <span class="material-symbols-outlined">electrical_services</span>
-            </div>
-            <div class="partner-info">
-              <h4>PT. PLN (Persero)</h4>
-              <p>Teknik Pemesinan &bull; RPL &bull; Multimedia</p>
-            </div>
-          </div>
-
-          <div class="pkl-partner-item">
-            <div class="partner-icon" style="background:rgba(244,63,94,0.08);color:#e11d48;">
-              <span class="material-symbols-outlined">smartphone</span>
-            </div>
-            <div class="partner-info">
-              <h4>Gojek Indonesia</h4>
-              <p>Rekayasa Perangkat Lunak &bull; Multimedia</p>
-            </div>
-          </div>
-
-          <div class="pkl-partner-item">
-            <div class="partner-icon" style="background:rgba(14,165,233,0.08);color:#0284c7;">
-              <span class="material-symbols-outlined">handyman</span>
-            </div>
-            <div class="partner-info">
-              <h4>Bengkel Resmi Toyota &amp; Astra Honda</h4>
-              <p>Teknik Ototronik &bull; Teknik Pemesinan</p>
-            </div>
-          </div>
+          <?php endif; ?>
         </div>
       </div>
     </section>

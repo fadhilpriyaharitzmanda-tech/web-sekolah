@@ -1,3 +1,14 @@
+<?php
+require_once __DIR__ . '/../config/database.php';
+$beritaList = [];
+try {
+    $pdo = getDbConnection();
+    $stmt = $pdo->query("SELECT * FROM berita WHERE status = 'Publikasi' ORDER BY tanggal DESC");
+    $beritaList = $stmt->fetchAll();
+} catch (Exception $e) {
+    // Fallback if db error
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -54,6 +65,29 @@
     <section class="section pt-0">
     <div class="container pt-4">
         <div class="news-grid" id="beritaGrid" data-animate>
+          <?php if (!empty($beritaList)): ?>
+            <?php foreach ($beritaList as $b): 
+              $gambarSrc = !empty($b['gambar']) ? (str_starts_with($b['gambar'], 'http') ? $b['gambar'] : '../' . $b['gambar']) : 'https://placehold.co/600x400?text=Berita';
+              $tanggalFmt = !empty($b['tanggal']) ? date('d F Y', strtotime($b['tanggal'])) : '';
+              $katClean = htmlspecialchars($b['kategori'] ?? 'Kegiatan');
+            ?>
+              <article class="news-card" data-kategori="<?= $katClean ?>">
+                <div class="news-card-img-wrap">
+                  <img class="news-card-img" src="<?= htmlspecialchars($gambarSrc) ?>" alt="<?= htmlspecialchars($b['judul']) ?>">
+                  <span class="news-card-tag"><?= strtoupper($katClean) ?></span>
+                </div>
+                <div class="news-card-body">
+                  <time class="news-date"><?= htmlspecialchars($tanggalFmt) ?></time>
+                  <h3 class="news-card-title"><?= htmlspecialchars($b['judul']) ?></h3>
+                  <p class="news-card-desc"><?= htmlspecialchars($b['ringkasan']) ?></p>
+                  <a class="news-card-link" href="#">
+                    Baca Selengkapnya
+                    <span class="material-symbols-outlined icon-sm">arrow_forward</span>
+                  </a>
+                </div>
+              </article>
+            <?php endforeach; ?>
+          <?php else: ?>
 
           <article class="news-card" data-kategori="Prestasi">
             <div class="news-card-img-wrap">
@@ -149,8 +183,7 @@
                 <span class="material-symbols-outlined icon-sm">arrow_forward</span>
               </a>
             </div>
-          </article>
-
+          <?php endif; ?>
         </div>
       </div>
     </section>

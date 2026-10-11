@@ -5,6 +5,16 @@
  */
 $currentPage = $currentPage ?? 'dashboard';
 $assetsPath = $assetsPath ?? 'assets/';
+
+$sidebarPendingAduan = 0;
+$sidebarPendingPpdb = 0;
+try {
+    if (function_exists('getDbConnection')) {
+        $sbPdo = getDbConnection();
+        $sidebarPendingAduan = (int) $sbPdo->query("SELECT COUNT(*) FROM pengaduan WHERE status = 'Menunggu'")->fetchColumn();
+        $sidebarPendingPpdb = (int) $sbPdo->query("SELECT COUNT(*) FROM ppdb_pendaftar WHERE status_berkas = 'Menunggu Verifikasi'")->fetchColumn();
+    }
+} catch (Exception $e) {}
 ?>
 <!-- ==========================================
      START: Sidebar Component
@@ -112,14 +122,18 @@ $assetsPath = $assetsPath ?? 'assets/';
           <a href="kelola-ppdb.php" class="sidebar-menu-link <?= ($currentPage === 'kelola-ppdb') ? 'active' : '' ?>" id="menu-ppdb" title="Pendaftaran Siswa Baru">
             <i class="bi bi-person-badge-fill"></i>
             <span>PPDB Online</span>
-            <span class="sidebar-menu-badge">Baru</span>
+            <?php if ($sidebarPendingPpdb > 0): ?>
+              <span class="sidebar-menu-badge"><?= $sidebarPendingPpdb ?></span>
+            <?php endif; ?>
           </a>
         </li>
         <li class="sidebar-menu-item">
           <a href="kelola-pengaduan.php" class="sidebar-menu-link <?= ($currentPage === 'kelola-pengaduan') ? 'active' : '' ?>" id="menu-pengaduan" title="Kotak Pengaduan">
             <i class="bi bi-shield-check"></i>
             <span>Pengaduan</span>
-            <span class="sidebar-menu-badge">3</span>
+            <?php if ($sidebarPendingAduan > 0): ?>
+              <span class="sidebar-menu-badge bg-warning text-dark"><?= $sidebarPendingAduan ?></span>
+            <?php endif; ?>
           </a>
         </li>
         <li class="sidebar-menu-item">

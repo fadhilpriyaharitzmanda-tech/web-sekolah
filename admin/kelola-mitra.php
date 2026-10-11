@@ -1,7 +1,84 @@
 <?php
 /**
  * Kelola Mitra Industri (DUDI) & PKL - Admin SMKN 2 Karanganyar
+ * Native PHP Implementation (PDO)
  */
+require_once __DIR__ . '/../config/database.php';
+$pdo = getDbConnection();
+
+// HANDLE AJAX POST REQUESTS
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json; charset=utf-8');
+    $action = $_POST['action'] ?? '';
+
+    try {
+        if ($action === 'tambah' || $action === 'edit') {
+            $id = !empty($_POST['id']) ? (int)$_POST['id'] : null;
+            $nama_perusahaan = trim($_POST['nama_perusahaan'] ?? '');
+            $alamat = trim($_POST['alamat'] ?? '');
+            $bidang_usaha = trim($_POST['bidang_usaha'] ?? '');
+            $jurusan_terkait = trim($_POST['jurusan_terkait'] ?? '');
+            $kuota_pkl = !empty($_POST['kuota_pkl']) ? (int)$_POST['kuota_pkl'] : 25;
+            $mou_mulai = !empty($_POST['mou_mulai']) ? $_POST['mou_mulai'] : date('Y-m-d');
+            $mou_selesai = !empty($_POST['mou_selesai']) ? $_POST['mou_selesai'] : date('Y-m-d', strtotime('+3 years'));
+            $status = !empty($_POST['status']) ? $_POST['status'] : 'Aktif';
+
+            if (empty($nama_perusahaan)) {
+                echo json_encode(['success' => false, 'message' => 'Nama perusahaan wajib diisi!']);
+                exit;
+            }
+
+            if ($action === 'tambah') {
+                $stmt = $pdo->prepare("INSERT INTO mitra_industri (nama_perusahaan, bidang_usaha, alamat, jurusan_terkait, kuota_pkl, mou_mulai, mou_selesai, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+                $stmt->execute([$nama_perusahaan, $bidang_usaha, $alamat, $jurusan_terkait, $kuota_pkl, $mou_mulai, $mou_selesai, $status]);
+                echo json_encode(['success' => true, 'message' => 'Mitra industri berhasil ditambahkan!']);
+                exit;
+            } else {
+                $stmt = $pdo->prepare("UPDATE mitra_industri SET nama_perusahaan = ?, bidang_usaha = ?, alamat = ?, jurusan_terkait = ?, kuota_pkl = ?, mou_mulai = ?, mou_selesai = ?, status = ? WHERE id = ?");
+                $stmt->execute([$nama_perusahaan, $bidang_usaha, $alamat, $jurusan_terkait, $kuota_pkl, $mou_mulai, $mou_selesai, $status, $id]);
+                echo json_encode(['success' => true, 'message' => 'Data mitra industri berhasil diperbarui!']);
+                exit;
+            }
+        }
+
+        if ($action === 'hapus') {
+            $id = (int)($_POST['id'] ?? 0);
+            $stmt = $pdo->prepare("DELETE FROM mitra_industri WHERE id = ?");
+            $stmt->execute([$id]);
+            echo json_encode(['success' => true, 'message' => 'Mitra industri berhasil dihapus!']);
+            exit;
+        }
+
+        if ($action === 'toggle_status') {
+            $id = (int)($_POST['id'] ?? 0);
+            $status = $_POST['status'] === 'Aktif' ? 'Aktif' : 'Nonaktif';
+            $stmt = $pdo->prepare("UPDATE mitra_industri SET status = ? WHERE id = ?");
+            $stmt->execute([$status, $id]);
+            echo json_encode(['success' => true, 'message' => 'Status mitra berhasil diubah!']);
+            exit;
+        }
+
+        echo json_encode(['success' => false, 'message' => 'Aksi tidak valid!']);
+        exit;
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+        exit;
+    }
+}
+
+// FETCH DATA
+$mitraList = [];
+try {
+    $stmt = $pdo->query("SELECT * FROM mitra_industri ORDER BY id DESC");
+    $mitraList = $stmt->fetchAll();
+} catch (Exception $e) {
+    //
+}
+
+$totalMitra = count($mitraList);
+$mouAktif = count(array_filter($mitraList, fn($m) => ($m['status'] ?? 'Aktif') === 'Aktif'));
+$totalKuota = array_sum(array_column($mitraList, 'kuota_pkl'));
+
 $pageTitle = 'Kelola Mitra Industri & PKL - Admin SMKN 2 Karanganyar';
 $currentPage = 'kelola-mitra';
 $assetsPath = 'assets/';
@@ -40,10 +117,10 @@ include __DIR__ . '/components/sidebar.php';
             <i class="bi bi-buildings-fill"></i>
           </div>
         </div>
-        <div class="stat-value text-success">84 Mitra</div>
+        <div class="stat-value text-success"><?= $totalMitra ?> Mitra</div>
         <div class="trend-badge trend-up">
           <i class="bi bi-check-circle-fill"></i>
-          <span>Perusahaan Bersertifikat</span>
+          <span>Perusahaan Terverifikasi</span>
         </div>
       </div>
     </div>
@@ -55,7 +132,7 @@ include __DIR__ . '/components/sidebar.php';
             <i class="bi bi-file-earmark-check-fill"></i>
           </div>
         </div>
-        <div class="stat-value text-primary">78 Kerjasama</div>
+        <div class="stat-value text-primary"><?= $mouAktif ?> Kerjasama</div>
         <div class="trend-badge text-primary">
           <i class="bi bi-shield-check"></i>
           <span>Berlaku 3 - 5 Tahun</span>
@@ -65,12 +142,12 @@ include __DIR__ . '/components/sidebar.php';
     <div class="col-xl-3 col-sm-6">
       <div class="card card-stat">
         <div class="card-header">
-          <span class="stat-label">Siswa Sedang PKL</span>
+          <span class="stat-label">Kapasitas Kuota PKL</span>
           <div class="stat-icon-circle bg-warning-subtle text-warning">
             <i class="bi bi-person-workspace"></i>
           </div>
         </div>
-        <div class="stat-value text-warning">482 Siswa</div>
+        <div class="stat-value text-warning"><?= $totalKuota ?> Siswa/Thn</div>
         <div class="trend-badge text-warning">
           <i class="bi bi-geo-alt-fill"></i>
           <span>Solo Raya &amp; Jakarta</span>
@@ -107,7 +184,7 @@ include __DIR__ . '/components/sidebar.php';
           <option value="Otomotif">Otomotif &amp; Manufaktur</option>
           <option value="Software">Teknologi &amp; Software</option>
           <option value="Tekstil">Tekstil &amp; Garmen</option>
-          <option value="Pemesinan">Permesinan Presisi</option>
+          <option value="Mesin">Permesinan Presisi</option>
         </select>
         <button class="btn-table-action" type="button" onclick="alert('Data kemitraan industri berhasil diekspor ke Excel!')">
           <i class="bi bi-file-earmark-excel"></i> Unduh Excel
@@ -130,98 +207,58 @@ include __DIR__ . '/components/sidebar.php';
           </tr>
         </thead>
         <tbody>
-          <!-- Mitra 1 -->
-          <tr>
-            <td style="width: 70px;">
-              <div class="rounded-3 bg-light d-flex align-items-center justify-content-center fw-bold text-success border" style="width: 46px; height: 46px; font-size: 0.82rem; letter-spacing: 0.05em;">
-                AHM
-              </div>
-            </td>
-            <td>
-              <div class="fw-bold text-main">PT. Astra Honda Motor</div>
-              <div class="text-muted fs-xs">Jakarta &amp; Karawang &bull; Manufaktur Otomotif</div>
-            </td>
-            <td>Kelas Industri &amp; PKL</td>
-            <td><span class="badge bg-danger-subtle text-danger fw-bold">Ototronik &amp; Mesin</span></td>
-            <td><strong>40 Siswa / Tahun</strong></td>
-            <td>2024 - 2029 (Aktif)</td>
-            <td><span class="badge-table success">MoU Aktif</span></td>
-            <td>
-              <div class="d-flex justify-content-center gap-1">
-                <button type="button" class="table-btn-action" title="Edit Mitra" onclick="editMitra('PT. Astra Honda Motor', 'Jakarta & Karawang', 'Ototronik & Mesin', '40', '2024-01-01', '2029-12-31')">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button type="button" class="table-btn-action" title="Data Siswa PKL" onclick="lihatSiswaPKL('PT. Astra Honda Motor', '40 Siswa')">
-                  <i class="bi bi-people"></i>
-                </button>
-                <button type="button" class="table-btn-action delete" title="Hapus Mitra" onclick="hapusMitra(this, 'PT. Astra Honda Motor')">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Mitra 2 -->
-          <tr>
-            <td style="width: 70px;">
-              <div class="rounded-3 bg-light d-flex align-items-center justify-content-center fw-bold text-primary border" style="width: 46px; height: 46px; font-size: 0.82rem; letter-spacing: 0.05em;">
-                SRI
-              </div>
-            </td>
-            <td>
-              <div class="fw-bold text-main">PT. Sri Rejeki Isman Tbk (Sritex)</div>
-              <div class="text-muted fs-xs">Sukoharjo &bull; Tekstil &amp; Produk Tekstil</div>
-            </td>
-            <td>Perekrutan &amp; Prakerin</td>
-            <td><span class="badge bg-warning-subtle text-warning fw-bold">Teknik Tekstil (TPK)</span></td>
-            <td><strong>60 Siswa / Tahun</strong></td>
-            <td>2023 - 2028 (Aktif)</td>
-            <td><span class="badge-table success">MoU Aktif</span></td>
-            <td>
-              <div class="d-flex justify-content-center gap-1">
-                <button type="button" class="table-btn-action" title="Edit Mitra" onclick="editMitra('PT. Sri Rejeki Isman Tbk (Sritex)', 'Sukoharjo', 'Teknik Tekstil (TPK)', '60', '2023-05-10', '2028-05-10')">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button type="button" class="table-btn-action" title="Data Siswa PKL" onclick="lihatSiswaPKL('PT. Sri Rejeki Isman Tbk', '58 Siswa')">
-                  <i class="bi bi-people"></i>
-                </button>
-                <button type="button" class="table-btn-action delete" title="Hapus Mitra" onclick="hapusMitra(this, 'PT. Sritex')">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Mitra 3 -->
-          <tr>
-            <td style="width: 70px;">
-              <div class="rounded-3 bg-light d-flex align-items-center justify-content-center fw-bold text-success border" style="width: 46px; height: 46px; font-size: 0.82rem; letter-spacing: 0.05em;">
-                GTL
-              </div>
-            </td>
-            <td>
-              <div class="fw-bold text-main">PT. Gothika Teknologi Nusantara</div>
-              <div class="text-muted fs-xs">Surakarta &bull; Software &amp; Cloud Development</div>
-            </td>
-            <td>Magang Industri &amp; Mentoring</td>
-            <td><span class="badge bg-success-subtle text-success fw-bold">RPL</span></td>
-            <td><strong>25 Siswa / Tahun</strong></td>
-            <td>2025 - 2028 (Aktif)</td>
-            <td><span class="badge-table success">MoU Aktif</span></td>
-            <td>
-              <div class="d-flex justify-content-center gap-1">
-                <button type="button" class="table-btn-action" title="Edit Mitra" onclick="editMitra('PT. Gothika Teknologi Nusantara', 'Surakarta', 'RPL', '25', '2025-01-01', '2028-01-01')">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button type="button" class="table-btn-action" title="Data Siswa PKL" onclick="lihatSiswaPKL('PT. Gothika Teknologi Nusantara', '24 Siswa')">
-                  <i class="bi bi-people"></i>
-                </button>
-                <button type="button" class="table-btn-action delete" title="Hapus Mitra" onclick="hapusMitra(this, 'PT. Gothika Teknologi')">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
+          <?php if (!empty($mitraList)): ?>
+            <?php foreach ($mitraList as $m): 
+              $words = explode(' ', trim($m['nama_perusahaan']));
+              $init = '';
+              foreach (array_slice($words, 0, 3) as $w) {
+                if (!empty($w)) $init .= strtoupper($w[0]);
+              }
+              $isAktif = ($m['status'] ?? 'Aktif') === 'Aktif';
+              $mouMulai = !empty($m['mou_mulai']) ? date('Y', strtotime($m['mou_mulai'])) : '-';
+              $mouSelesai = !empty($m['mou_selesai']) ? date('Y', strtotime($m['mou_selesai'])) : '-';
+            ?>
+            <tr data-id="<?= $m['id'] ?>">
+              <td style="width: 70px;">
+                <div class="rounded-3 bg-light d-flex align-items-center justify-content-center fw-bold text-success border" style="width: 46px; height: 46px; font-size: 0.82rem; letter-spacing: 0.05em;">
+                  <?= htmlspecialchars(substr($init, 0, 3)) ?>
+                </div>
+              </td>
+              <td>
+                <div class="fw-bold text-main"><?= htmlspecialchars($m['nama_perusahaan']) ?></div>
+                <div class="text-muted fs-xs"><?= htmlspecialchars($m['alamat'] ?? '-') ?></div>
+              </td>
+              <td><?= htmlspecialchars($m['bidang_usaha'] ?? 'Kemitraan DUDI') ?></td>
+              <td>
+                <span class="badge bg-success-subtle text-success fw-bold"><?= htmlspecialchars($m['jurusan_terkait'] ?? 'Semua') ?></span>
+              </td>
+              <td><strong><?= (int)($m['kuota_pkl'] ?? 0) ?> Siswa / Thn</strong></td>
+              <td><?= $mouMulai ?> - <?= $mouSelesai ?> (<?= $isAktif ? 'Aktif' : 'Berakhir' ?>)</td>
+              <td>
+                <span class="badge-table <?= $isAktif ? 'success' : 'secondary' ?>">
+                  <?= $isAktif ? 'MoU Aktif' : 'Nonaktif' ?>
+                </span>
+              </td>
+              <td>
+                <div class="d-flex justify-content-center gap-1">
+                  <button type="button" class="table-btn-action" title="Edit Mitra" onclick="editMitra(<?= htmlspecialchars(json_encode($m)) ?>)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button type="button" class="table-btn-action" title="Data Siswa PKL" onclick="lihatSiswaPKL('<?= htmlspecialchars(addslashes($m['nama_perusahaan'])) ?>', '<?= (int)$m['kuota_pkl'] ?> Siswa')">
+                    <i class="bi bi-people"></i>
+                  </button>
+                  <button type="button" class="table-btn-action delete" title="Hapus Mitra" onclick="hapusMitra(<?= $m['id'] ?>, '<?= htmlspecialchars(addslashes($m['nama_perusahaan'])) ?>')">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <tr>
+              <td colspan="8" class="text-center py-4 text-muted">Belum ada data mitra industri tersimpan.</td>
+            </tr>
+          <?php endif; ?>
         </tbody>
       </table>
     </div>
@@ -229,14 +266,12 @@ include __DIR__ . '/components/sidebar.php';
     <!-- Table Pagination -->
     <div class="table-footer-control">
       <div class="table-pagination-info">
-        Menampilkan <strong>1 - 3</strong> dari <strong>84</strong> Mitra Industri Terikat
+        Menampilkan <strong><?= count($mitraList) ?></strong> Mitra Industri Terikat
       </div>
       <div class="table-pagination-nav">
         <button class="btn-pagination-nav" disabled><i class="bi bi-chevron-left"></i></button>
         <button class="btn-pagination-nav active">1</button>
-        <button class="btn-pagination-nav">2</button>
-        <button class="btn-pagination-nav">3</button>
-        <button class="btn-pagination-nav"><i class="bi bi-chevron-right"></i></button>
+        <button class="btn-pagination-nav" disabled><i class="bi bi-chevron-right"></i></button>
       </div>
     </div>
   </div>
@@ -257,40 +292,44 @@ include __DIR__ . '/components/sidebar.php';
       </div>
       <div class="modal-body">
         <form id="formTambahMitra">
+          <input type="hidden" name="action" value="tambah">
           <div class="row g-3">
             <div class="col-md-7">
               <label class="form-label-custom" for="tambahNamaMitra">Nama Perusahaan / Lembaga Industri</label>
-              <input type="text" class="form-control-custom" id="tambahNamaMitra" placeholder="Contoh: PT. Komatsu Indonesia" required>
+              <input type="text" class="form-control-custom" name="nama_perusahaan" id="tambahNamaMitra" placeholder="Contoh: PT. Komatsu Indonesia" required>
               <div class="form-text-custom">Nama resmi mitra BUMN/Swasta/Multinasional bersertifikat.</div>
             </div>
             <div class="col-md-5">
               <label class="form-label-custom" for="tambahLokasiMitra">Kawasan / Kota Industri</label>
-              <input type="text" class="form-control-custom" id="tambahLokasiMitra" placeholder="Cikarang, Bekasi / Solo Raya" required>
+              <input type="text" class="form-control-custom" name="alamat" id="tambahLokasiMitra" placeholder="Cikarang, Bekasi / Solo Raya" required>
             </div>
 
+            <div class="col-md-6">
+              <label class="form-label-custom" for="tambahBidangMitra">Bidang Usaha / Kerjasama</label>
+              <input type="text" class="form-control-custom" name="bidang_usaha" id="tambahBidangMitra" placeholder="Manufaktur Otomotif / Software House" required>
+            </div>
             <div class="col-md-6">
               <label class="form-label-custom" for="tambahJurusanMitra">Program Keahlian Terkait</label>
-              <select class="form-select-custom" id="tambahJurusanMitra">
+              <select class="form-select-custom" name="jurusan_terkait" id="tambahJurusanMitra">
                 <option value="RPL">Rekayasa Perangkat Lunak (RPL)</option>
-                <option value="TPM">Teknik Pemesinan (TPM)</option>
-                <option value="TPK">Teknik Pembuatan Kain (TPK)</option>
-                <option value="TOT">Teknik Ototronik (TOT)</option>
-                <option value="Semua">Semua Program Keahlian</option>
+                <option value="Teknik Pemesinan">Teknik Pemesinan (TPM)</option>
+                <option value="Teknik Tekstil">Teknik Tekstil (TPK)</option>
+                <option value="Teknik Ototronik">Teknik Ototronik (TOT)</option>
+                <option value="Semua Program" selected>Semua Program Keahlian</option>
               </select>
             </div>
-            <div class="col-md-6">
-              <label class="form-label-custom" for="tambahKuotaMitra">Kapasitas Kuota PKL Siswa / Tahun</label>
-              <input type="number" class="form-control-custom" id="tambahKuotaMitra" placeholder="25" value="25">
-            </div>
 
-            <div class="col-md-6">
-              <label class="form-label-custom" for="tambahMulaiMou">Tanggal Mulai Berlaku MoU</label>
-              <input type="date" class="form-control-custom" id="tambahMulaiMou" value="<?= date('Y-m-d') ?>">
+            <div class="col-md-4">
+              <label class="form-label-custom" for="tambahKuotaMitra">Kapasitas Kuota PKL / Thn</label>
+              <input type="number" class="form-control-custom" name="kuota_pkl" id="tambahKuotaMitra" placeholder="25" value="25">
             </div>
-            <div class="col-md-6">
-              <label class="form-label-custom" for="tambahSelesaiMou">Tanggal Berakhir Masa MoU</label>
-              <input type="date" class="form-control-custom" id="tambahSelesaiMou" value="<?= date('Y-m-d', strtotime('+3 years')) ?>">
-              <div class="form-text-custom">Standar periode kerjasama DUDI adalah 3 s/d 5 tahun.</div>
+            <div class="col-md-4">
+              <label class="form-label-custom" for="tambahMulaiMou">Mulai MoU</label>
+              <input type="date" class="form-control-custom" name="mou_mulai" id="tambahMulaiMou" value="<?= date('Y-m-d') ?>">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label-custom" for="tambahSelesaiMou">Berakhir MoU</label>
+              <input type="date" class="form-control-custom" name="mou_selesai" id="tambahSelesaiMou" value="<?= date('Y-m-d', strtotime('+3 years')) ?>">
             </div>
           </div>
         </form>
@@ -317,32 +356,38 @@ include __DIR__ . '/components/sidebar.php';
       </div>
       <div class="modal-body">
         <form id="formEditMitra">
+          <input type="hidden" name="action" value="edit">
+          <input type="hidden" name="id" id="editIdMitra">
           <div class="row g-3">
             <div class="col-md-7">
               <label class="form-label-custom" for="editNamaMitra">Nama Perusahaan</label>
-              <input type="text" class="form-control-custom" id="editNamaMitra" required>
+              <input type="text" class="form-control-custom" name="nama_perusahaan" id="editNamaMitra" required>
             </div>
             <div class="col-md-5">
               <label class="form-label-custom" for="editLokasiMitra">Lokasi / Alamat</label>
-              <input type="text" class="form-control-custom" id="editLokasiMitra" required>
+              <input type="text" class="form-control-custom" name="alamat" id="editLokasiMitra" required>
             </div>
 
+            <div class="col-md-6">
+              <label class="form-label-custom" for="editBidangMitra">Bidang Usaha</label>
+              <input type="text" class="form-control-custom" name="bidang_usaha" id="editBidangMitra">
+            </div>
             <div class="col-md-6">
               <label class="form-label-custom" for="editJurusanMitra">Program Terkait</label>
-              <input type="text" class="form-control-custom" id="editJurusanMitra">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label-custom" for="editKuotaMitra">Kuota PKL Tahunan</label>
-              <input type="number" class="form-control-custom" id="editKuotaMitra">
+              <input type="text" class="form-control-custom" name="jurusan_terkait" id="editJurusanMitra">
             </div>
 
-            <div class="col-md-6">
-              <label class="form-label-custom" for="editMulaiMou">Mulai MoU</label>
-              <input type="date" class="form-control-custom" id="editMulaiMou">
+            <div class="col-md-4">
+              <label class="form-label-custom" for="editKuotaMitra">Kuota PKL Tahunan</label>
+              <input type="number" class="form-control-custom" name="kuota_pkl" id="editKuotaMitra">
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
+              <label class="form-label-custom" for="editMulaiMou">Mulai MoU</label>
+              <input type="date" class="form-control-custom" name="mou_mulai" id="editMulaiMou">
+            </div>
+            <div class="col-md-4">
               <label class="form-label-custom" for="editSelesaiMou">Berakhir MoU</label>
-              <input type="date" class="form-control-custom" id="editSelesaiMou">
+              <input type="date" class="form-control-custom" name="mou_selesai" id="editSelesaiMou">
             </div>
           </div>
         </form>
@@ -358,13 +403,15 @@ include __DIR__ . '/components/sidebar.php';
 </div>
 
 <script>
-function editMitra(nama, lokasi, jurusan, kuota, mulai, selesai) {
-  document.getElementById('editNamaMitra').value = nama;
-  document.getElementById('editLokasiMitra').value = lokasi;
-  document.getElementById('editJurusanMitra').value = jurusan;
-  document.getElementById('editKuotaMitra').value = kuota;
-  document.getElementById('editMulaiMou').value = mulai;
-  document.getElementById('editSelesaiMou').value = selesai;
+function editMitra(data) {
+  document.getElementById('editIdMitra').value = data.id || '';
+  document.getElementById('editNamaMitra').value = data.nama_perusahaan || '';
+  document.getElementById('editLokasiMitra').value = data.alamat || '';
+  document.getElementById('editBidangMitra').value = data.bidang_usaha || '';
+  document.getElementById('editJurusanMitra').value = data.jurusan_terkait || '';
+  document.getElementById('editKuotaMitra').value = data.kuota_pkl || 25;
+  document.getElementById('editMulaiMou').value = data.mou_mulai || '';
+  document.getElementById('editSelesaiMou').value = data.mou_selesai || '';
 
   const modalEl = document.getElementById('modalEditMitra');
   const modal = new bootstrap.Modal(modalEl);
@@ -372,39 +419,83 @@ function editMitra(nama, lokasi, jurusan, kuota, mulai, selesai) {
 }
 
 function lihatSiswaPKL(perusahaan, jumlah) {
-  alert('Data Penempatan PKL:\nPerusahaan: ' + perusahaan + '\nTotal Siswa Aktif: ' + jumlah + '\nStatus: Seluruh siswa telah dilengkapi asuransi kerja dan surat tugas resmi.');
+  alert('Data Penempatan PKL:\nPerusahaan: ' + perusahaan + '\nTotal Kuota Siswa: ' + jumlah + '\nStatus: Kerjasama resmi MoU terverifikasi.');
 }
 
 function simpanTambahMitra() {
-  const nama = document.getElementById('tambahNamaMitra').value;
-  if (!nama) {
+  const form = document.getElementById('formTambahMitra');
+  if (!form.nama_perusahaan.value.trim()) {
     alert('Silakan masukkan nama mitra industri!');
     return;
   }
-  const modalEl = document.getElementById('modalTambahMitra');
-  const modal = bootstrap.Modal.getInstance(modalEl);
-  if (modal) modal.hide();
-  alert('Mitra industri "' + nama + '" berhasil disimpan ke database!');
+
+  const formData = new FormData(form);
+  fetch('kelola-mitra.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert(data.message);
+      location.reload();
+    } else {
+      alert('Gagal: ' + data.message);
+    }
+  })
+  .catch(err => {
+    alert('Terjadi kesalahan jaringan.');
+  });
 }
 
 function simpanEditMitra() {
-  const nama = document.getElementById('editNamaMitra').value;
-  const modalEl = document.getElementById('modalEditMitra');
-  const modal = bootstrap.Modal.getInstance(modalEl);
-  if (modal) modal.hide();
-  alert('Data mitra "' + nama + '" berhasil diperbarui!');
+  const form = document.getElementById('formEditMitra');
+  if (!form.nama_perusahaan.value.trim()) {
+    alert('Silakan masukkan nama mitra industri!');
+    return;
+  }
+
+  const formData = new FormData(form);
+  fetch('kelola-mitra.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert(data.message);
+      location.reload();
+    } else {
+      alert('Gagal: ' + data.message);
+    }
+  })
+  .catch(err => {
+    alert('Terjadi kesalahan jaringan.');
+  });
 }
 
-function hapusMitra(btn, nama) {
+function hapusMitra(id, nama) {
   if (confirm('Hapus data kemitraan dengan ' + nama + '?')) {
-    const row = btn.closest('tr');
-    if (row) {
-      row.style.opacity = '0.3';
-      setTimeout(() => {
-        row.remove();
-        alert('Mitra industri ' + nama + ' berhasil dihapus.');
-      }, 250);
-    }
+    const formData = new FormData();
+    formData.append('action', 'hapus');
+    formData.append('id', id);
+
+    fetch('kelola-mitra.php', {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message);
+        location.reload();
+      } else {
+        alert('Gagal: ' + data.message);
+      }
+    })
+    .catch(err => {
+      alert('Terjadi kesalahan jaringan.');
+    });
   }
 }
 

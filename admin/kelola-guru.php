@@ -1,7 +1,101 @@
 <?php
 /**
  * Kelola Guru & Tenaga Kependidikan - Admin SMKN 2 Karanganyar
+ * Native PHP Implementation (PDO)
  */
+require_once __DIR__ . '/../config/database.php';
+$pdo = getDbConnection();
+
+// HANDLE AJAX POST REQUESTS
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json; charset=utf-8');
+    $action = $_POST['action'] ?? '';
+
+    try {
+        if ($action === 'tambah' || $action === 'edit') {
+            $id = !empty($_POST['id']) ? (int)$_POST['id'] : null;
+            $nama = trim($_POST['nama'] ?? '');
+            $nip = trim($_POST['nip'] ?? '');
+            $status_kepegawaian = trim($_POST['status_kepegawaian'] ?? 'PNS');
+            $bidang_studi = trim($_POST['bidang_studi'] ?? '');
+            $jabatan = trim($_POST['jabatan'] ?? '');
+            $pendidikan_terakhir = trim($_POST['pendidikan_terakhir'] ?? '');
+            $email = trim($_POST['email'] ?? '');
+            $kategori = trim($_POST['kategori'] ?? 'Guru');
+
+            if (empty($nama)) {
+                echo json_encode(['success' => false, 'message' => 'Nama guru wajib diisi!']);
+                exit;
+            }
+
+            // Handle file upload
+            $fotoPath = null;
+            if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+                $uploadDir = __DIR__ . '/../uploads/guru/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
+                $ext = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
+                $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+                if (in_array($ext, $allowed)) {
+                    $newFileName = 'guru_' . time() . '_' . rand(100, 999) . '.' . $ext;
+                    if (move_uploaded_file($_FILES['foto']['tmp_name'], $uploadDir . $newFileName)) {
+                        $fotoPath = 'uploads/guru/' . $newFileName;
+                    }
+                }
+            }
+
+            if ($action === 'tambah') {
+                if (!$fotoPath) {
+                    $fotoPath = 'assets/images/avatar.png';
+                }
+                $stmt = $pdo->prepare("INSERT INTO guru_staff (nama, nip, bidang_studi, jabatan, pendidikan_terakhir, status_kepegawaian, email, foto, kategori, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+                $stmt->execute([$nama, $nip, $bidang_studi, $jabatan, $pendidikan_terakhir, $status_kepegawaian, $email, $fotoPath, $kategori]);
+                echo json_encode(['success' => true, 'message' => 'Data guru/staff berhasil ditambahkan!']);
+                exit;
+            } else {
+                if ($fotoPath) {
+                    $stmt = $pdo->prepare("UPDATE guru_staff SET nama = ?, nip = ?, bidang_studi = ?, jabatan = ?, pendidikan_terakhir = ?, status_kepegawaian = ?, email = ?, foto = ?, kategori = ? WHERE id = ?");
+                    $stmt->execute([$nama, $nip, $bidang_studi, $jabatan, $pendidikan_terakhir, $status_kepegawaian, $email, $fotoPath, $kategori, $id]);
+                } else {
+                    $stmt = $pdo->prepare("UPDATE guru_staff SET nama = ?, nip = ?, bidang_studi = ?, jabatan = ?, pendidikan_terakhir = ?, status_kepegawaian = ?, email = ?, kategori = ? WHERE id = ?");
+                    $stmt->execute([$nama, $nip, $bidang_studi, $jabatan, $pendidikan_terakhir, $status_kepegawaian, $email, $kategori, $id]);
+                }
+                echo json_encode(['success' => true, 'message' => 'Data guru/staff berhasil diperbarui!']);
+                exit;
+            }
+        }
+
+        if ($action === 'hapus') {
+            $id = (int)($_POST['id'] ?? 0);
+            $stmt = $pdo->prepare("DELETE FROM guru_staff WHERE id = ?");
+            $stmt->execute([$id]);
+            echo json_encode(['success' => true, 'message' => 'Data guru berhasil dihapus!']);
+            exit;
+        }
+
+        echo json_encode(['success' => false, 'message' => 'Aksi tidak valid!']);
+        exit;
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+        exit;
+    }
+}
+
+// FETCH DATA
+$guruList = [];
+try {
+    $stmt = $pdo->query("SELECT * FROM guru_staff ORDER BY id ASC");
+    $guruList = $stmt->fetchAll();
+} catch (Exception $e) {
+    //
+}
+
+$totalGuru = count($guruList);
+$totalPns = count(array_filter($guruList, fn($g) => in_array($g['status_kepegawaian'] ?? '', ['PNS', 'PPPK'])));
+$totalKejuruan = count(array_filter($guruList, fn($g) => ($g['kategori'] ?? '') === 'Guru'));
+$totalStaff = count(array_filter($guruList, fn($g) => ($g['kategori'] ?? '') === 'Staff'));
+
 $pageTitle = 'Kelola Guru & Staff - Admin SMKN 2 Karanganyar';
 $currentPage = 'kelola-guru';
 $assetsPath = 'assets/';
@@ -40,7 +134,7 @@ include __DIR__ . '/components/sidebar.php';
             <i class="bi bi-people-fill"></i>
           </div>
         </div>
-        <div class="stat-value text-success">132 Orang</div>
+        <div class="stat-value text-success"><?= $totalGuru ?> Orang</div>
         <div class="trend-badge trend-up">
           <i class="bi bi-check-circle-fill"></i>
           <span>Aktif Mengajar &amp; Dinas</span>
@@ -50,30 +144,30 @@ include __DIR__ . '/components/sidebar.php';
     <div class="col-xl-3 col-sm-6">
       <div class="card card-stat">
         <div class="card-header">
-          <span class="stat-label">Guru Bersertifikasi</span>
+          <span class="stat-label">ASN (PNS &amp; PPPK)</span>
           <div class="stat-icon-circle bg-primary-subtle text-primary">
             <i class="bi bi-award-fill"></i>
           </div>
         </div>
-        <div class="stat-value text-primary">100% Pendidik</div>
+        <div class="stat-value text-primary"><?= $totalPns ?> Pendidik</div>
         <div class="trend-badge text-primary">
           <i class="bi bi-shield-check"></i>
-          <span>Sertifikat Pendidik Nasional</span>
+          <span>Status Kepegawaian Negara</span>
         </div>
       </div>
     </div>
     <div class="col-xl-3 col-sm-6">
       <div class="card card-stat">
         <div class="card-header">
-          <span class="stat-label">Guru Kejuruan</span>
+          <span class="stat-label">Tenaga Pengajar</span>
           <div class="stat-icon-circle bg-warning-subtle text-warning">
             <i class="bi bi-book-half"></i>
           </div>
         </div>
-        <div class="stat-value text-warning">76 Pengajar</div>
+        <div class="stat-value text-warning"><?= $totalKejuruan ?> Guru</div>
         <div class="trend-badge text-warning">
           <i class="bi bi-gear-fill"></i>
-          <span>4 Program Keahlian</span>
+          <span>Kompetensi Kejuruan</span>
         </div>
       </div>
     </div>
@@ -85,7 +179,7 @@ include __DIR__ . '/components/sidebar.php';
             <i class="bi bi-briefcase-fill"></i>
           </div>
         </div>
-        <div class="stat-value text-info">24 Staf TU</div>
+        <div class="stat-value text-info"><?= $totalStaff ?> Staf TU</div>
         <div class="trend-badge text-info">
           <i class="bi bi-building-fill-check"></i>
           <span>Tata Usaha &amp; Teknisi</span>
@@ -108,7 +202,7 @@ include __DIR__ . '/components/sidebar.php';
           <option value="Mesin">Produktif Mesin</option>
           <option value="Tekstil">Produktif Tekstil</option>
           <option value="Ototronik">Produktif Ototronik</option>
-          <option value="Normatif">Normatif &amp; Adaptif</option>
+          <option value="PNS">Pegawai PNS</option>
         </select>
         <button class="btn-table-action" type="button" onclick="alert('Data guru berhasil diekspor ke format Excel!')">
           <i class="bi bi-file-earmark-arrow-down"></i> Unduh Excel
@@ -130,131 +224,59 @@ include __DIR__ . '/components/sidebar.php';
           </tr>
         </thead>
         <tbody>
-          <!-- Guru 1 -->
-          <tr>
-            <td>
-              <div class="table-user-cell">
-                <img src="assets/images/user_5.jpg" alt="Eko" class="table-user-avatar" onerror="this.src='assets/images/avatar.png'">
-                <div>
-                  <div class="table-user-name">Eko Prasetyo, S.Kom., M.Cs.</div>
-                  <div class="table-user-sub">eko.prasetyo@smkn2kra.sch.id</div>
+          <?php if (!empty($guruList)): ?>
+            <?php foreach ($guruList as $g): 
+              $fotoUrl = !empty($g['foto']) ? (str_starts_with($g['foto'], 'http') || str_starts_with($g['foto'], 'assets') ? $g['foto'] : '../' . $g['foto']) : 'assets/images/avatar.png';
+              $statusBadgeClass = match($g['status_kepegawaian'] ?? 'PNS') {
+                'PNS' => 'success',
+                'PPPK' => 'info',
+                default => 'warning'
+              };
+            ?>
+            <tr data-id="<?= $g['id'] ?>">
+              <td>
+                <div class="table-user-cell">
+                  <img src="<?= htmlspecialchars($fotoUrl) ?>" alt="<?= htmlspecialchars($g['nama']) ?>" class="table-user-avatar" onerror="this.src='assets/images/avatar.png'">
+                  <div>
+                    <div class="table-user-name"><?= htmlspecialchars($g['nama']) ?></div>
+                    <div class="table-user-sub"><?= htmlspecialchars($g['email'] ?? '-') ?></div>
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td>19850412 201001 1 015</td>
-            <td><span class="badge bg-success-subtle text-success">Produktif RPL</span></td>
-            <td>Ketua Program Keahlian RPL</td>
-            <td>S2 Ilmu Komputer</td>
-            <td><span class="badge-table success">PNS</span></td>
-            <td>
-              <div class="d-flex justify-content-center gap-1">
-                <button type="button" class="table-btn-action" title="Edit Guru" onclick="editGuru('Eko Prasetyo, S.Kom., M.Cs.', '19850412 201001 1 015', 'PNS', 'Produktif RPL', 'Ketua Program Keahlian RPL', 'S2 Ilmu Komputer', 'eko.prasetyo@smkn2kra.sch.id')">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button type="button" class="table-btn-action delete" title="Hapus Guru" onclick="hapusGuru(this, 'Eko Prasetyo, S.Kom., M.Cs.')">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Guru 2 -->
-          <tr>
-            <td>
-              <div class="table-user-cell">
-                <img src="assets/images/user_6.jpg" alt="Bambang" class="table-user-avatar" onerror="this.src='assets/images/avatar.png'">
-                <div>
-                  <div class="table-user-name">Bambang Sutrisno, S.T., M.T.</div>
-                  <div class="table-user-sub">bambang.s@smkn2kra.sch.id</div>
+              </td>
+              <td><?= htmlspecialchars($g['nip'] ?? '-') ?></td>
+              <td><span class="badge bg-success-subtle text-success"><?= htmlspecialchars($g['bidang_studi']) ?></span></td>
+              <td><?= htmlspecialchars($g['jabatan'] ?? '-') ?></td>
+              <td><?= htmlspecialchars($g['pendidikan_terakhir'] ?? '-') ?></td>
+              <td><span class="badge-table <?= $statusBadgeClass ?>"><?= htmlspecialchars($g['status_kepegawaian']) ?></span></td>
+              <td>
+                <div class="d-flex justify-content-center gap-1">
+                  <button type="button" class="table-btn-action" title="Edit Guru" onclick="editGuru(<?= htmlspecialchars(json_encode($g)) ?>)">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button type="button" class="table-btn-action delete" title="Hapus Guru" onclick="hapusGuru(<?= $g['id'] ?>, '<?= htmlspecialchars(addslashes($g['nama'])) ?>')">
+                    <i class="bi bi-trash"></i>
+                  </button>
                 </div>
-              </div>
-            </td>
-            <td>19790823 200501 1 008</td>
-            <td><span class="badge bg-primary-subtle text-primary">Teknik Mesin &amp; CNC</span></td>
-            <td>Ketua Program Keahlian TPM</td>
-            <td>S2 Teknik Mesin</td>
-            <td><span class="badge-table success">PNS</span></td>
-            <td>
-              <div class="d-flex justify-content-center gap-1">
-                <button type="button" class="table-btn-action" title="Edit Guru" onclick="editGuru('Bambang Sutrisno, S.T., M.T.', '19790823 200501 1 008', 'PNS', 'Teknik Mesin & CNC', 'Ketua Program Keahlian TPM', 'S2 Teknik Mesin', 'bambang.s@smkn2kra.sch.id')">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button type="button" class="table-btn-action delete" title="Hapus Guru" onclick="hapusGuru(this, 'Bambang Sutrisno, S.T., M.T.')">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Guru 3 -->
-          <tr>
-            <td>
-              <div class="table-user-cell">
-                <img src="assets/images/user_7.jpg" alt="Sri" class="table-user-avatar" onerror="this.src='assets/images/avatar.png'">
-                <div>
-                  <div class="table-user-name">Ibu Sri Wahyuni, S.T.</div>
-                  <div class="table-user-sub">sri.wahyuni@smkn2kra.sch.id</div>
-                </div>
-              </div>
-            </td>
-            <td>19821104 200801 2 012</td>
-            <td><span class="badge bg-warning-subtle text-warning">Teknologi Tekstil (TPK)</span></td>
-            <td>Ketua Program Keahlian TPK</td>
-            <td>S1 Teknik Tekstil</td>
-            <td><span class="badge-table success">PNS</span></td>
-            <td>
-              <div class="d-flex justify-content-center gap-1">
-                <button type="button" class="table-btn-action" title="Edit Guru" onclick="editGuru('Ibu Sri Wahyuni, S.T.', '19821104 200801 2 012', 'PNS', 'Teknologi Tekstil (TPK)', 'Ketua Program Keahlian TPK', 'S1 Teknik Tekstil', 'sri.wahyuni@smkn2kra.sch.id')">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button type="button" class="table-btn-action delete" title="Hapus Guru" onclick="hapusGuru(this, 'Ibu Sri Wahyuni, S.T.')">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Guru 4 -->
-          <tr>
-            <td>
-              <div class="table-user-cell">
-                <img src="assets/images/user_8.jpg" alt="Hendra" class="table-user-avatar" onerror="this.src='assets/images/avatar.png'">
-                <div>
-                  <div class="table-user-name">Hendra Gunawan, S.Pd.</div>
-                  <div class="table-user-sub">hendra.g@smkn2kra.sch.id</div>
-                </div>
-              </div>
-            </td>
-            <td>19910515 201903 1 004</td>
-            <td><span class="badge bg-danger-subtle text-danger">Ototronik Kendaraan</span></td>
-            <td>Ketua Program Keahlian TOT</td>
-            <td>S1 Pendidikan Teknik Otomotif</td>
-            <td><span class="badge-table info">PPPK</span></td>
-            <td>
-              <div class="d-flex justify-content-center gap-1">
-                <button type="button" class="table-btn-action" title="Edit Guru" onclick="editGuru('Hendra Gunawan, S.Pd.', '19910515 201903 1 004', 'PPPK', 'Ototronik Kendaraan', 'Ketua Program Keahlian TOT', 'S1 Pendidikan Teknik Otomotif', 'hendra.g@smkn2kra.sch.id')">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button type="button" class="table-btn-action delete" title="Hapus Guru" onclick="hapusGuru(this, 'Hendra Gunawan, S.Pd.')">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
+              </td>
+            </tr>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <tr>
+              <td colspan="7" class="text-center py-4 text-muted">Belum ada data guru tersimpan.</td>
+            </tr>
+          <?php endif; ?>
         </tbody>
       </table>
     </div>
 
     <div class="table-footer-control">
       <div class="table-pagination-info">
-        Menampilkan <strong>1 - 4</strong> dari <strong>132</strong> Guru &amp; Staff Pendidik
+        Menampilkan <strong><?= count($guruList) ?></strong> Guru &amp; Staff Pendidik
       </div>
       <div class="table-pagination-nav">
         <button class="btn-pagination-nav" disabled><i class="bi bi-chevron-left"></i></button>
         <button class="btn-pagination-nav active">1</button>
-        <button class="btn-pagination-nav">2</button>
-        <button class="btn-pagination-nav">3</button>
-        <button class="btn-pagination-nav"><i class="bi bi-chevron-right"></i></button>
+        <button class="btn-pagination-nav" disabled><i class="bi bi-chevron-right"></i></button>
       </div>
     </div>
   </div>
@@ -274,21 +296,22 @@ include __DIR__ . '/components/sidebar.php';
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form id="formTambahGuru">
+        <form id="formTambahGuru" enctype="multipart/form-data">
+          <input type="hidden" name="action" value="tambah">
           <div class="row g-3">
             <div class="col-md-7">
               <label class="form-label-custom" for="tambahNamaGuru">Nama Lengkap &amp; Gelar</label>
-              <input type="text" class="form-control-custom" id="tambahNamaGuru" placeholder="Contoh: Budi Susanto, S.Pd., M.Kom" required>
+              <input type="text" class="form-control-custom" name="nama" id="tambahNamaGuru" placeholder="Contoh: Budi Susanto, S.Pd., M.Kom" required>
               <div class="form-text-custom">Gunakan nama lengkap beserta gelar akademik resmi.</div>
             </div>
             <div class="col-md-5">
               <label class="form-label-custom" for="tambahNipGuru">NIP / NUPTK</label>
-              <input type="text" class="form-control-custom" id="tambahNipGuru" placeholder="19870315 201101 1 002" required>
+              <input type="text" class="form-control-custom" name="nip" id="tambahNipGuru" placeholder="19870315 201101 1 002" required>
             </div>
 
             <div class="col-md-6">
               <label class="form-label-custom" for="tambahStatusGuru">Status Kepegawaian</label>
-              <select class="form-select-custom" id="tambahStatusGuru">
+              <select class="form-select-custom" name="status_kepegawaian" id="tambahStatusGuru">
                 <option value="PNS" selected>PNS (Pegawai Negeri Sipil)</option>
                 <option value="PPPK">PPPK (P3K Kemendikbud)</option>
                 <option value="GTT / PTT">GTT / PTT (Guru Tidak Tetap)</option>
@@ -296,23 +319,33 @@ include __DIR__ . '/components/sidebar.php';
             </div>
             <div class="col-md-6">
               <label class="form-label-custom" for="tambahMapelGuru">Mata Pelajaran / Bidang Pengajaran</label>
-              <input type="text" class="form-control-custom" id="tambahMapelGuru" placeholder="Pemrograman Web &amp; Perangkat Bergerak" required>
+              <input type="text" class="form-control-custom" name="bidang_studi" id="tambahMapelGuru" placeholder="Pemrograman Web &amp; Perangkat Bergerak" required>
             </div>
 
             <div class="col-md-6">
               <label class="form-label-custom" for="tambahJabatanGuru">Jabatan Tambahan (Opsional)</label>
-              <input type="text" class="form-control-custom" id="tambahJabatanGuru" placeholder="Waka Kurikulum / Kaprodi RPL / Wali Kelas">
+              <input type="text" class="form-control-custom" name="jabatan" id="tambahJabatanGuru" placeholder="Waka Kurikulum / Kaprodi RPL / Wali Kelas">
             </div>
             <div class="col-md-6">
+              <label class="form-label-custom" for="tambahPendidikanGuru">Pendidikan Terakhir</label>
+              <input type="text" class="form-control-custom" name="pendidikan_terakhir" id="tambahPendidikanGuru" placeholder="S1 Teknik Informatika / S2 Komputer">
+            </div>
+
+            <div class="col-md-6">
               <label class="form-label-custom" for="tambahEmailGuru">Email Institusi Resmi</label>
-              <input type="email" class="form-control-custom" id="tambahEmailGuru" placeholder="nama@smkn2kra.sch.id">
-              <div class="form-text-custom">Email domain sekolah untuk koordinasi dinas.</div>
+              <input type="email" class="form-control-custom" name="email" id="tambahEmailGuru" placeholder="nama@smkn2kra.sch.id">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-custom" for="tambahKategoriGuru">Kategori Tenaga</label>
+              <select class="form-select-custom" name="kategori" id="tambahKategoriGuru">
+                <option value="Guru" selected>Guru / Pendidik</option>
+                <option value="Staff">Tenaga Kependidikan / TU</option>
+              </select>
             </div>
 
             <div class="col-12">
-              <label class="form-label-custom">Foto Profil Resmi (Format JPG/PNG)</label>
-              <input type="file" class="form-control-custom" accept="image/*">
-              <div class="form-text-custom">Rekomendasi rasio pas foto 3x4 atau 1:1 resolusi minimal 500x500px.</div>
+              <label class="form-label-custom" for="tambahFotoGuru">Foto Profil Resmi (Format JPG/PNG)</label>
+              <input type="file" class="form-control-custom" name="foto" id="tambahFotoGuru" accept="image/*">
             </div>
           </div>
         </form>
@@ -338,20 +371,22 @@ include __DIR__ . '/components/sidebar.php';
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form id="formEditGuru">
+        <form id="formEditGuru" enctype="multipart/form-data">
+          <input type="hidden" name="action" value="edit">
+          <input type="hidden" name="id" id="editIdGuru">
           <div class="row g-3">
             <div class="col-md-7">
               <label class="form-label-custom" for="editNamaGuru">Nama Lengkap &amp; Gelar</label>
-              <input type="text" class="form-control-custom" id="editNamaGuru" required>
+              <input type="text" class="form-control-custom" name="nama" id="editNamaGuru" required>
             </div>
             <div class="col-md-5">
               <label class="form-label-custom" for="editNipGuru">NIP / NUPTK</label>
-              <input type="text" class="form-control-custom" id="editNipGuru" required>
+              <input type="text" class="form-control-custom" name="nip" id="editNipGuru" required>
             </div>
 
             <div class="col-md-6">
               <label class="form-label-custom" for="editStatusGuru">Status Kepegawaian</label>
-              <select class="form-select-custom" id="editStatusGuru">
+              <select class="form-select-custom" name="status_kepegawaian" id="editStatusGuru">
                 <option value="PNS">PNS (Pegawai Negeri Sipil)</option>
                 <option value="PPPK">PPPK (P3K Kemendikbud)</option>
                 <option value="GTT / PTT">GTT / PTT (Guru Tidak Tetap)</option>
@@ -359,20 +394,33 @@ include __DIR__ . '/components/sidebar.php';
             </div>
             <div class="col-md-6">
               <label class="form-label-custom" for="editMapelGuru">Mata Pelajaran / Bidang</label>
-              <input type="text" class="form-control-custom" id="editMapelGuru" required>
+              <input type="text" class="form-control-custom" name="bidang_studi" id="editMapelGuru" required>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-6">
               <label class="form-label-custom" for="editJabatanGuru">Jabatan Tambahan</label>
-              <input type="text" class="form-control-custom" id="editJabatanGuru">
+              <input type="text" class="form-control-custom" name="jabatan" id="editJabatanGuru">
             </div>
-            <div class="col-md-4">
+            <div class="col-md-6">
               <label class="form-label-custom" for="editPendidikanGuru">Pendidikan Terakhir</label>
-              <input type="text" class="form-control-custom" id="editPendidikanGuru">
+              <input type="text" class="form-control-custom" name="pendidikan_terakhir" id="editPendidikanGuru">
             </div>
-            <div class="col-md-4">
+
+            <div class="col-md-6">
               <label class="form-label-custom" for="editEmailGuru">Email Institusi</label>
-              <input type="email" class="form-control-custom" id="editEmailGuru">
+              <input type="email" class="form-control-custom" name="email" id="editEmailGuru">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-custom" for="editKategoriGuru">Kategori Tenaga</label>
+              <select class="form-select-custom" name="kategori" id="editKategoriGuru">
+                <option value="Guru">Guru / Pendidik</option>
+                <option value="Staff">Tenaga Kependidikan / TU</option>
+              </select>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label-custom" for="editFotoGuru">Ganti Foto Profil (Kosongkan jika tetap)</label>
+              <input type="file" class="form-control-custom" name="foto" id="editFotoGuru" accept="image/*">
             </div>
           </div>
         </form>
@@ -388,14 +436,16 @@ include __DIR__ . '/components/sidebar.php';
 </div>
 
 <script>
-function editGuru(nama, nip, status, mapel, jabatan, pendidikan, email) {
-  document.getElementById('editNamaGuru').value = nama;
-  document.getElementById('editNipGuru').value = nip;
-  document.getElementById('editStatusGuru').value = status;
-  document.getElementById('editMapelGuru').value = mapel;
-  document.getElementById('editJabatanGuru').value = jabatan;
-  document.getElementById('editPendidikanGuru').value = pendidikan;
-  document.getElementById('editEmailGuru').value = email;
+function editGuru(data) {
+  document.getElementById('editIdGuru').value = data.id || '';
+  document.getElementById('editNamaGuru').value = data.nama || '';
+  document.getElementById('editNipGuru').value = data.nip || '';
+  document.getElementById('editStatusGuru').value = data.status_kepegawaian || 'PNS';
+  document.getElementById('editMapelGuru').value = data.bidang_studi || '';
+  document.getElementById('editJabatanGuru').value = data.jabatan || '';
+  document.getElementById('editPendidikanGuru').value = data.pendidikan_terakhir || '';
+  document.getElementById('editEmailGuru').value = data.email || '';
+  document.getElementById('editKategoriGuru').value = data.kategori || 'Guru';
 
   const modalEl = document.getElementById('modalEditGuru');
   const modal = new bootstrap.Modal(modalEl);
@@ -403,35 +453,79 @@ function editGuru(nama, nip, status, mapel, jabatan, pendidikan, email) {
 }
 
 function simpanTambahGuru() {
-  const nama = document.getElementById('tambahNamaGuru').value;
-  if (!nama) {
+  const form = document.getElementById('formTambahGuru');
+  if (!form.nama.value.trim()) {
     alert('Silakan masukkan nama guru!');
     return;
   }
-  const modalEl = document.getElementById('modalTambahGuru');
-  const modal = bootstrap.Modal.getInstance(modalEl);
-  if (modal) modal.hide();
-  alert('Data guru "' + nama + '" berhasil disimpan ke database!');
+
+  const formData = new FormData(form);
+  fetch('kelola-guru.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert(data.message);
+      location.reload();
+    } else {
+      alert('Gagal: ' + data.message);
+    }
+  })
+  .catch(err => {
+    alert('Terjadi kesalahan jaringan.');
+  });
 }
 
 function simpanEditGuru() {
-  const nama = document.getElementById('editNamaGuru').value;
-  const modalEl = document.getElementById('modalEditGuru');
-  const modal = bootstrap.Modal.getInstance(modalEl);
-  if (modal) modal.hide();
-  alert('Perubahan data guru "' + nama + '" berhasil diperbarui!');
+  const form = document.getElementById('formEditGuru');
+  if (!form.nama.value.trim()) {
+    alert('Silakan masukkan nama guru!');
+    return;
+  }
+
+  const formData = new FormData(form);
+  fetch('kelola-guru.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert(data.message);
+      location.reload();
+    } else {
+      alert('Gagal: ' + data.message);
+    }
+  })
+  .catch(err => {
+    alert('Terjadi kesalahan jaringan.');
+  });
 }
 
-function hapusGuru(btn, nama) {
+function hapusGuru(id, nama) {
   if (confirm('Apakah Anda yakin ingin menghapus data guru: ' + nama + '?')) {
-    const row = btn.closest('tr');
-    if (row) {
-      row.style.opacity = '0.3';
-      setTimeout(() => {
-        row.remove();
-        alert('Data guru "' + nama + '" telah berhasil dihapus.');
-      }, 250);
-    }
+    const formData = new FormData();
+    formData.append('action', 'hapus');
+    formData.append('id', id);
+
+    fetch('kelola-guru.php', {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message);
+        location.reload();
+      } else {
+        alert('Gagal: ' + data.message);
+      }
+    })
+    .catch(err => {
+      alert('Terjadi kesalahan jaringan.');
+    });
   }
 }
 

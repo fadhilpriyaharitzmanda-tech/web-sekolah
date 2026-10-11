@@ -2,15 +2,54 @@
 /**
  * Admin Dashboard - SMKN 2 Karanganyar
  * Modular implementation utilizing header, sidebar, topbar, and footer components.
+ * Native PHP Implementation (PDO)
  */
 require_once __DIR__ . '/../config/database.php';
+
 try {
     $pdo = getDbConnection();
+
+    // Landing Page Hero
     $heroCountActive = (int) $pdo->query("SELECT COUNT(*) FROM hero_banners WHERE status = 'Aktif'")->fetchColumn();
     $heroCountTotal = (int) $pdo->query("SELECT COUNT(*) FROM hero_banners")->fetchColumn();
+
+    // PPDB Online
+    $ppdbCount = (int) $pdo->query("SELECT COUNT(*) FROM ppdb_pendaftar")->fetchColumn();
+    $ppdbVerif = (int) $pdo->query("SELECT COUNT(*) FROM ppdb_pendaftar WHERE status_berkas = 'Terverifikasi'")->fetchColumn();
+    $ppdbPending = (int) $pdo->query("SELECT COUNT(*) FROM ppdb_pendaftar WHERE status_berkas = 'Menunggu Verifikasi'")->fetchColumn();
+
+    // Guru & Staff
+    $guruCount = (int) $pdo->query("SELECT COUNT(*) FROM guru_staff WHERE status = 'Aktif'")->fetchColumn();
+
+    // Mitra Industri
+    $mitraCount = (int) $pdo->query("SELECT COUNT(*) FROM mitra_industri WHERE status = 'Aktif'")->fetchColumn();
+
+    // Jurusan
+    $jurusanCount = (int) $pdo->query("SELECT COUNT(*) FROM jurusan WHERE status = 'Aktif'")->fetchColumn();
+
+    // Berita
+    $beritaCount = (int) $pdo->query("SELECT COUNT(*) FROM berita WHERE status = 'Publish'")->fetchColumn();
+
+    // Pengaduan
+    $pengaduanPending = (int) $pdo->query("SELECT COUNT(*) FROM pengaduan WHERE status = 'Menunggu'")->fetchColumn();
+    $pengaduanTotal = (int) $pdo->query("SELECT COUNT(*) FROM pengaduan")->fetchColumn();
+
+    // Galeri & Prestasi
+    $galeriCount = (int) $pdo->query("SELECT COUNT(*) FROM galeri")->fetchColumn();
+    $prestasiCount = (int) $pdo->query("SELECT COUNT(*) FROM prestasi WHERE status = 'Aktif'")->fetchColumn();
+
+    // Recent Activity Queries
+    $recentPpdb = $pdo->query("SELECT nama_lengkap, jurusan_pilihan, created_at, status_berkas FROM ppdb_pendaftar ORDER BY id DESC LIMIT 2")->fetchAll(PDO::FETCH_ASSOC);
+    $recentBerita = $pdo->query("SELECT judul, created_at, status FROM berita ORDER BY id DESC LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+    $recentPengaduan = $pdo->query("SELECT nama_pelapor, perihal, created_at, status FROM pengaduan ORDER BY id DESC LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+
 } catch (Exception $e) {
-    $heroCountActive = 0;
-    $heroCountTotal = 0;
+    $heroCountActive = 0; $heroCountTotal = 0;
+    $ppdbCount = 0; $ppdbVerif = 0; $ppdbPending = 0;
+    $guruCount = 0; $mitraCount = 0; $jurusanCount = 0;
+    $beritaCount = 0; $pengaduanPending = 0; $pengaduanTotal = 0;
+    $galeriCount = 0; $prestasiCount = 0;
+    $recentPpdb = []; $recentBerita = null; $recentPengaduan = null;
 }
 
 $pageTitle = 'Dashboard - Admin SMKN 2 Karanganyar';
@@ -89,14 +128,14 @@ include __DIR__ . '/components/sidebar.php';
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom">
                     <li><a class="dropdown-item" href="kelola-ppdb.php"><i class="bi bi-eye"></i> Lihat Data PPDB</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-arrow-down"></i> Ekspor Laporan</a></li>
+                    <li><a class="dropdown-item" href="kelola-ppdb.php"><i class="bi bi-check2-circle"></i> Verifikasi Berkas</a></li>
                   </ul>
                 </div>
               </div>
-              <div class="stat-value">642 Calon</div>
+              <div class="stat-value"><?= number_format($ppdbCount, 0, ',', '.') ?> Calon</div>
               <div class="trend-badge trend-up">
-                <i class="bi bi-arrow-up-right"></i>
-                <span>+40% dibanding minggu lalu</span>
+                <i class="bi bi-check-circle-fill"></i>
+                <span><?= $ppdbVerif ?> Terverifikasi &bull; <?= $ppdbPending ?> Menunggu</span>
               </div>
             </div>
             <div class="sparkline-container sparkline-card-footer">
@@ -120,15 +159,15 @@ include __DIR__ . '/components/sidebar.php';
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom">
                     <li><a class="dropdown-item" href="kelola-guru.php"><i class="bi bi-people"></i> Kelola Guru &amp; Staff</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-arrow-down"></i> Ekspor Data</a></li>
+                    <li><a class="dropdown-item" href="kelola-jurusan.php"><i class="bi bi-cpu"></i> Kelola Jurusan</a></li>
                   </ul>
                 </div>
               </div>
               <a href="kelola-guru.php" class="text-decoration-none d-block">
-                <div class="stat-value text-main">132</div>
+                <div class="stat-value text-main"><?= $guruCount ?></div>
                 <div class="trend-badge trend-up">
-                  <i class="bi bi-arrow-up-right"></i>
-                  <span>100% Sertifikasi Kompetensi</span>
+                  <i class="bi bi-mortarboard-fill"></i>
+                  <span><?= $jurusanCount ?> Program Keahlian Unggulan</span>
                 </div>
               </a>
             </div>
@@ -152,7 +191,7 @@ include __DIR__ . '/components/sidebar.php';
         <div class="col-12">
           <div class="card mb-0">
             <div class="card-header mb-2">
-              <h2 class="card-title">Statistik Kunjungan &amp; Layanan Web</h2>
+              <h2 class="card-title">Statistik Aktivitas &amp; Layanan Sekolah</h2>
               <!-- Custom Static Legends -->
               <div class="d-flex gap-3 align-items-center">
                 <div class="chart-legend-item">
@@ -161,13 +200,13 @@ include __DIR__ . '/components/sidebar.php';
                 </div>
                 <div class="chart-legend-item">
                   <span class="legend-dot bg-lime-accent"></span>
-                  <span class="chart-legend-label">Layanan Online</span>
+                  <span class="chart-legend-label">Layanan PPDB</span>
                 </div>
               </div>
             </div>
             <div class="d-flex align-items-baseline gap-2 mb-3">
               <span class="stat-value-amount">24.500</span>
-              <span class="trend-badge trend-up fs-xs">+35% pengunjung bulan ini</span>
+              <span class="trend-badge trend-up fs-xs">+35% interaksi portal bulan ini</span>
             </div>
             <div id="revenue-chart"></div>
           </div>
@@ -184,56 +223,77 @@ include __DIR__ . '/components/sidebar.php';
                   <i class="bi bi-three-dots"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom">
-                  <li><a class="dropdown-item" href="#"><i class="bi bi-funnel"></i> Filter Status</a></li>
-                  <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-arrow-down"></i> Ekspor CSV</a></li>
+                  <li><a class="dropdown-item" href="kelola-ppdb.php"><i class="bi bi-funnel"></i> Data PPDB</a></li>
+                  <li><a class="dropdown-item" href="kelola-pengaduan.php"><i class="bi bi-chat-dots"></i> Data Pengaduan</a></li>
                 </ul>
               </div>
             </div>
 
             <!-- Transaction Items List -->
             <div class="transaction-list">
-              <a href="kelola-ppdb.php" class="transaction-item text-decoration-none">
-                <div class="transaction-icon bg-forest-light text-lime">
-                  <i class="bi bi-person-plus"></i>
-                </div>
-                <div class="transaction-info">
-                  <div class="transaction-name">Pendaftaran PPDB Baru: Ahmad Farhan</div>
-                  <div class="transaction-date">Hari ini • 12:40 WIB</div>
-                </div>
-                <div class="transaction-amount text-success">Verifikasi OK</div>
-              </a>
+              <?php if (!empty($recentPpdb)): ?>
+                <?php foreach ($recentPpdb as $rp): ?>
+                  <a href="kelola-ppdb.php" class="transaction-item text-decoration-none">
+                    <div class="transaction-icon bg-forest-light text-lime">
+                      <i class="bi bi-person-plus"></i>
+                    </div>
+                    <div class="transaction-info">
+                      <div class="transaction-name">Pendaftaran PPDB: <?= htmlspecialchars($rp['nama_lengkap']) ?></div>
+                      <div class="transaction-date"><?= htmlspecialchars($rp['jurusan_pilihan']) ?> &bull; <?= date('d M Y', strtotime($rp['created_at'])) ?></div>
+                    </div>
+                    <div class="transaction-amount <?= $rp['status_berkas'] === 'Terverifikasi' ? 'text-success' : 'text-warning' ?>">
+                      <?= htmlspecialchars($rp['status_berkas']) ?>
+                    </div>
+                  </a>
+                <?php endforeach; ?>
+              <?php else: ?>
+                <a href="kelola-ppdb.php" class="transaction-item text-decoration-none">
+                  <div class="transaction-icon bg-forest-light text-lime"><i class="bi bi-person-plus"></i></div>
+                  <div class="transaction-info">
+                    <div class="transaction-name">Belum ada pendaftar baru</div>
+                    <div class="transaction-date">Menunggu pengajuan formulir</div>
+                  </div>
+                  <div class="transaction-amount text-muted">-</div>
+                </a>
+              <?php endif; ?>
 
-              <a href="kelola-berita.php" class="transaction-item text-decoration-none">
-                <div class="transaction-icon bg-forest-light text-lime">
-                  <i class="bi bi-file-earmark-text"></i>
-                </div>
-                <div class="transaction-info">
-                  <div class="transaction-name">Publikasi Warta: Juara 1 LKS Robotika</div>
-                  <div class="transaction-date">Kemarin • 08:15 WIB</div>
-                </div>
-                <div class="transaction-amount text-main">Diterbitkan</div>
-              </a>
+              <?php if (!empty($recentBerita)): ?>
+                <a href="kelola-berita.php" class="transaction-item text-decoration-none">
+                  <div class="transaction-icon bg-forest-light text-lime">
+                    <i class="bi bi-file-earmark-text"></i>
+                  </div>
+                  <div class="transaction-info">
+                    <div class="transaction-name">Warta: <?= htmlspecialchars(mb_strimwidth($recentBerita['judul'], 0, 32, '...')) ?></div>
+                    <div class="transaction-date"><?= date('d M Y', strtotime($recentBerita['created_at'])) ?></div>
+                  </div>
+                  <div class="transaction-amount text-main"><?= htmlspecialchars($recentBerita['status']) ?></div>
+                </a>
+              <?php endif; ?>
 
-              <a href="kelola-pengaduan.php" class="transaction-item text-decoration-none">
-                <div class="transaction-icon bg-forest-light text-lime">
-                  <i class="bi bi-chat-dots"></i>
-                </div>
-                <div class="transaction-info">
-                  <div class="transaction-name">Pengaduan Layanan: Penerangan Parkir</div>
-                  <div class="transaction-date">08 Okt 2026 • 16:30 WIB</div>
-                </div>
-                <div class="transaction-amount text-warning">Menunggu Respon</div>
-              </a>
+              <?php if (!empty($recentPengaduan)): ?>
+                <a href="kelola-pengaduan.php" class="transaction-item text-decoration-none">
+                  <div class="transaction-icon bg-forest-light text-lime">
+                    <i class="bi bi-chat-dots"></i>
+                  </div>
+                  <div class="transaction-info">
+                    <div class="transaction-name">Pengaduan: <?= htmlspecialchars(mb_strimwidth($recentPengaduan['perihal'], 0, 30, '...')) ?></div>
+                    <div class="transaction-date"><?= htmlspecialchars($recentPengaduan['nama_pelapor']) ?> &bull; <?= date('d M Y', strtotime($recentPengaduan['created_at'])) ?></div>
+                  </div>
+                  <div class="transaction-amount <?= $recentPengaduan['status'] === 'Selesai' ? 'text-success' : 'text-warning' ?>">
+                    <?= htmlspecialchars($recentPengaduan['status']) ?>
+                  </div>
+                </a>
+              <?php endif; ?>
 
               <a href="kelola-galeri.php" class="transaction-item text-decoration-none">
                 <div class="transaction-icon bg-forest-light text-lime">
                   <i class="bi bi-images"></i>
                 </div>
                 <div class="transaction-info">
-                  <div class="transaction-name">Upload Galeri: Wisuda &amp; Expo Industri</div>
-                  <div class="transaction-date">07 Okt 2026 • 09:20 WIB</div>
+                  <div class="transaction-name">Galeri Dokumentasi Sekolah</div>
+                  <div class="transaction-date">Terakhir disinkronkan &bull; Update Foto Terkini</div>
                 </div>
-                <div class="transaction-amount text-main">12 Foto Baru</div>
+                <div class="transaction-amount text-main"><?= $galeriCount ?> Foto</div>
               </a>
             </div>
 
@@ -244,25 +304,25 @@ include __DIR__ . '/components/sidebar.php';
         <div class="col-md-5 d-flex flex-column">
           <div class="card h-100 flex-grow-1">
             <div class="card-header">
-              <h2 class="card-title">Ringkasan Jurusan &amp; PKL</h2>
+              <h2 class="card-title">Ringkasan Data &amp; Jejaring</h2>
               <div class="dropdown">
                 <button class="card-more-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false"
                   aria-label="More Options" id="btn-more-products">
                   <i class="bi bi-three-dots"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom">
-                  <li><a class="dropdown-item" href="#"><i class="bi bi-plus-lg"></i> Tambah Program</a></li>
-                  <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Kelola</a></li>
+                  <li><a class="dropdown-item" href="kelola-mitra.php"><i class="bi bi-buildings"></i> Kelola Mitra DUDI</a></li>
+                  <li><a class="dropdown-item" href="kelola-jurusan.php"><i class="bi bi-cpu"></i> Kelola Jurusan</a></li>
                 </ul>
               </div>
             </div>
 
             <div class="progress-container">
               <div class="progress-label-row">
-                <span class="progress-label">Siswa Sedang PKL</span>
-                <span class="progress-value">482 / 500</span>
+                <span class="progress-label">Mitra Industri (DUDI)</span>
+                <span class="progress-value"><?= $mitraCount ?> Perusahaan</span>
               </div>
-              <div class="progress" role="progressbar" aria-label="Siswa PKL" aria-valuenow="85"
+              <div class="progress" role="progressbar" aria-label="Mitra Industri" aria-valuenow="85"
                 aria-valuemin="0" aria-valuemax="100">
                 <div class="progress-bar bg-lime-accent w-85"></div>
               </div>
@@ -270,45 +330,45 @@ include __DIR__ . '/components/sidebar.php';
 
             <div class="progress-container">
               <div class="progress-label-row">
-                <span class="progress-label">Mitra Industri (DUDI)</span>
-                <span class="progress-value">84 Perusahaan</span>
+                <span class="progress-label">Program &amp; Konsentrasi Keahlian</span>
+                <span class="progress-value"><?= $jurusanCount ?> Jurusan Aktif</span>
               </div>
-              <div class="progress" role="progressbar" aria-label="Mitra Industri" aria-valuenow="75"
+              <div class="progress" role="progressbar" aria-label="Jurusan" aria-valuenow="100"
                 aria-valuemin="0" aria-valuemax="100">
-                <div class="progress-bar bg-lime-accent w-75"></div>
+                <div class="progress-bar bg-lime-accent" style="width: 100%;"></div>
               </div>
             </div>
 
             <div class="progress-container">
               <div class="progress-label-row">
-                <span class="progress-label">Kelulusan Uji Sertifikasi</span>
-                <span class="progress-value">98% Lulus</span>
+                <span class="progress-label">Prestasi Siswa &amp; Sekolah</span>
+                <span class="progress-value"><?= $prestasiCount ?> Kejuaraan</span>
               </div>
-              <div class="progress" role="progressbar" aria-label="Sertifikasi" aria-valuenow="98"
+              <div class="progress" role="progressbar" aria-label="Prestasi" aria-valuenow="90"
                 aria-valuemin="0" aria-valuemax="100">
-                <div class="progress-bar bg-lime-accent w-95"></div>
+                <div class="progress-bar bg-lime-accent" style="width: 90%;"></div>
               </div>
             </div>
 
             <div class="progress-container">
               <div class="progress-label-row">
-                <span class="progress-label">Tingkat Serapan Kerja Alumni</span>
-                <span class="progress-value">89% Bekerja</span>
+                <span class="progress-label">Berita &amp; Publikasi Warta</span>
+                <span class="progress-value"><?= $beritaCount ?> Artikel Publish</span>
               </div>
-              <div class="progress" role="progressbar" aria-label="Serapan Alumni" aria-valuenow="89"
+              <div class="progress" role="progressbar" aria-label="Berita" aria-valuenow="75"
                 aria-valuemin="0" aria-valuemax="100">
-                <div class="progress-bar bg-brand-orange w-85"></div>
+                <div class="progress-bar bg-brand-orange" style="width: 75%;"></div>
               </div>
             </div>
 
             <div class="progress-container">
               <div class="progress-label-row">
-                <span class="progress-label">Program Kewirausahaan (SPW)</span>
-                <span class="progress-value">120 Siswa</span>
+                <span class="progress-label">Kotak Pengaduan Masuk</span>
+                <span class="progress-value"><?= $pengaduanPending ?> Perlu Ditanggapi</span>
               </div>
-              <div class="progress" role="progressbar" aria-label="SPW Siswa" aria-valuenow="65"
+              <div class="progress" role="progressbar" aria-label="Pengaduan" aria-valuenow="50"
                 aria-valuemin="0" aria-valuemax="100">
-                <div class="progress-bar bg-lime-accent w-65"></div>
+                <div class="progress-bar <?= $pengaduanPending > 0 ? 'bg-brand-orange' : 'bg-lime-accent' ?>" style="width: <?= $pengaduanPending > 0 ? '60%' : '15%' ?>;"></div>
               </div>
             </div>
           </div>
@@ -343,7 +403,7 @@ include __DIR__ . '/components/sidebar.php';
             </div>
             <div class="chart-legend-item">
               <span class="legend-dot bg-brand-orange"></span>
-              <span class="text-muted-green">Layanan &amp; Nilai</span>
+              <span class="text-muted-green">Layanan &amp; Warta</span>
             </div>
           </div>
         </div>

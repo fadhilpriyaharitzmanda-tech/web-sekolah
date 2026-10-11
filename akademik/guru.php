@@ -1,3 +1,14 @@
+<?php
+require_once __DIR__ . '/../config/database.php';
+$webGuruList = [];
+try {
+    $pdo = getDbConnection();
+    $stmt = $pdo->query("SELECT * FROM guru_staff ORDER BY id ASC");
+    $webGuruList = $stmt->fetchAll();
+} catch (Exception $e) {
+    //
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -39,6 +50,80 @@
         </div>
 
         <div class="guru-grid" id="guruGrid">
+          <?php if (!empty($webGuruList)): ?>
+            <?php foreach ($webGuruList as $g): 
+              $parts = explode(' ', trim($g['nama']));
+              $initials = '';
+              foreach (array_slice($parts, 0, 2) as $p) {
+                if (!empty($p) && ctype_alpha($p[0])) $initials .= strtoupper($p[0]);
+              }
+              if (empty($initials)) $initials = 'GR';
+
+              $bidang = $g['bidang_studi'] ?? '';
+              $komp = 'all';
+              if (stripos($bidang, 'RPL') !== false || stripos($bidang, 'Perangkat Lunak') !== false) $komp = 'RPL';
+              elseif (stripos($bidang, 'Mesin') !== false || stripos($bidang, 'Pemesinan') !== false) $komp = 'Mesin';
+              elseif (stripos($bidang, 'Ototronik') !== false || stripos($bidang, 'Otomotif') !== false) $komp = 'Teknik Ototronik';
+              elseif (stripos($bidang, 'Tekstil') !== false || stripos($bidang, 'Kain') !== false) $komp = 'Tekstil';
+              elseif (stripos($bidang, 'Matematika') !== false) $komp = 'Matematika';
+              elseif (stripos($bidang, 'Inggris') !== false) $komp = 'Bahasa Inggris';
+              elseif (stripos($bidang, 'Indonesia') !== false) $komp = 'Bahasa Indonesia';
+              elseif (stripos($bidang, 'Agama') !== false) $komp = 'Pendidikan Agama';
+              elseif (stripos($bidang, 'PKN') !== false) $komp = 'PKN';
+              else $komp = $bidang;
+            ?>
+              <div class="guru-card" data-kompetensi="<?= htmlspecialchars($komp) ?>">
+                <div class="guru-card-header" onclick="toggleGuru(this)">
+                  <div class="guru-avatar"><?= htmlspecialchars(substr($initials, 0, 2)) ?></div>
+                  <div class="guru-card-info">
+                    <h3><?= htmlspecialchars($g['nama']) ?></h3>
+                    <span class="kompetensi"><?= htmlspecialchars($g['bidang_studi']) ?></span>
+                  </div>
+                  <span class="material-symbols-outlined guru-card-chevron">expand_more</span>
+                </div>
+                <div class="guru-card-body">
+                  <div class="guru-detail">
+                    <div class="guru-detail-item">
+                      <span class="label">Nama Lengkap</span>
+                      <span class="value"><?= htmlspecialchars($g['nama']) ?></span>
+                    </div>
+                    <?php if (!empty($g['nip'])): ?>
+                    <div class="guru-detail-item">
+                      <span class="label">NIP / NUPTK</span>
+                      <span class="value"><?= htmlspecialchars($g['nip']) ?></span>
+                    </div>
+                    <?php endif; ?>
+                    <div class="guru-detail-item">
+                      <span class="label">Status</span>
+                      <span class="value"><?= htmlspecialchars($g['status_kepegawaian'] ?? 'PNS') ?></span>
+                    </div>
+                    <div class="guru-detail-item">
+                      <span class="label">Mata Pelajaran</span>
+                      <span class="value"><?= htmlspecialchars($g['bidang_studi']) ?></span>
+                    </div>
+                    <?php if (!empty($g['jabatan'])): ?>
+                    <div class="guru-detail-item">
+                      <span class="label">Jabatan</span>
+                      <span class="value"><?= htmlspecialchars($g['jabatan']) ?></span>
+                    </div>
+                    <?php endif; ?>
+                    <?php if (!empty($g['pendidikan_terakhir'])): ?>
+                    <div class="guru-detail-item">
+                      <span class="label">Pendidikan</span>
+                      <span class="value"><?= htmlspecialchars($g['pendidikan_terakhir']) ?></span>
+                    </div>
+                    <?php endif; ?>
+                    <?php if (!empty($g['email'])): ?>
+                    <div class="guru-detail-item">
+                      <span class="label">Email</span>
+                      <span class="value"><?= htmlspecialchars($g['email']) ?></span>
+                    </div>
+                    <?php endif; ?>
+                  </div>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          <?php else: ?>
           <!-- RPL -->
           <div class="guru-card" data-kompetensi="RPL">
             <div class="guru-card-header" onclick="toggleGuru(this)">
@@ -450,6 +535,7 @@
                 </div>
             </div>
           </div>
+          <?php endif; ?>
         </div>
 
         <div class="guru-empty" id="guruEmpty">

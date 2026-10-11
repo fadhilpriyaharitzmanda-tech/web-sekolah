@@ -697,7 +697,8 @@ ul { list-style: none; }
   position: absolute;
   inset: 0;
   opacity: 0;
-  transition: opacity 0.8s ease;
+  z-index: 1;
+  transition: opacity 0.8s ease-in-out;
   display: flex;
   align-items: center;
   pointer-events: none;
@@ -705,6 +706,7 @@ ul { list-style: none; }
 
 .hero-slide.active {
   opacity: 1;
+  z-index: 2;
   pointer-events: auto;
 }
 

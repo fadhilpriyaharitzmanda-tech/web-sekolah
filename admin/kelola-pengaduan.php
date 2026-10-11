@@ -1,7 +1,66 @@
 <?php
 /**
  * Kelola Kotak Pengaduan & Aspirasi - Admin SMKN 2 Karanganyar
+ * Native PHP Implementation (PDO)
  */
+require_once __DIR__ . '/../config/database.php';
+$pdo = getDbConnection();
+
+// HANDLE AJAX POST REQUESTS
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json; charset=utf-8');
+    $action = $_POST['action'] ?? '';
+
+    try {
+        if ($action === 'respon') {
+            $id = (int)($_POST['id'] ?? 0);
+            $status = trim($_POST['status'] ?? 'Proses');
+            $tanggapan = trim($_POST['tanggapan'] ?? '');
+            
+            $stmt = $pdo->prepare("UPDATE pengaduan SET status = ?, tanggapan = ?, tanggal_selesai = IF(? = 'Selesai', NOW(), tanggal_selesai) WHERE id = ?");
+            $stmt->execute([$status, $tanggapan, $status, $id]);
+            echo json_encode(['success' => true, 'message' => 'Tanggapan dan status pengaduan berhasil diperbarui!']);
+            exit;
+        }
+
+        if ($action === 'selesai') {
+            $id = (int)($_POST['id'] ?? 0);
+            $stmt = $pdo->prepare("UPDATE pengaduan SET status = 'Selesai', tanggal_selesai = NOW() WHERE id = ?");
+            $stmt->execute([$id]);
+            echo json_encode(['success' => true, 'message' => 'Tiket pengaduan berhasil ditandai selesai!']);
+            exit;
+        }
+
+        if ($action === 'hapus') {
+            $id = (int)($_POST['id'] ?? 0);
+            $stmt = $pdo->prepare("DELETE FROM pengaduan WHERE id = ?");
+            $stmt->execute([$id]);
+            echo json_encode(['success' => true, 'message' => 'Data pengaduan berhasil dihapus!']);
+            exit;
+        }
+
+        echo json_encode(['success' => false, 'message' => 'Aksi tidak valid!']);
+        exit;
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+        exit;
+    }
+}
+
+// FETCH DATA
+$pengaduanList = [];
+try {
+    $stmt = $pdo->query("SELECT * FROM pengaduan ORDER BY id DESC");
+    $pengaduanList = $stmt->fetchAll();
+} catch (Exception $e) {
+    //
+}
+
+$totalLaporan = count($pengaduanList);
+$totalMenunggu = count(array_filter($pengaduanList, fn($p) => ($p['status'] ?? '') === 'Menunggu Respon'));
+$totalProses = count(array_filter($pengaduanList, fn($p) => ($p['status'] ?? '') === 'Proses'));
+$totalSelesai = count(array_filter($pengaduanList, fn($p) => ($p['status'] ?? '') === 'Selesai'));
+
 $pageTitle = 'Kelola Pengaduan & Aspirasi - Admin SMKN 2 Karanganyar';
 $currentPage = 'kelola-pengaduan';
 $assetsPath = 'assets/';
@@ -20,10 +79,10 @@ include __DIR__ . '/components/sidebar.php';
       <p class="page-subtitle">Tindaklanjuti keluhan sarana prasarana, kritik, saran, serta aspirasi dari siswa, wali murid, dan masyarakat.</p>
     </div>
     <div class="d-flex gap-2">
-      <a href="../informasi/kontak.php" target="_blank" class="btn btn-outline-success btn-sm d-flex align-items-center gap-2">
+      <a href="../layanan/pengaduan.php" target="_blank" class="btn btn-outline-success btn-sm d-flex align-items-center gap-2">
         <i class="bi bi-eye"></i> Form Aduan Website
       </a>
-      <button type="button" class="btn btn-success btn-sm d-flex align-items-center gap-2" onclick="alert('Laporan pengaduan berhasil diekspor ke PDF!')">
+      <button type="button" class="btn btn-success btn-sm d-flex align-items-center gap-2" onclick="alert('Laporan pengaduan berhasil diekspor!')">
         <i class="bi bi-download"></i> Unduh Laporan
       </button>
     </div>
@@ -40,7 +99,7 @@ include __DIR__ . '/components/sidebar.php';
             <i class="bi bi-inbox-fill"></i>
           </div>
         </div>
-        <div class="stat-value text-primary">28 Laporan</div>
+        <div class="stat-value text-primary"><?= $totalLaporan ?> Laporan</div>
         <div class="trend-badge trend-up">
           <i class="bi bi-arrow-up-right"></i>
           <span>Periode Tahun Berjalan</span>
@@ -55,7 +114,7 @@ include __DIR__ . '/components/sidebar.php';
             <i class="bi bi-hourglass-split"></i>
           </div>
         </div>
-        <div class="stat-value text-warning">3 Laporan</div>
+        <div class="stat-value text-warning"><?= $totalMenunggu ?> Laporan</div>
         <div class="trend-badge text-warning">
           <i class="bi bi-clock-fill"></i>
           <span>Perlu Tindakan Cepat</span>
@@ -70,7 +129,7 @@ include __DIR__ . '/components/sidebar.php';
             <i class="bi bi-arrow-repeat"></i>
           </div>
         </div>
-        <div class="stat-value text-info">5 Laporan</div>
+        <div class="stat-value text-info"><?= $totalProses ?> Laporan</div>
         <div class="trend-badge text-info">
           <i class="bi bi-gear-fill"></i>
           <span>Sedang Diproses Tim Terkait</span>
@@ -85,10 +144,10 @@ include __DIR__ . '/components/sidebar.php';
             <i class="bi bi-check-circle-fill"></i>
           </div>
         </div>
-        <div class="stat-value text-success">20 Laporan</div>
+        <div class="stat-value text-success"><?= $totalSelesai ?> Laporan</div>
         <div class="trend-badge trend-up">
           <i class="bi bi-check-all"></i>
-          <span>71% Tingkat Penyelesaian</span>
+          <span>Telah Diberikan Respon</span>
         </div>
       </div>
     </div>
@@ -107,8 +166,9 @@ include __DIR__ . '/components/sidebar.php';
           <option value="Sarpras">Sarana &amp; Prasarana</option>
           <option value="Fasilitas">Fasilitas Lab</option>
           <option value="Apresiasi">Apresiasi Publik</option>
+          <option value="Bullying">Bullying / Perundungan</option>
         </select>
-        <button class="btn-table-action" type="button" onclick="filterPengaduanTable()">
+        <button class="btn-table-action" type="button" onclick="location.reload()">
           <i class="bi bi-arrow-clockwise"></i> Segarkan
         </button>
       </div>
@@ -128,70 +188,48 @@ include __DIR__ . '/components/sidebar.php';
           </tr>
         </thead>
         <tbody>
-          <!-- Row 1 -->
-          <tr>
-            <td class="table-order-id" style="width: 130px;">#ADU-2026-028</td>
-            <td>
-              <div class="fw-bold text-main">Budi Santoso</div>
-              <div class="text-muted fs-xs">Wali Murid &bull; 08139281029</div>
-            </td>
-            <td class="table-cell-title text-wrap-cell">
-              <div class="fw-bold text-main mb-1">Penerangan Akses Parkir Gerbang Selatan</div>
-              <div class="text-muted fs-xs">Lampu penerangan di area parkir motor siswa gerbang selatan padam saat kegiatan ekstrakurikuler sore hari...</div>
-            </td>
-            <td><span class="badge bg-warning-subtle text-warning fw-bold">Sarpras</span></td>
-            <td>08 Okt 2026</td>
-            <td><span class="badge-table warning">Menunggu Respon</span></td>
-            <td>
-              <div class="d-flex justify-content-center gap-1">
-                <button type="button" class="table-btn-action" title="Tindak Lanjuti" onclick="tindakLanjutiAduan('#ADU-2026-028', 'Budi Santoso')"><i class="bi bi-reply-fill"></i></button>
-                <button type="button" class="table-btn-action" title="Tandai Selesai" onclick="selesaikanAduan(this, '#ADU-2026-028')"><i class="bi bi-check-lg"></i></button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Row 2 -->
-          <tr>
-            <td class="table-order-id" style="width: 130px;">#ADU-2026-027</td>
-            <td>
-              <div class="fw-bold text-main">Rina Wulandari</div>
-              <div class="text-muted fs-xs">Siswa Kelas XI RPL 2</div>
-            </td>
-            <td class="table-cell-title text-wrap-cell">
-              <div class="fw-bold text-main mb-1">Pendingin AC Lab Komputer 3 Kurang Dingin</div>
-              <div class="text-muted fs-xs">Unit pendingin ruangan di lab software nomor 3 sering mati otomatis saat dipakai praktik rendering aplikasi...</div>
-            </td>
-            <td><span class="badge bg-info-subtle text-info fw-bold">Fasilitas Lab</span></td>
-            <td>07 Okt 2026</td>
-            <td><span class="badge-table info">Proses Servis</span></td>
-            <td>
-              <div class="d-flex justify-content-center gap-1">
-                <button type="button" class="table-btn-action" title="Tindak Lanjuti" onclick="tindakLanjutiAduan('#ADU-2026-027', 'Rina Wulandari')"><i class="bi bi-reply-fill"></i></button>
-                <button type="button" class="table-btn-action" title="Tandai Selesai" onclick="selesaikanAduan(this, '#ADU-2026-027')"><i class="bi bi-check-lg"></i></button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Row 3 -->
-          <tr>
-            <td class="table-order-id" style="width: 130px;">#ADU-2026-026</td>
-            <td>
-              <div class="fw-bold text-main">Dra. Haryati</div>
-              <div class="text-muted fs-xs">Masyarakat Sekitar</div>
-            </td>
-            <td class="table-cell-title text-wrap-cell">
-              <div class="fw-bold text-main mb-1">Apresiasi Kebersihan Trotoar Depan Sekolah</div>
-              <div class="text-muted fs-xs">Terima kasih atas kepedulian tim kebersihan sekolah yang rutin membersihkan saluran air depan gerbang...</div>
-            </td>
-            <td><span class="badge bg-success-subtle text-success fw-bold">Apresiasi Publik</span></td>
-            <td>04 Okt 2026</td>
-            <td><span class="badge-table success">Selesai</span></td>
-            <td>
-              <div class="d-flex justify-content-center gap-1">
-                <button type="button" class="table-btn-action" title="Lihat Detail" onclick="alert('Tiket #ADU-2026-026 telah selesai dan telah diarsipkan.')"><i class="bi bi-eye"></i></button>
-              </div>
-            </td>
-          </tr>
+          <?php if (!empty($pengaduanList)): ?>
+            <?php foreach ($pengaduanList as $p): 
+              $badgeClass = match($p['status'] ?? 'Menunggu Respon') {
+                'Selesai' => 'success',
+                'Proses' => 'info',
+                default => 'warning'
+              };
+              $tglLapor = !empty($p['tanggal_lapor']) ? date('d M Y', strtotime($p['tanggal_lapor'])) : '-';
+            ?>
+            <tr data-id="<?= $p['id'] ?>">
+              <td class="table-order-id" style="width: 130px;"><?= htmlspecialchars($p['no_tiket'] ?? '#ADU-'.$p['id']) ?></td>
+              <td>
+                <div class="fw-bold text-main"><?= htmlspecialchars($p['nama_pelapor']) ?></div>
+                <div class="text-muted fs-xs"><?= htmlspecialchars($p['no_hp'] ?? $p['email'] ?? '-') ?></div>
+              </td>
+              <td class="table-cell-title text-wrap-cell" style="max-width: 300px;">
+                <div class="fw-bold text-main mb-1"><?= htmlspecialchars($p['subjek']) ?></div>
+                <div class="text-muted fs-xs text-truncate"><?= htmlspecialchars(substr($p['isi_pengaduan'], 0, 100)) ?>...</div>
+              </td>
+              <td><span class="badge bg-warning-subtle text-warning fw-bold"><?= htmlspecialchars($p['kategori']) ?></span></td>
+              <td><?= $tglLapor ?></td>
+              <td><span class="badge-table <?= $badgeClass ?>"><?= htmlspecialchars($p['status'] ?? 'Menunggu Respon') ?></span></td>
+              <td>
+                <div class="d-flex justify-content-center gap-1">
+                  <button type="button" class="table-btn-action" title="Tindak Lanjuti" onclick="tindakLanjutiAduan(<?= htmlspecialchars(json_encode($p)) ?>)">
+                    <i class="bi bi-reply-fill"></i>
+                  </button>
+                  <button type="button" class="table-btn-action" title="Tandai Selesai" onclick="selesaikanAduan(<?= $p['id'] ?>, '<?= htmlspecialchars(addslashes($p['no_tiket'] ?? '')) ?>')">
+                    <i class="bi bi-check-lg"></i>
+                  </button>
+                  <button type="button" class="table-btn-action delete" title="Hapus Laporan" onclick="hapusPengaduan(<?= $p['id'] ?>, '<?= htmlspecialchars(addslashes($p['no_tiket'] ?? '')) ?>')">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <tr>
+              <td colspan="7" class="text-center py-4 text-muted">Belum ada pengaduan atau aspirasi masuk.</td>
+            </tr>
+          <?php endif; ?>
         </tbody>
       </table>
     </div>
@@ -199,13 +237,12 @@ include __DIR__ . '/components/sidebar.php';
     <!-- Table Pagination -->
     <div class="table-footer-control">
       <div class="table-pagination-info">
-        Menampilkan <strong>1 - 3</strong> dari <strong>28</strong> Tiket Aspirasi &amp; Pengaduan
+        Menampilkan <strong><?= count($pengaduanList) ?></strong> Tiket Aspirasi &amp; Pengaduan
       </div>
       <div class="table-pagination-nav">
         <button class="btn-pagination-nav" disabled><i class="bi bi-chevron-left"></i></button>
         <button class="btn-pagination-nav active">1</button>
-        <button class="btn-pagination-nav">2</button>
-        <button class="btn-pagination-nav"><i class="bi bi-chevron-right"></i></button>
+        <button class="btn-pagination-nav" disabled><i class="bi bi-chevron-right"></i></button>
       </div>
     </div>
   </div>
@@ -226,45 +263,41 @@ include __DIR__ . '/components/sidebar.php';
       </div>
       <div class="modal-body">
         <form id="formResponPengaduan">
+          <input type="hidden" name="action" value="respon">
+          <input type="hidden" name="id" id="modalId">
           <div class="row g-3">
             <div class="col-md-6">
-              <label class="form-label-custom" for="modalTiketId">Nomor Tiket Aduan</label>
+              <label class="form-label-custom">Nomor Tiket Aduan</label>
               <input type="text" class="form-control-custom" id="modalTiketId" readonly>
             </div>
             <div class="col-md-6">
-              <label class="form-label-custom" for="modalNamaPelapor">Nama Pelapor</label>
+              <label class="form-label-custom">Nama Pelapor</label>
               <input type="text" class="form-control-custom" id="modalNamaPelapor" readonly>
             </div>
 
+            <div class="col-12">
+              <label class="form-label-custom">Isi Laporan Pengaduan</label>
+              <textarea class="form-control-custom" id="modalIsiAduan" rows="3" readonly style="background:#f8f9fa;"></textarea>
+            </div>
+
             <div class="col-md-6">
-              <label class="form-label-custom" for="modalStatusAduan">Pembaruan Status Penanganan</label>
-              <select class="form-select-custom" id="modalStatusAduan">
+              <label class="form-label-custom">Pembaruan Status Penanganan</label>
+              <select class="form-select-custom" name="status" id="modalStatusAduan">
                 <option value="Proses">Sedang Dalam Penanganan Tim Terkait</option>
-                <option value="Selesai" selected>Selesai Ditindaklanjuti Paripurna</option>
+                <option value="Selesai">Selesai Ditindaklanjuti Paripurna</option>
+                <option value="Menunggu Respon">Menunggu Respon</option>
                 <option value="Tolak">Diarsipkan (Laporan Tidak Relevan)</option>
               </select>
             </div>
             <div class="col-md-6">
-              <label class="form-label-custom" for="modalUnitTerkait">Unit / Penanggung Jawab Terkait</label>
-              <select class="form-select-custom" id="modalUnitTerkait">
-                <option value="Sarpras" selected>Waka Sarana &amp; Prasarana</option>
-                <option value="Kurikulum">Waka Kurikulum &amp; Pembelajaran</option>
-                <option value="Kesiswaan">Waka Kesiswaan &amp; BK</option>
-                <option value="Humas">Humas &amp; Hubungan Industri</option>
-              </select>
+              <label class="form-label-custom">Unit Penanggung Jawab</label>
+              <input type="text" class="form-control-custom" value="Tim Kesiswaan / Sarpras SMKN 2" readonly>
             </div>
 
             <div class="col-12">
               <label class="form-label-custom" for="modalCatatanRespon">Catatan Tanggapan &amp; Tindakan Riil</label>
-              <textarea class="form-control-custom" id="modalCatatanRespon" rows="4" placeholder="Tuliskan keterangan tindakan perbaikan yang telah dilakukan oleh tim sekolah..." required></textarea>
-              <div class="form-text-custom">Pesan tanggapan ini akan dikirimkan secara otomatis kepada nomor kontak pelapor.</div>
-            </div>
-
-            <div class="col-12">
-              <div class="form-switch-custom">
-                <input class="form-switch-input-custom" type="checkbox" id="checkNotifWa" checked>
-                <label class="form-label-custom mb-0" for="checkNotifWa">Kirimkan notifikasi pembaharuan langsung via SMS / WhatsApp Pelapor</label>
-              </div>
+              <textarea class="form-control-custom" name="tanggapan" id="modalCatatanRespon" rows="4" placeholder="Tuliskan keterangan tindakan perbaikan yang telah dilakukan oleh tim sekolah..." required></textarea>
+              <div class="form-text-custom">Pesan tanggapan ini tersimpan di sistem pelaporan resmi.</div>
             </div>
           </div>
         </form>
@@ -272,7 +305,7 @@ include __DIR__ . '/components/sidebar.php';
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
         <button type="button" class="btn btn-success btn-sm d-flex align-items-center gap-2" onclick="kirimResponAduan()">
-          <i class="bi bi-send-fill"></i> Kirim Tindak Lanjut
+          <i class="bi bi-send-fill"></i> Simpan Tindak Lanjut
         </button>
       </div>
     </div>
@@ -280,12 +313,13 @@ include __DIR__ . '/components/sidebar.php';
 </div>
 
 <script>
-let currentTiketBtn = null;
-
-function tindakLanjutiAduan(tiket, pelapor) {
-  document.getElementById('modalTiketId').value = tiket;
-  document.getElementById('modalNamaPelapor').value = pelapor;
-  document.getElementById('modalCatatanRespon').value = 'Laporan telah kami terima dan tim terkait telah melakukan peninjauan lapangan serta perbaikan yang dibutuhkan.';
+function tindakLanjutiAduan(data) {
+  document.getElementById('modalId').value = data.id || '';
+  document.getElementById('modalTiketId').value = data.no_tiket || ('#ADU-' + data.id);
+  document.getElementById('modalNamaPelapor').value = data.nama_pelapor || '';
+  document.getElementById('modalIsiAduan').value = (data.subjek ? (data.subjek + '\n\n') : '') + (data.isi_pengaduan || '');
+  document.getElementById('modalStatusAduan').value = data.status || 'Proses';
+  document.getElementById('modalCatatanRespon').value = data.tanggapan || 'Laporan telah kami terima dan tim terkait telah melakukan peninjauan lapangan serta perbaikan yang dibutuhkan.';
 
   const modalEl = document.getElementById('modalTindakLanjutPengaduan');
   const modal = new bootstrap.Modal(modalEl);
@@ -293,26 +327,59 @@ function tindakLanjutiAduan(tiket, pelapor) {
 }
 
 function kirimResponAduan() {
-  const tiket = document.getElementById('modalTiketId').value;
-  const status = document.getElementById('modalStatusAduan').value;
-  alert('Tanggapan untuk tiket ' + tiket + ' berhasil dikirim ke pelapor dengan status: ' + status + '!');
-  
-  const modalEl = document.getElementById('modalTindakLanjutPengaduan');
-  const modal = bootstrap.Modal.getInstance(modalEl);
-  if (modal) modal.hide();
+  const form = document.getElementById('formResponPengaduan');
+  const formData = new FormData(form);
+
+  fetch('kelola-pengaduan.php', { method: 'POST', body: formData })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert(data.message);
+      location.reload();
+    } else {
+      alert('Gagal: ' + data.message);
+    }
+  })
+  .catch(() => alert('Terjadi kesalahan jaringan.'));
 }
 
-function selesaikanAduan(btn, tiket) {
+function selesaikanAduan(id, tiket) {
   if (confirm('Tandai tiket ' + tiket + ' sebagai SELESAI ditindaklanjuti?')) {
-    const row = btn.closest('tr');
-    if (row) {
-      const badge = row.querySelector('.badge-table');
-      if (badge) {
-        badge.className = 'badge-table success';
-        badge.textContent = 'Selesai';
+    const formData = new FormData();
+    formData.append('action', 'selesai');
+    formData.append('id', id);
+
+    fetch('kelola-pengaduan.php', { method: 'POST', body: formData })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message);
+        location.reload();
+      } else {
+        alert('Gagal: ' + data.message);
       }
-      alert('Tiket ' + tiket + ' telah berhasil ditandai selesai.');
-    }
+    })
+    .catch(() => alert('Terjadi kesalahan jaringan.'));
+  }
+}
+
+function hapusPengaduan(id, tiket) {
+  if (confirm('Hapus laporan tiket ' + tiket + '?')) {
+    const formData = new FormData();
+    formData.append('action', 'hapus');
+    formData.append('id', id);
+
+    fetch('kelola-pengaduan.php', { method: 'POST', body: formData })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message);
+        location.reload();
+      } else {
+        alert('Gagal: ' + data.message);
+      }
+    })
+    .catch(() => alert('Terjadi kesalahan jaringan.'));
   }
 }
 

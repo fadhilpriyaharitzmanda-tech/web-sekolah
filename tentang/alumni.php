@@ -1,3 +1,14 @@
+<?php
+require_once __DIR__ . '/../config/database.php';
+$alumniList = [];
+try {
+    $pdo = getDbConnection();
+    $stmt = $pdo->query("SELECT * FROM testimoni WHERE status = 'Aktif' ORDER BY urutan ASC, id DESC");
+    $alumniList = $stmt->fetchAll();
+} catch (Exception $e) {
+    //
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -114,72 +125,38 @@
 
     <section class="container">
       <div class="alumni-grid" data-animate>
-        <div class="alumni-card">
-          <div class="alumni-header">
-            <img src="https://ui-avatars.com/api/?name=Ahmad+Fauzi&background=4ade80&color=fff&size=80" alt="Ahmad Fauzi">
-            <div class="alumni-info">
-              <h3>Ahmad Fauzi</h3>
-              <span class="angkatan">RPL - 2020</span>
+        <?php if (!empty($alumniList)): ?>
+          <?php foreach ($alumniList as $a): 
+            $fotoUrl = !empty($a['foto']) ? (str_starts_with($a['foto'], 'http') ? $a['foto'] : '../' . $a['foto']) : 'https://ui-avatars.com/api/?name=' . urlencode($a['nama']) . '&background=4ade80&color=fff&size=80';
+            $pekerjaan = $a['profesi'] ?? $a['perusahaan'] ?? '';
+          ?>
+            <div class="alumni-card">
+              <div class="alumni-header">
+                <img src="<?= htmlspecialchars($fotoUrl) ?>" alt="<?= htmlspecialchars($a['nama']) ?>">
+                <div class="alumni-info">
+                  <h3><?= htmlspecialchars($a['nama']) ?></h3>
+                  <span class="angkatan"><?= htmlspecialchars($a['jurusan']) ?> - <?= htmlspecialchars($a['tahun_lulus']) ?></span>
+                </div>
+              </div>
+              <?php if (!empty($pekerjaan)): ?>
+                <p class="posisi"><?= htmlspecialchars($pekerjaan) ?></p>
+              <?php endif; ?>
+              <p class="testi">"<?= htmlspecialchars($a['testimoni']) ?>"</p>
             </div>
-          </div>
-          <p class="posisi">Fullstack Developer di PT. Tech Innovasi</p>
-          <p class="testi">"Ilmu yang saya dapat di SMKN 2 Karanganyar benar-benar menjadi fondasi karir saya di dunia teknologi."</p>
-        </div>
-        <div class="alumni-card">
-          <div class="alumni-header">
-            <img src="https://ui-avatars.com/api/?name=Dewi+Sartika&background=60a5fa&color=fff&size=80" alt="Dewi Sartika">
-            <div class="alumni-info">
-              <h3>Dewi Sartika</h3>
-              <span class="angkatan">M - 2019</span>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <div class="alumni-card">
+            <div class="alumni-header">
+              <img src="https://ui-avatars.com/api/?name=Ahmad+Fauzi&background=4ade80&color=fff&size=80" alt="Ahmad Fauzi">
+              <div class="alumni-info">
+                <h3>Ahmad Fauzi</h3>
+                <span class="angkatan">RPL - 2020</span>
+              </div>
             </div>
+            <p class="posisi">Fullstack Developer di PT. Tech Innovasi</p>
+            <p class="testi">"Ilmu yang saya dapat di SMKN 2 Karanganyar benar-benar menjadi fondasi karir saya di dunia teknologi."</p>
           </div>
-          <p class="posisi">Teknisi Mesin CNC di PT. Astra Honda</p>
-          <p class="testi">"Praktik langsung dengan mesin industri membuat saya tidak kaget saat terjun ke dunia kerja."</p>
-        </div>
-        <div class="alumni-card">
-          <div class="alumni-header">
-            <img src="https://ui-avatars.com/api/?name=Rizky+Ramadhan&background=fb923c&color=fff&size=80" alt="Rizky Ramadhan">
-            <div class="alumni-info">
-              <h3>Rizky Ramadhan</h3>
-              <span class="angkatan">TL - 2021</span>
-            </div>
-          </div>
-          <p class="posisi">Supervisor Produksi di PT. Sritex</p>
-          <p class="testi">"Dari SMKN 2 saya belajar disiplin dan ketelitian yang sangat berguna di industri tekstil."</p>
-        </div>
-        <div class="alumni-card">
-          <div class="alumni-header">
-            <img src="https://ui-avatars.com/api/?name=Putri+Indah&background=f87171&color=fff&size=80" alt="Putri Indah">
-            <div class="alumni-info">
-              <h3>Putri Indah</h3>
-              <span class="angkatan">TO - 2020</span>
-            </div>
-          </div>
-          <p class="posisi">Teknisi Otomotif di Bengkel Resmi Toyota</p>
-          <p class="testi">"Guru-guru sangat berpengalaman dan membimbing saya hingga mampu bersaing di industri otomotif."</p>
-        </div>
-        <div class="alumni-card">
-          <div class="alumni-header">
-            <img src="https://ui-avatars.com/api/?name=Bagas+Pratama&background=a78bfa&color=fff&size=80" alt="Bagas Pratama">
-            <div class="alumni-info">
-              <h3>Bagas Pratama</h3>
-              <span class="angkatan">RPL - 2019</span>
-            </div>
-          </div>
-          <p class="posisi">Mobile Developer di Gojek</p>
-          <p class="testi">"Berkat dasar pemrograman yang kuat dari SMK, saya bisa melanjutkan ke jenjang karir impian."</p>
-        </div>
-        <div class="alumni-card">
-          <div class="alumni-header">
-            <img src="https://ui-avatars.com/api/?name=Sinta+Dewi&background=34d399&color=fff&size=80" alt="Sinta Dewi">
-            <div class="alumni-info">
-              <h3>Sinta Dewi</h3>
-              <span class="angkatan">M - 2018</span>
-            </div>
-          </div>
-          <p class="posisi">Quality Control di PT. Pindad</p>
-          <p class="testi">"Pengalaman praktik industri yang diberikan sekolah sangat membangun mental kerja saya."</p>
-        </div>
+        <?php endif; ?>
       </div>
     </section>
   </main>

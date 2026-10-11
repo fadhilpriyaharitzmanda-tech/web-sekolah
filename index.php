@@ -4,9 +4,17 @@ try {
     $pdo = getDbConnection();
     $heroSlides = $pdo->query("SELECT * FROM hero_banners WHERE status = 'Aktif' ORDER BY urutan ASC, id ASC")->fetchAll(PDO::FETCH_ASSOC);
     $ctaBanner = $pdo->query("SELECT * FROM cta_banners LIMIT 1")->fetch(PDO::FETCH_ASSOC);
+    $statsList = $pdo->query("SELECT * FROM statistik_sekolah ORDER BY urutan ASC, id ASC")->fetchAll(PDO::FETCH_ASSOC);
+    $jurusanList = $pdo->query("SELECT * FROM jurusan WHERE status = 'Aktif' ORDER BY urutan ASC, id ASC")->fetchAll(PDO::FETCH_ASSOC);
+    $beritaList = $pdo->query("SELECT * FROM berita WHERE status = 'Publikasi' AND tampil_landing = 1 ORDER BY tanggal DESC, id DESC LIMIT 3")->fetchAll(PDO::FETCH_ASSOC);
+    $testiList = $pdo->query("SELECT * FROM testimoni WHERE status = 'Aktif' ORDER BY urutan ASC, id DESC LIMIT 3")->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
     $heroSlides = [];
     $ctaBanner = null;
+    $statsList = [];
+    $jurusanList = [];
+    $beritaList = [];
+    $testiList = [];
 }
 ?>
 <!DOCTYPE html>
@@ -16,7 +24,7 @@ try {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SMKN 2 Karanganyar</title>
-  <link rel="stylesheet" href="css/style.css?v=3">
+  <link rel="stylesheet" href="css/style.css?v=<?= time() ?>">
   <style>
     .testi-section {
       padding: 5rem 0;
@@ -98,7 +106,7 @@ try {
       <div class="hero-slides">
         <?php if (!empty($heroSlides)): ?>
           <?php foreach ($heroSlides as $idx => $slide): ?>
-            <div class="hero-slide <?= ($idx === 0) ? 'active' : '' ?>">
+            <div class="hero-slide <?= ($idx === 0) ? 'active' : '' ?>" data-slide-index="<?= $idx ?>" data-urutan="<?= htmlspecialchars($slide['urutan']) ?>">
               <div class="hero-bg">
                 <?php 
                   $imgSrc = $slide['gambar'];
@@ -118,13 +126,27 @@ try {
                   <h1 class="hero-title"><?= htmlspecialchars($slide['judul']) ?></h1>
                   <p class="hero-desc"><?= htmlspecialchars($slide['deskripsi']) ?></p>
                   <div class="hero-actions">
-                    <a href="#program" class="btn-primary text-decoration-none">
-                      Explore Programs
-                      <span class="material-symbols-outlined icon-sm">arrow_forward</span>
-                    </a>
-                    <a href="#profil" class="btn-outline-light text-decoration-none">
-                      About Us
-                    </a>
+                    <?php if (!empty($slide['tombol1_teks'])): ?>
+                      <a href="<?= htmlspecialchars(!empty($slide['tombol1_link']) ? $slide['tombol1_link'] : '#program') ?>" class="btn-primary text-decoration-none">
+                        <?= htmlspecialchars($slide['tombol1_teks']) ?>
+                        <span class="material-symbols-outlined icon-sm">arrow_forward</span>
+                      </a>
+                    <?php else: ?>
+                      <a href="#program" class="btn-primary text-decoration-none">
+                        Explore Programs
+                        <span class="material-symbols-outlined icon-sm">arrow_forward</span>
+                      </a>
+                    <?php endif; ?>
+
+                    <?php if (!empty($slide['tombol2_teks'])): ?>
+                      <a href="<?= htmlspecialchars(!empty($slide['tombol2_link']) ? $slide['tombol2_link'] : '#profil') ?>" class="btn-outline-light text-decoration-none">
+                        <?= htmlspecialchars($slide['tombol2_teks']) ?>
+                      </a>
+                    <?php else: ?>
+                      <a href="#profil" class="btn-outline-light text-decoration-none">
+                        About Us
+                      </a>
+                    <?php endif; ?>
                   </div>
                 </div>
               </div>
@@ -132,7 +154,7 @@ try {
           <?php endforeach; ?>
         <?php else: ?>
           <!-- Fallback Slide 1 -->
-          <div class="hero-slide active">
+          <div class="hero-slide active" data-slide-index="0" data-urutan="1">
             <div class="hero-bg">
               <img src="https://lh3.googleusercontent.com/aida/AP1WRLvevxdfR6XhlXMEbZsdNFg10EUtUpgrltceK3RxVnLUp4je9-02tpF3KxuC3_lR99RDkzIFrCtl9gtDzZsUxtiXJ2gRJZrzQfIXDQeJr01oC09gcuwlzpf7_icfVnrxiwqIM4tNwHV4haL6_qaADuG3Tixo9rWsjHiV107oBe-djyjj5fpl30PhtbVne_-_hz5dbYgA33qFDs3Z3wM_cFYn3jnaRUrCheQVAOcB9uUdAcBdvEC_oYf-G_Q" alt="Gedung SMKN 2 Karanganyar">
             </div>
@@ -142,11 +164,13 @@ try {
                 <h1 class="hero-title">Pusat Unggulan Pendidikan Vokasi</h1>
                 <p class="hero-desc">Membentuk tenaga kerja profesional, kompeten, dan siap bersaing di era industri global melalui kurikulum berbasis teknologi.</p>
                 <div class="hero-actions">
-                  <button class="btn-primary">
+                  <a href="#program" class="btn-primary text-decoration-none">
                     Explore Programs
                     <span class="material-symbols-outlined icon-sm">arrow_forward</span>
-                  </button>
-                  <button class="btn-outline-light">About Us</button>
+                  </a>
+                  <a href="#profil" class="btn-outline-light text-decoration-none">
+                    About Us
+                  </a>
                 </div>
               </div>
             </div>
@@ -155,19 +179,19 @@ try {
       </div>
 
       <!-- Carousel Controls -->
-      <button class="hero-arrow hero-arrow-left" aria-label="Previous slide">
+      <button class="hero-arrow hero-arrow-left" aria-label="Previous slide" title="Slide Sebelumnya">
         <span class="material-symbols-outlined">chevron_left</span>
       </button>
-      <button class="hero-arrow hero-arrow-right" aria-label="Next slide">
+      <button class="hero-arrow hero-arrow-right" aria-label="Next slide" title="Slide Berikutnya">
         <span class="material-symbols-outlined">chevron_right</span>
       </button>
 
       <div class="hero-dots">
         <?php 
-          $slideCount = !empty($heroSlides) ? count($heroSlides) : 3;
+          $slideCount = !empty($heroSlides) ? count($heroSlides) : 1;
           for ($d = 0; $d < $slideCount; $d++): 
         ?>
-          <button class="hero-dot <?= ($d === 0) ? 'active' : '' ?>" aria-label="Slide <?= $d + 1 ?>"></button>
+          <button class="hero-dot <?= ($d === 0) ? 'active' : '' ?>" aria-label="Slide <?= $d + 1 ?>" data-slide-target="<?= $d ?>"></button>
         <?php endfor; ?>
       </div>
     </section>
@@ -176,22 +200,19 @@ try {
     <section class="stats-section">
       <div class="container">
         <div class="stats-grid">
-          <div class="stat-item">
-            <p class="stat-number">2500+</p>
-            <p class="stat-label">Siswa Aktif</p>
-          </div>
-          <div class="stat-item">
-            <p class="stat-number">45+</p>
-            <p class="stat-label">Partner Industri</p>
-          </div>
-          <div class="stat-item">
-            <p class="stat-number">100%</p>
-            <p class="stat-label">Kurikulum Industri</p>
-          </div>
-          <div class="stat-item">
-            <p class="stat-number">7+</p>
-            <p class="stat-label">Eskul Prestasi</p>
-          </div>
+          <?php if (!empty($statsList)): ?>
+            <?php foreach ($statsList as $st): ?>
+              <div class="stat-item">
+                <p class="stat-number"><?= htmlspecialchars($st['nilai']) ?></p>
+                <p class="stat-label"><?= htmlspecialchars($st['label']) ?></p>
+              </div>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <div class="stat-item"><p class="stat-number">2500+</p><p class="stat-label">Siswa Aktif</p></div>
+            <div class="stat-item"><p class="stat-number">45+</p><p class="stat-label">Partner Industri</p></div>
+            <div class="stat-item"><p class="stat-number">100%</p><p class="stat-label">Kurikulum Industri</p></div>
+            <div class="stat-item"><p class="stat-number">7+</p><p class="stat-label">Eskul Prestasi</p></div>
+          <?php endif; ?>
         </div>
       </div>
     </section>
@@ -210,42 +231,30 @@ try {
       </div>
 
       <div class="majors-grid">
-        <a class="major-card" href="#" style="--mc: #4ade80;">
-          <div class="mc-img">
-            <img src="images/3d-rpl.png" alt="Rekayasa Perangkat Lunak">
-          </div>
-          <div class="mc-body">
-            <h3>Rekayasa Perangkat Lunak</h3>
-            <p>Mempelajari tentang pengembangan perangkat lunak termasuk pembuatan, pemeliharaan, dan manajemen organisasi.</p>
-          </div>
-        </a>
-        <a class="major-card" href="#" style="--mc: #60a5fa;">
-          <div class="mc-img">
-            <img src="images/3d-mesin.png" alt="Teknik Pemesinan">
-          </div>
-          <div class="mc-body">
-            <h3>Teknik Pemesinan</h3>
-            <p>Mempelajari tentang cara memproduksi barang teknik dan menggunakan mesin konvensional maupun CNC.</p>
-          </div>
-        </a>
-        <a class="major-card" href="#" style="--mc: #fb923c;">
-          <div class="mc-img">
-            <img src="images/3d-tekstil.png" alt="Teknik Pembuatan Kain">
-          </div>
-          <div class="mc-body">
-            <h3>Teknik Pembuatan Kain</h3>
-            <p>Mempelajari tentang desain tenun, mesin pembuatan kain, pemeliharaan, perawatan, dan pengendalian mutunya.</p>
-          </div>
-        </a>
-        <a class="major-card" href="#" style="--mc: #f87171;">
-          <div class="mc-img">
-            <img src="images/3d-oto.png" alt="Teknik Ototronik">
-          </div>
-          <div class="mc-body">
-            <h3>Teknik Ototronik</h3>
-            <p>Mempelajari tentang otomotif dalam penguasaan teknologi elektronik dan kontrol pada kendaraan bermotor.</p>
-          </div>
-        </a>
+        <?php if (!empty($jurusanList)): ?>
+          <?php foreach ($jurusanList as $jur): 
+            $warnaJur = !empty($jur['warna']) ? $jur['warna'] : '#4ade80';
+            $imgJur = !empty($jur['gambar']) ? $jur['gambar'] : 'images/3d-rpl.png';
+            if (strpos($imgJur, 'http://') !== 0 && strpos($imgJur, 'https://') !== 0) {
+              $imgJur = ltrim($imgJur, '/');
+            }
+          ?>
+            <a class="major-card" href="akademik/jurusan.php" style="--mc: <?= htmlspecialchars($warnaJur) ?>;">
+              <div class="mc-img">
+                <img src="<?= htmlspecialchars($imgJur) ?>" alt="<?= htmlspecialchars($jur['nama']) ?>" onerror="this.src='images/3d-rpl.png'">
+              </div>
+              <div class="mc-body">
+                <h3><?= htmlspecialchars($jur['nama']) ?></h3>
+                <p><?= htmlspecialchars($jur['deskripsi']) ?></p>
+              </div>
+            </a>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <a class="major-card" href="akademik/jurusan.php" style="--mc: #4ade80;">
+            <div class="mc-img"><img src="images/3d-rpl.png" alt="Rekayasa Perangkat Lunak"></div>
+            <div class="mc-body"><h3>Rekayasa Perangkat Lunak</h3><p>Mempelajari pengembangan aplikasi web modern, mobile, dan sistem industri.</p></div>
+          </a>
+        <?php endif; ?>
       </div>
     </section>
 
@@ -257,53 +266,33 @@ try {
           <h2 class="section-title mt-2">Update &amp; Berita Terbaru</h2>
         </div>
         <div class="news-grid" data-animate>
-          <article class="news-card" data-kategori="Prestasi">
-            <div class="news-card-img-wrap">
-              <img class="news-card-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1oQITlQxReSzB_iV4d4_8TBuxQ-GZNqW_LJJjMb_ludZiWGYQuAMtmFGechN-618UO8F3DFV6DcXRbgUvE-AnSJQnbZDfzclQ94bXkvN_3t7lu8TUhGv55Xu_CsZ_Ar0Vw6clauRRop2rUJrgG-VTc7TO6_82q_kpoZOOEqAcPzBkeEJH0XbCwWYblItMIRtd7q-3Nv0W8JNn_HKY_qbW_CTlPqmTo2GMs6Crt0mEt2A-jlIe7TQ8ARPYrLJoPajF0a56BpFTX8M" alt="Prestasi">
-              <span class="news-card-tag">PRESTASI</span>
-            </div>
-            <div class="news-card-body">
-              <time class="news-date">12 Oktober 2024</time>
-              <h3 class="news-card-title">Juara 1 Lomba Kompetensi Siswa (LKS) Tingkat Provinsi</h3>
-              <p class="news-card-desc">Siswa SMKN 2 Karanganyar kembali menorehkan prestasi membanggakan di bidang Robotika dan Otomasi Industri tingkat wilayah...</p>
-              <a class="news-card-link" href="#">
-                Baca Selengkapnya
-                <span class="material-symbols-outlined icon-sm">arrow_forward</span>
-              </a>
-            </div>
-          </article>
-
-          <article class="news-card" data-kategori="Kerjasama">
-            <div class="news-card-img-wrap">
-              <img class="news-card-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAR6u9lB4fwZ1GSdURK-YFBsWlOlcol9arlvZp64eAHYjdMp88kK8UnK6vg4AJxyV1HqsCTvsR_9pmFTgwmz6xm2wd7zadqLJRajyQziTajNEnv6yxPcT7oSuXLKIubghNObb0IX8CZrPM5KZ-YBgEk64E3Z_UGplcSFXeeQnqag_4FFovAx2r5CVNDIuj38wTXu9VSvXsHubWi318mTGNmUcQWXcffb6iJc8_uWszQLuAY-FbB0sU4LQILmzzjC46a1H6-wpbNW-8" alt="Kerjasama">
-              <span class="news-card-tag">KERJASAMA</span>
-            </div>
-            <div class="news-card-body">
-              <time class="news-date">08 Oktober 2024</time>
-              <h3 class="news-card-title">MoU Baru Bersama PT. Astra International Tbk</h3>
-              <p class="news-card-desc">Peningkatan kualitas lulusan melalui program link and match kelas industri dan sertifikasi internasional bagi para pengajar...</p>
-              <a class="news-card-link" href="#">
-                Baca Selengkapnya
-                <span class="material-symbols-outlined icon-sm">arrow_forward</span>
-              </a>
-            </div>
-          </article>
-
-          <article class="news-card" data-kategori="Event">
-            <div class="news-card-img-wrap">
-              <img class="news-card-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3_aUhUZkEJ9ijlY6KCG87Z7SUfq4-IRaNqNP95zosXcQaSGJF_KFJCp_jJB3EjHKGWm8QrU7IM7Q3d3RXqe0Ku8G407h5lV5jljQTYgD1wn3Tz_y6LeyVlTFQ6AfvYpU8F-pL0h-wcXyC83wkTibzzXMB7DycGWa0RKlVrgpztiKVutAAM05V_gSVhkfwhTbsICB3iN9tI4FS1LsdLDrrQ7vg4a498iLmmByBp3JdDsfnl2oAMJOrQIbqIIQUPoQmN4ghmver2V0" alt="Workshop">
-              <span class="news-card-tag">EVENT</span>
-            </div>
-            <div class="news-card-body">
-              <time class="news-date">05 Oktober 2024</time>
-              <h3 class="news-card-title">Workshop Transformasi Digital 4.0 Bagi Guru Vokasi</h3>
-              <p class="news-card-desc">Mengintegrasikan teknologi Internet of Things (IoT) ke dalam modul pembelajaran praktik di semua program keahlian teknik...</p>
-              <a class="news-card-link" href="#">
-                Baca Selengkapnya
-                <span class="material-symbols-outlined icon-sm">arrow_forward</span>
-              </a>
-            </div>
-          </article>
+          <?php if (!empty($beritaList)): ?>
+            <?php foreach ($beritaList as $b): 
+              $bImg = !empty($b['gambar']) ? $b['gambar'] : 'images/gedung.jpg';
+              if (strpos($bImg, 'http://') !== 0 && strpos($bImg, 'https://') !== 0) {
+                $bImg = ltrim($bImg, '/');
+              }
+              $bDateFormatted = !empty($b['tanggal']) ? date('d F Y', strtotime($b['tanggal'])) : '';
+            ?>
+              <article class="news-card" data-kategori="<?= htmlspecialchars($b['kategori']) ?>">
+                <div class="news-card-img-wrap">
+                  <img class="news-card-img" src="<?= htmlspecialchars($bImg) ?>" alt="<?= htmlspecialchars($b['judul']) ?>" onerror="this.src='images/gedung.jpg'">
+                  <span class="news-card-tag"><?= strtoupper(htmlspecialchars($b['kategori'])) ?></span>
+                </div>
+                <div class="news-card-body">
+                  <time class="news-date"><?= htmlspecialchars($bDateFormatted) ?></time>
+                  <h3 class="news-card-title"><?= htmlspecialchars($b['judul']) ?></h3>
+                  <p class="news-card-desc"><?= htmlspecialchars($b['ringkasan']) ?></p>
+                  <a class="news-card-link" href="informasi/berita.php">
+                    Baca Selengkapnya
+                    <span class="material-symbols-outlined icon-sm">arrow_forward</span>
+                  </a>
+                </div>
+              </article>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <p class="text-center text-muted">Belum ada berita yang dipublikasikan.</p>
+          <?php endif; ?>
         </div>
       </div>
     </section>
@@ -322,36 +311,27 @@ try {
           </a>
         </div>
         <div class="testi-grid">
-          <div class="testi-card">
-            <div class="testi-header">
-              <img src="https://ui-avatars.com/api/?name=Ahmad+Fauzi&background=4ade80&color=fff&size=80" alt="Ahmad Fauzi">
-              <div>
-                <div class="testi-name">Ahmad Fauzi</div>
-                <div class="testi-info">RPL - 2020 | Fullstack Developer</div>
+          <?php if (!empty($testiList)): ?>
+            <?php foreach ($testiList as $t): 
+              $tFoto = !empty($t['foto']) ? $t['foto'] : ('https://ui-avatars.com/api/?name=' . urlencode($t['nama']) . '&background=4ade80&color=fff&size=80');
+              if (strpos($tFoto, 'http://') !== 0 && strpos($tFoto, 'https://') !== 0) {
+                $tFoto = ltrim($tFoto, '/');
+              }
+            ?>
+              <div class="testi-card">
+                <div class="testi-header">
+                  <img src="<?= htmlspecialchars($tFoto) ?>" alt="<?= htmlspecialchars($t['nama']) ?>" onerror="this.src='https://ui-avatars.com/api/?name=<?= urlencode($t['nama']) ?>&background=4ade80&color=fff&size=80'">
+                  <div>
+                    <div class="testi-name"><?= htmlspecialchars($t['nama']) ?></div>
+                    <div class="testi-info"><?= htmlspecialchars($t['jurusan']) ?> - <?= htmlspecialchars($t['angkatan']) ?> | <?= htmlspecialchars($t['pekerjaan']) ?> <?= !empty($t['perusahaan']) ? 'di ' . htmlspecialchars($t['perusahaan']) : '' ?></div>
+                  </div>
+                </div>
+                <blockquote><?= htmlspecialchars($t['testimoni']) ?></blockquote>
               </div>
-            </div>
-            <blockquote>Ilmu yang saya dapat di SMKN 2 Karanganyar benar-benar menjadi fondasi karir saya di dunia teknologi. Praktik langsung dengan kurikulum industri membuat saya siap kerja.</blockquote>
-          </div>
-          <div class="testi-card">
-            <div class="testi-header">
-              <img src="https://ui-avatars.com/api/?name=Dewi+Sartika&background=60a5fa&color=fff&size=80" alt="Dewi Sartika">
-              <div>
-                <div class="testi-name">Dewi Sartika</div>
-                <div class="testi-info">M - 2019 | Teknisi CNC di Astra Honda</div>
-              </div>
-            </div>
-            <blockquote>Praktik langsung dengan mesin industri membuat saya tidak kaget saat terjun ke dunia kerja. Guru-guru membimbing dengan sabar hingga saya benar-benar kompeten.</blockquote>
-          </div>
-          <div class="testi-card">
-            <div class="testi-header">
-              <img src="https://ui-avatars.com/api/?name=Rizky+Ramadhan&background=fb923c&color=fff&size=80" alt="Rizky Ramadhan">
-              <div>
-                <div class="testi-name">Rizky Ramadhan</div>
-                <div class="testi-info">TL - 2021 | Supervisor Produksi di PT. Sritex</div>
-              </div>
-            </div>
-            <blockquote>Dari SMKN 2 saya belajar disiplin dan ketelitian yang sangat berguna di industri tekstil. Bekal soft skill yang diajarkan benar-benar membedakan saya di tempat kerja.</blockquote>
-          </div>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <p class="text-center text-muted">Belum ada testimoni alumni.</p>
+          <?php endif; ?>
         </div>
       </div>
     </section>
@@ -381,7 +361,7 @@ try {
   <?php include 'components/backtotop.html'; ?>
 
   <script src="js/include.js?v=2"></script>
-  <script src="js/index.js?v=1"></script>
+  <script src="js/index.js?v=<?= time() ?>"></script>
   <script>initPage('index');</script>
 </body>
 

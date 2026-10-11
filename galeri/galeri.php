@@ -1,3 +1,12 @@
+<?php
+require_once __DIR__ . '/../config/database.php';
+try {
+    $pdo = getDbConnection();
+    $galeriList = $pdo->query("SELECT * FROM galeri ORDER BY tanggal DESC, id DESC")->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $galeriList = [];
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -120,6 +129,26 @@
         </div>
 
         <div class="galeri-grid" id="galeriGrid">
+          <?php if (!empty($galeriList)): ?>
+            <?php foreach ($galeriList as $item): 
+              $imgSrc = !empty($item['gambar']) ? $item['gambar'] : 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=600&auto=format&fit=crop';
+              if (strpos($imgSrc, 'http://') !== 0 && strpos($imgSrc, 'https://') !== 0) {
+                $imgSrc = '../' . ltrim($imgSrc, '/');
+              }
+              $kat = strtolower(trim($item['kategori']));
+            ?>
+              <div class="galeri-item" data-kategori="<?= htmlspecialchars($kat) ?>">
+                <span class="galeri-tag"><?= htmlspecialchars(ucfirst($kat)) ?></span>
+                <img src="<?= htmlspecialchars($imgSrc) ?>" alt="<?= htmlspecialchars($item['judul']) ?>" onerror="this.src='https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=600&auto=format&fit=crop'">
+                <div class="galeri-item-overlay">
+                  <span><?= htmlspecialchars($item['judul']) ?></span>
+                  <?php if (!empty($item['deskripsi'])): ?>
+                    <small><?= htmlspecialchars($item['deskripsi']) ?></small>
+                  <?php endif; ?>
+                </div>
+              </div>
+            <?php endforeach; ?>
+          <?php else: ?>
           <div class="galeri-item" data-kategori="akademik">
             <span class="galeri-tag">Akademik</span>
             <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_SXYPcGmyuDDk27y1MY2vNOUJUXjLe0GaVZXZQg228B_uZmwgt-UA0fqW0AQ2W_cNG1hPAelMnQ2Qv-VuxQ1EgsEyotraqSTQnS1Tc10wrrnH1oF-Ke2D7CIgBIoejjMFqsVWwBYLUkkVfNfOSrBZf8OxvvpW33_FSPb5ys4NTsFGvNAx7PNUi74zwtwr2m0wmuuUIX66-NecZFn3fQxiUqx32IFSWMKRvhrtvPa3jO8SOsBiomNJ5brpOZetll7Hqog5uP9AoAA" alt="Kegiatan Belajar">
@@ -192,6 +221,7 @@
               <small>Laboratorium Terpadu</small>
             </div>
           </div>
+          <?php endif; ?>
         </div>
       </div>
     </section>

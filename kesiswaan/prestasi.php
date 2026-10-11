@@ -1,3 +1,14 @@
+<?php
+require_once __DIR__ . '/../config/database.php';
+$webPrestasiList = [];
+try {
+    $pdo = getDbConnection();
+    $stmt = $pdo->query("SELECT * FROM prestasi WHERE status = 'Publikasi' ORDER BY tahun DESC, id DESC");
+    $webPrestasiList = $stmt->fetchAll();
+} catch (Exception $e) {
+    //
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -260,69 +271,35 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>1</td>
-                <td>LKS Robotika &amp; Otomasi Industri</td>
-                <td><span class="prestasi-badge emas">Provinsi</span></td>
-                <td>2023</td>
-                <td>Ahmad Rizki</td>
-                <td>XII TO</td>
-                <td>Juara 1</td>
-              </tr>
-              <tr>
-                <td>2</td>
-                <td>LKS CNC Tingkat Nasional</td>
-                <td><span class="prestasi-badge juara">Nasional</span></td>
-                <td>2023</td>
-                <td>Dimas Prasetyo</td>
-                <td>XII Mesin</td>
-                <td>Juara 2</td>
-              </tr>
-              <tr>
-                <td>3</td>
-                <td>Kontes Robotika Indonesia</td>
-                <td><span class="prestasi-badge perak">Nasional</span></td>
-                <td>2023</td>
-                <td>Tim Robotik</td>
-                <td>XII TO</td>
-                <td>Juara 3</td>
-              </tr>
-              <tr>
-                <td>4</td>
-                <td>Olimpiade Sains Nasional</td>
-                <td><span class="prestasi-badge juara">Provinsi</span></td>
-                <td>2023</td>
-                <td>Siti Nurhayati</td>
-                <td>XI RPL</td>
-                <td>Finalis</td>
-              </tr>
-              <tr>
-                <td>5</td>
-                <td>LKS Web Technologies</td>
-                <td><span class="prestasi-badge emas">Kabupaten</span></td>
-                <td>2024</td>
-                <td>Budi Santoso</td>
-                <td>XI RPL</td>
-                <td>Juara 1</td>
-              </tr>
-              <tr>
-                <td>6</td>
-                <td>PORSENI SMK Tingkat Provinsi</td>
-                <td><span class="prestasi-badge perak">Provinsi</span></td>
-                <td>2024</td>
-                <td>Ani Rahmawati</td>
-                <td>XII Tekstil</td>
-                <td>Juara 3</td>
-              </tr>
-              <tr>
-                <td>7</td>
-                <td>Olimpiade Matematika Vokasi</td>
-                <td><span class="prestasi-badge emas">Nasional</span></td>
-                <td>2024</td>
-                <td>Agus Wijaya</td>
-                <td>XII RPL</td>
-                <td>Juara 1</td>
-              </tr>
+              <?php if (!empty($webPrestasiList)): ?>
+                <?php foreach ($webPrestasiList as $idx => $p): 
+                  $badgeCls = match($p['tingkat'] ?? '') {
+                    'Nasional' => 'juara',
+                    'Provinsi' => 'emas',
+                    default => 'perak'
+                  };
+                ?>
+                  <tr>
+                    <td><?= $idx + 1 ?></td>
+                    <td><?= htmlspecialchars($p['judul']) ?></td>
+                    <td><span class="prestasi-badge <?= $badgeCls ?>"><?= htmlspecialchars($p['tingkat']) ?></span></td>
+                    <td><?= htmlspecialchars($p['tahun']) ?></td>
+                    <td><?= htmlspecialchars($p['nama_peraih']) ?></td>
+                    <td><?= htmlspecialchars($p['kelas_jurusan'] ?? '-') ?></td>
+                    <td><?= htmlspecialchars($p['peringkat']) ?></td>
+                  </tr>
+                <?php endforeach; ?>
+              <?php else: ?>
+                <tr>
+                  <td>1</td>
+                  <td>LKS Robotika &amp; Otomasi Industri</td>
+                  <td><span class="prestasi-badge emas">Provinsi</span></td>
+                  <td>2023</td>
+                  <td>Ahmad Rizki</td>
+                  <td>XII TO</td>
+                  <td>Juara 1</td>
+                </tr>
+              <?php endif; ?>
             </tbody>
           </table>
         </div>

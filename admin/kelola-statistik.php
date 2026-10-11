@@ -3,6 +3,50 @@
  * Kelola Statistik Sekolah - Admin SMKN 2 Karanganyar
  * Manajemen counter landing page, rincian siswa, guru, sarpras, dan data statistik akademik.
  */
+require_once __DIR__ . '/../config/database.php';
+$pdo = getDbConnection();
+
+// ==========================================
+// HANDLE BACKEND POST REQUESTS (AJAX CRUD)
+// ==========================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json; charset=utf-8');
+    $action = $_POST['action'] ?? '';
+
+    if ($action === 'simpan_counter') {
+        $stats = [
+            'stat_1' => ['label' => trim($_POST['label_1'] ?? 'Siswa Aktif'), 'nilai' => trim($_POST['nilai_1'] ?? '2500+')],
+            'stat_2' => ['label' => trim($_POST['label_2'] ?? 'Partner Industri'), 'nilai' => trim($_POST['nilai_2'] ?? '45+')],
+            'stat_3' => ['label' => trim($_POST['label_3'] ?? 'Kurikulum Industri'), 'nilai' => trim($_POST['nilai_3'] ?? '100%')],
+            'stat_4' => ['label' => trim($_POST['label_4'] ?? 'Eskul Prestasi'), 'nilai' => trim($_POST['nilai_4'] ?? '7+')],
+        ];
+
+        $stmt = $pdo->prepare("INSERT INTO statistik_sekolah (kode, label, nilai, urutan) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE label = VALUES(label), nilai = VALUES(nilai)");
+        $order = 1;
+        foreach ($stats as $kode => $val) {
+            $stmt->execute([$kode, $val['label'], $val['nilai'], $order++]);
+        }
+
+        echo json_encode(['success' => true, 'message' => 'Angka counter landing page berhasil diperbarui ke database!']);
+        exit;
+    }
+}
+
+// Fetch stats dari database
+$statRows = $pdo->query("SELECT * FROM statistik_sekolah ORDER BY urutan ASC, id ASC")->fetchAll(PDO::FETCH_ASSOC);
+$stats = [];
+foreach ($statRows as $row) {
+    $stats[$row['kode']] = $row;
+}
+$s1_val = $stats['stat_1']['nilai'] ?? '2500+';
+$s1_lbl = $stats['stat_1']['label'] ?? 'Siswa Aktif';
+$s2_val = $stats['stat_2']['nilai'] ?? '45+';
+$s2_lbl = $stats['stat_2']['label'] ?? 'Partner Industri';
+$s3_val = $stats['stat_3']['nilai'] ?? '100%';
+$s3_lbl = $stats['stat_3']['label'] ?? 'Kurikulum Industri';
+$s4_val = $stats['stat_4']['nilai'] ?? '7+';
+$s4_lbl = $stats['stat_4']['label'] ?? 'Eskul Prestasi';
+
 $pageTitle = 'Kelola Statistik Sekolah - Admin SMKN 2 Karanganyar';
 $currentPage = 'kelola-stats';
 $assetsPath = 'assets/';
@@ -126,20 +170,20 @@ include __DIR__ . '/components/sidebar.php';
         </div>
         <div class="row g-3 text-center py-2">
           <div class="col-6 col-md-3 border-end border-secondary border-opacity-25">
-            <div class="display-6 fw-bold text-lime" id="pv-stat-1" style="color: var(--brand-lime);">2500+</div>
-            <div class="fs-xs text-white-50 fw-semibold text-uppercase tracking-wider" id="pv-label-1">Siswa Aktif</div>
+            <div class="display-6 fw-bold text-lime" id="pv-stat-1" style="color: var(--brand-lime);"><?= htmlspecialchars($s1_val) ?></div>
+            <div class="fs-xs text-white-50 fw-semibold text-uppercase tracking-wider" id="pv-label-1"><?= htmlspecialchars($s1_lbl) ?></div>
           </div>
           <div class="col-6 col-md-3 border-end border-secondary border-opacity-25">
-            <div class="display-6 fw-bold text-lime" id="pv-stat-2" style="color: var(--brand-lime);">45+</div>
-            <div class="fs-xs text-white-50 fw-semibold text-uppercase tracking-wider" id="pv-label-2">Partner Industri</div>
+            <div class="display-6 fw-bold text-lime" id="pv-stat-2" style="color: var(--brand-lime);"><?= htmlspecialchars($s2_val) ?></div>
+            <div class="fs-xs text-white-50 fw-semibold text-uppercase tracking-wider" id="pv-label-2"><?= htmlspecialchars($s2_lbl) ?></div>
           </div>
           <div class="col-6 col-md-3 border-end border-secondary border-opacity-25">
-            <div class="display-6 fw-bold text-lime" id="pv-stat-3" style="color: var(--brand-lime);">100%</div>
-            <div class="fs-xs text-white-50 fw-semibold text-uppercase tracking-wider" id="pv-label-3">Kurikulum Industri</div>
+            <div class="display-6 fw-bold text-lime" id="pv-stat-3" style="color: var(--brand-lime);"><?= htmlspecialchars($s3_val) ?></div>
+            <div class="fs-xs text-white-50 fw-semibold text-uppercase tracking-wider" id="pv-label-3"><?= htmlspecialchars($s3_lbl) ?></div>
           </div>
           <div class="col-6 col-md-3">
-            <div class="display-6 fw-bold text-lime" id="pv-stat-4" style="color: var(--brand-lime);">7+</div>
-            <div class="fs-xs text-white-50 fw-semibold text-uppercase tracking-wider" id="pv-label-4">Eskul Prestasi</div>
+            <div class="display-6 fw-bold text-lime" id="pv-stat-4" style="color: var(--brand-lime);"><?= htmlspecialchars($s4_val) ?></div>
+            <div class="fs-xs text-white-50 fw-semibold text-uppercase tracking-wider" id="pv-label-4"><?= htmlspecialchars($s4_lbl) ?></div>
           </div>
         </div>
       </div>
@@ -167,11 +211,11 @@ include __DIR__ . '/components/sidebar.php';
                 </div>
                 <div class="mb-3">
                   <label class="form-label fs-xs fw-bold text-muted mb-1">Angka Counter (Nominal)</label>
-                  <input type="text" class="form-control fw-bold fs-5 text-success" id="input-stat-1" value="2500+" oninput="updateLivePreview()">
+                  <input type="text" class="form-control fw-bold fs-5 text-success" id="input-stat-1" value="<?= htmlspecialchars($s1_val) ?>" oninput="updateLivePreview()">
                 </div>
                 <div>
                   <label class="form-label fs-xs text-muted mb-1">Label Keterangan</label>
-                  <input type="text" class="form-control form-control-sm" id="input-label-1" value="Siswa Aktif" oninput="updateLivePreview()">
+                  <input type="text" class="form-control form-control-sm" id="input-label-1" value="<?= htmlspecialchars($s1_lbl) ?>" oninput="updateLivePreview()">
                 </div>
               </div>
             </div>
@@ -185,11 +229,11 @@ include __DIR__ . '/components/sidebar.php';
                 </div>
                 <div class="mb-3">
                   <label class="form-label fs-xs fw-bold text-muted mb-1">Angka Counter (Nominal)</label>
-                  <input type="text" class="form-control fw-bold fs-5 text-primary" id="input-stat-2" value="45+" oninput="updateLivePreview()">
+                  <input type="text" class="form-control fw-bold fs-5 text-primary" id="input-stat-2" value="<?= htmlspecialchars($s2_val) ?>" oninput="updateLivePreview()">
                 </div>
                 <div>
                   <label class="form-label fs-xs text-muted mb-1">Label Keterangan</label>
-                  <input type="text" class="form-control form-control-sm" id="input-label-2" value="Partner Industri" oninput="updateLivePreview()">
+                  <input type="text" class="form-control form-control-sm" id="input-label-2" value="<?= htmlspecialchars($s2_lbl) ?>" oninput="updateLivePreview()">
                 </div>
               </div>
             </div>
@@ -203,11 +247,11 @@ include __DIR__ . '/components/sidebar.php';
                 </div>
                 <div class="mb-3">
                   <label class="form-label fs-xs fw-bold text-muted mb-1">Angka Counter (Nominal)</label>
-                  <input type="text" class="form-control fw-bold fs-5 text-warning" id="input-stat-3" value="100%" oninput="updateLivePreview()">
+                  <input type="text" class="form-control fw-bold fs-5 text-warning" id="input-stat-3" value="<?= htmlspecialchars($s3_val) ?>" oninput="updateLivePreview()">
                 </div>
                 <div>
                   <label class="form-label fs-xs text-muted mb-1">Label Keterangan</label>
-                  <input type="text" class="form-control form-control-sm" id="input-label-3" value="Kurikulum Industri" oninput="updateLivePreview()">
+                  <input type="text" class="form-control form-control-sm" id="input-label-3" value="<?= htmlspecialchars($s3_lbl) ?>" oninput="updateLivePreview()">
                 </div>
               </div>
             </div>
@@ -221,11 +265,11 @@ include __DIR__ . '/components/sidebar.php';
                 </div>
                 <div class="mb-3">
                   <label class="form-label fs-xs fw-bold text-muted mb-1">Angka Counter (Nominal)</label>
-                  <input type="text" class="form-control fw-bold fs-5 text-info" id="input-stat-4" value="7+" oninput="updateLivePreview()">
+                  <input type="text" class="form-control fw-bold fs-5 text-info" id="input-stat-4" value="<?= htmlspecialchars($s4_val) ?>" oninput="updateLivePreview()">
                 </div>
                 <div>
                   <label class="form-label fs-xs text-muted mb-1">Label Keterangan</label>
-                  <input type="text" class="form-control form-control-sm" id="input-label-4" value="Eskul Prestasi" oninput="updateLivePreview()">
+                  <input type="text" class="form-control form-control-sm" id="input-label-4" value="<?= htmlspecialchars($s4_lbl) ?>" oninput="updateLivePreview()">
                 </div>
               </div>
             </div>
@@ -473,12 +517,32 @@ function resetDefaultCounter() {
 }
 
 function simpanStatistikGlobal() {
-  const s1 = document.getElementById('input-stat-1').value;
-  const s2 = document.getElementById('input-stat-2').value;
-  const s3 = document.getElementById('input-stat-3').value;
-  const s4 = document.getElementById('input-stat-4').value;
-  
-  alert('Berhasil menyimpan statistik sekolah!\n- ' + s1 + ' Siswa Aktif\n- ' + s2 + ' Partner Industri\n- ' + s3 + ' Kurikulum Industri\n- ' + s4 + ' Eskul Prestasi\nData telah disinkronkan ke Landing Page.');
+  const fd = new FormData();
+  fd.append('action', 'simpan_counter');
+  fd.append('nilai_1', document.getElementById('input-stat-1').value);
+  fd.append('label_1', document.getElementById('input-label-1').value);
+  fd.append('nilai_2', document.getElementById('input-stat-2').value);
+  fd.append('label_2', document.getElementById('input-label-2').value);
+  fd.append('nilai_3', document.getElementById('input-stat-3').value);
+  fd.append('label_3', document.getElementById('input-label-3').value);
+  fd.append('nilai_4', document.getElementById('input-stat-4').value);
+  fd.append('label_4', document.getElementById('input-label-4').value);
+
+  fetch('kelola-statistik.php', {
+    method: 'POST',
+    body: fd
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert('Berhasil! ' + data.message);
+    } else {
+      alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
+    }
+  })
+  .catch(err => {
+    alert('Terjadi kesalahan jaringan: ' + err.message);
+  });
 }
 </script>
 

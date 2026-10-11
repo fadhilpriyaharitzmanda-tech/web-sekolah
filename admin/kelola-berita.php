@@ -2,6 +2,136 @@
 /**
  * Kelola Warta & Berita Sekolah - Admin SMKN 2 Karanganyar
  */
+require_once __DIR__ . '/../config/database.php';
+$pdo = getDbConnection();
+
+$uploadDir = __DIR__ . '/../uploads/berita/';
+if (!is_dir($uploadDir)) {
+    mkdir($uploadDir, 0777, true);
+}
+
+function uploadBeritaImage($fileInputName, $existingPath = '') {
+    if (!isset($_FILES[$fileInputName]) || $_FILES[$fileInputName]['error'] === UPLOAD_ERR_NO_FILE) {
+        return $existingPath;
+    }
+    $file = $_FILES[$fileInputName];
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        throw new Exception("Gagal mengunggah file. Kode error: " . $file['error']);
+    }
+    $allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    $fileInfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mimeType = finfo_file($fileInfo, $file['tmp_name']);
+    finfo_close($fileInfo);
+    if (!in_array($mimeType, $allowedMimes)) {
+        throw new Exception("Format gambar harus JPG, PNG, atau WEBP.");
+    }
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $newFileName = 'berita_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+    $targetPath = __DIR__ . '/../uploads/berita/' . $newFileName;
+    if (!move_uploaded_file($file['tmp_name'], $targetPath)) {
+        throw new Exception("Gagal menyimpan file gambar.");
+    }
+    return 'uploads/berita/' . $newFileName;
+}
+
+function resolveBeritaImg($path) {
+    if (empty($path)) return '../images/gedung.jpg';
+    if (strpos($path, 'http://') === 0 || strpos($path, 'https://') === 0) return $path;
+    return '../' . ltrim($path, '/');
+}
+
+// ==========================================
+// HANDLE BACKEND POST REQUESTS (AJAX CRUD)
+// ==========================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json; charset=utf-8');
+    $action = $_POST['action'] ?? '';
+
+    try {
+        if ($action === 'tambah') {
+            $judul = trim($_POST['judul'] ?? '');
+            $kategori = trim($_POST['kategori'] ?? 'Prestasi');
+            $tanggal = trim($_POST['tanggal'] ?? date('Y-m-d'));
+            $ringkasan = trim($_POST['ringkasan'] ?? '');
+            $konten = trim($_POST['konten'] ?? '');
+            $tampilLanding = isset($_POST['tampil_landing']) && $_POST['tampil_landing'] == '1' ? 1 : 0;
+            $status = trim($_POST['status'] ?? 'Publikasi');
+            $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $judul), '-'));
+
+            if (empty($judul)) {
+                echo json_encode(['success' => false, 'message' => 'Judul berita wajib diisi!']);
+                exit;
+            }
+
+            $urlGambarInput = trim($_POST['url_gambar'] ?? '');
+            $gambarPath = $urlGambarInput ?: 'images/gedung.jpg';
+            if (isset($_FILES['gambar_file']) && $_FILES['gambar_file']['error'] === UPLOAD_ERR_OK) {
+                $gambarPath = uploadBeritaImage('gambar_file', $gambarPath);
+            }
+
+            $stmt = $pdo->prepare("INSERT INTO berita (judul, slug, kategori, gambar, ringkasan, konten, penulis, tanggal, tampil_landing, status) VALUES (?, ?, ?, ?, ?, ?, 'Admin SMKN 2', ?, ?, ?)");
+            $stmt->execute([$judul, $slug, $kategori, $gambarPath, $ringkasan, $konten, $tanggal, $tampilLanding, $status]);
+
+            echo json_encode(['success' => true, 'message' => 'Berita berhasil dipublikasikan!']);
+            exit;
+        }
+
+        if ($action === 'edit') {
+            $id = intval($_POST['id'] ?? 0);
+            $judul = trim($_POST['judul'] ?? '');
+            $kategori = trim($_POST['kategori'] ?? 'Prestasi');
+            $tanggal = trim($_POST['tanggal'] ?? date('Y-m-d'));
+            $ringkasan = trim($_POST['ringkasan'] ?? '');
+            $konten = trim($_POST['konten'] ?? '');
+            $tampilLanding = isset($_POST['tampil_landing']) && $_POST['tampil_landing'] == '1' ? 1 : 0;
+            $status = trim($_POST['status'] ?? 'Publikasi');
+            $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $judul), '-'));
+
+            $stmtExist = $pdo->prepare("SELECT gambar FROM berita WHERE id = ?");
+            $stmtExist->execute([$id]);
+            $existingImg = $stmtExist->fetchColumn() ?: 'images/gedung.jpg';
+
+            $urlGambarInput = trim($_POST['url_gambar'] ?? '');
+            $gambarPath = $urlGambarInput ?: $existingImg;
+            if (isset($_FILES['gambar_file']) && $_FILES['gambar_file']['error'] === UPLOAD_ERR_OK) {
+                $gambarPath = uploadBeritaImage('gambar_file', $gambarPath);
+            }
+
+            $stmt = $pdo->prepare("UPDATE berita SET judul = ?, slug = ?, kategori = ?, gambar = ?, ringkasan = ?, konten = ?, tanggal = ?, tampil_landing = ?, status = ? WHERE id = ?");
+            $stmt->execute([$judul, $slug, $kategori, $gambarPath, $ringkasan, $konten, $tanggal, $tampilLanding, $status, $id]);
+
+            echo json_encode(['success' => true, 'message' => 'Berita berhasil diperbarui!']);
+            exit;
+        }
+
+        if ($action === 'hapus') {
+            $id = intval($_POST['id'] ?? 0);
+            $stmt = $pdo->prepare("DELETE FROM berita WHERE id = ?");
+            $stmt->execute([$id]);
+            echo json_encode(['success' => true, 'message' => 'Berita berhasil dihapus!']);
+            exit;
+        }
+
+        if ($action === 'toggle_landing') {
+            $id = intval($_POST['id'] ?? 0);
+            $stmt = $pdo->prepare("UPDATE berita SET tampil_landing = IF(tampil_landing = 1, 0, 1) WHERE id = ?");
+            $stmt->execute([$id]);
+            echo json_encode(['success' => true, 'message' => 'Status tayang landing page diubah!']);
+            exit;
+        }
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        exit;
+    }
+}
+
+// Fetch berita data
+$beritaList = $pdo->query("SELECT * FROM berita ORDER BY tanggal DESC, id DESC")->fetchAll(PDO::FETCH_ASSOC);
+$totalArtikel = count($beritaList);
+$totalLanding = count(array_filter($beritaList, fn($b) => $b['tampil_landing'] == 1));
+$totalPrestasi = count(array_filter($beritaList, fn($b) => strtolower($b['kategori']) === 'prestasi'));
+$totalKerjasama = count(array_filter($beritaList, fn($b) => strtolower($b['kategori']) === 'kerjasama'));
+
 $pageTitle = 'Kelola Berita & Warta - Admin SMKN 2 Karanganyar';
 $currentPage = 'kelola-berita';
 $assetsPath = 'assets/';
@@ -40,7 +170,7 @@ include __DIR__ . '/components/sidebar.php';
             <i class="bi bi-newspaper"></i>
           </div>
         </div>
-        <div class="stat-value text-success">48 Artikel</div>
+        <div class="stat-value text-success"><?= $totalArtikel ?> Artikel</div>
         <div class="trend-badge trend-up">
           <i class="bi bi-check-circle-fill"></i>
           <span>Terbit Sepanjang Tahun</span>
@@ -55,10 +185,10 @@ include __DIR__ . '/components/sidebar.php';
             <i class="bi bi-broadcast"></i>
           </div>
         </div>
-        <div class="stat-value text-primary">3 Warta Utama</div>
+        <div class="stat-value text-primary"><?= $totalLanding ?> Warta Utama</div>
         <div class="trend-badge text-primary">
           <i class="bi bi-star-fill"></i>
-          <span>Berita Terhangat</span>
+          <span>Highlight Beranda</span>
         </div>
       </div>
     </div>
@@ -70,7 +200,7 @@ include __DIR__ . '/components/sidebar.php';
             <i class="bi bi-trophy-fill"></i>
           </div>
         </div>
-        <div class="stat-value text-warning">22 Liputan</div>
+        <div class="stat-value text-warning"><?= $totalPrestasi ?> Liputan</div>
         <div class="trend-badge text-warning">
           <i class="bi bi-award-fill"></i>
           <span>Kejuaraan Siswa &amp; Guru</span>
@@ -85,7 +215,7 @@ include __DIR__ . '/components/sidebar.php';
             <i class="bi bi-buildings-fill"></i>
           </div>
         </div>
-        <div class="stat-value text-info">16 Rilis Pers</div>
+        <div class="stat-value text-info"><?= $totalKerjasama ?> Rilis Pers</div>
         <div class="trend-badge text-info">
           <i class="bi bi-hand-thumbs-up-fill"></i>
           <span>Link &amp; Match Industri</span>
@@ -94,7 +224,7 @@ include __DIR__ . '/components/sidebar.php';
     </div>
   </div>
 
-  <!-- TABLE & LIST CARD (NO OVERFLOW-X) -->
+  <!-- TABLE & LIST CARD -->
   <div class="table-card-custom mb-4">
     <!-- Header Control Bar -->
     <div class="table-header-control">
@@ -131,83 +261,51 @@ include __DIR__ . '/components/sidebar.php';
           </tr>
         </thead>
         <tbody>
-          <!-- Item 1 (Prestasi) -->
-          <tr>
-            <td style="width: 80px;">
-              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1oQITlQxReSzB_iV4d4_8TBuxQ-GZNqW_LJJjMb_ludZiWGYQuAMtmFGechN-618UO8F3DFV6DcXRbgUvE-AnSJQnbZDfzclQ94bXkvN_3t7lu8TUhGv55Xu_CsZ_Ar0Vw6clauRRop2rUJrgG-VTc7TO6_82q_kpoZOOEqAcPzBkeEJH0XbCwWYblItMIRtd7q-3Nv0W8JNn_HKY_qbW_CTlPqmTo2GMs6Crt0mEt2A-jlIe7TQ8ARPYrLJoPajF0a56BpFTX8M" alt="Thumbnail" class="rounded object-fit-cover border" style="width: 68px; height: 46px;" onerror="this.src='../images/logo-placeholder.png'">
-            </td>
-            <td class="table-cell-title text-wrap-cell">
-              <div class="fw-bold text-main mb-1">Juara 1 Lomba Kompetensi Siswa (LKS) Tingkat Provinsi</div>
-              <div class="text-muted fs-xs" style="line-height: 1.45;">Siswa SMKN 2 Karanganyar kembali menorehkan prestasi membanggakan di bidang Robotika dan Otomasi Industri tingkat wilayah Jawa Tengah...</div>
-            </td>
-            <td><span class="badge bg-success-subtle text-success fw-bold">PRESTASI</span></td>
-            <td>12 Oktober 2024</td>
-            <td><span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Tampil</span></td>
-            <td><span class="badge-table success">Terbit</span></td>
-            <td>
-              <div class="d-flex justify-content-center gap-1">
-                <a href="../informasi/berita.php" target="_blank" class="table-btn-action" title="Pratinjau"><i class="bi bi-eye"></i></a>
-                <button type="button" class="table-btn-action" title="Edit Berita" onclick="editBerita('Juara 1 Lomba Kompetensi Siswa (LKS) Tingkat Provinsi', 'Prestasi', '2024-10-12', 'Siswa SMKN 2 Karanganyar kembali menorehkan prestasi membanggakan di bidang Robotika dan Otomasi Industri tingkat wilayah...')">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button type="button" class="table-btn-action delete" title="Hapus Berita" onclick="hapusBerita(this, 'Juara 1 LKS Tingkat Provinsi')">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Item 2 (Kerjasama) -->
-          <tr>
-            <td style="width: 80px;">
-              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAR6u9lB4fwZ1GSdURK-YFBsWlOlcol9arlvZp64eAHYjdMp88kK8UnK6vg4AJxyV1HqsCTvsR_9pmFTgwmz6xm2wd7zadqLJRajyQziTajNEnv6yxPcT7oSuXLKIubghNObb0IX8CZrPM5KZ-YBgEk64E3Z_UGplcSFXeeQnqag_4FFovAx2r5CVNDIuj38wTXu9VSvXsHubWi318mTGNmUcQWXcffb6iJc8_uWszQLuAY-FbB0sU4LQILmzzjC46a1H6-wpbNW-8" alt="Thumbnail" class="rounded object-fit-cover border" style="width: 68px; height: 46px;" onerror="this.src='../images/logo-placeholder.png'">
-            </td>
-            <td class="table-cell-title text-wrap-cell">
-              <div class="fw-bold text-main mb-1">MoU Baru Bersama PT. Astra International Tbk</div>
-              <div class="text-muted fs-xs" style="line-height: 1.45;">Peningkatan kualitas lulusan melalui program link and match kelas industri dan sertifikasi internasional bagi para pengajar vokasi...</div>
-            </td>
-            <td><span class="badge bg-primary-subtle text-primary fw-bold">KERJASAMA</span></td>
-            <td>08 Oktober 2024</td>
-            <td><span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Tampil</span></td>
-            <td><span class="badge-table success">Terbit</span></td>
-            <td>
-              <div class="d-flex justify-content-center gap-1">
-                <a href="../informasi/berita.php" target="_blank" class="table-btn-action" title="Pratinjau"><i class="bi bi-eye"></i></a>
-                <button type="button" class="table-btn-action" title="Edit Berita" onclick="editBerita('MoU Baru Bersama PT. Astra International Tbk', 'Kerjasama', '2024-10-08', 'Peningkatan kualitas lulusan melalui program link and match kelas industri dan sertifikasi internasional...')">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button type="button" class="table-btn-action delete" title="Hapus Berita" onclick="hapusBerita(this, 'MoU Baru Bersama PT. Astra')">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-
-          <!-- Item 3 (Event) -->
-          <tr>
-            <td style="width: 80px;">
-              <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3_aUhUZkEJ9ijlY6KCG87Z7SUfq4-IRaNqNP95zosXcQaSGJF_KFJCp_jJB3EjHKGWm8QrU7IM7Q3d3RXqe0Ku8G407h5lV5jljQTYgD1wn3Tz_y6LeyVlTFQ6AfvYpU8F-pL0h-wcXyC83wkTibzzXMB7DycGWa0RKlVrgpztiKVutAAM05V_gSVhkfwhTbsICB3iN9tI4FS1LsdLDrrQ7vg4a498iLmmByBp3JdDsfnl2oAMJOrQIbqIIQUPoQmN4ghmver2V0" alt="Thumbnail" class="rounded object-fit-cover border" style="width: 68px; height: 46px;" onerror="this.src='../images/logo-placeholder.png'">
-            </td>
-            <td class="table-cell-title text-wrap-cell">
-              <div class="fw-bold text-main mb-1">Workshop Transformasi Digital 4.0 Bagi Guru Vokasi</div>
-              <div class="text-muted fs-xs" style="line-height: 1.45;">Mengintegrasikan teknologi Internet of Things (IoT) ke dalam modul pembelajaran praktik di semua program keahlian teknik...</div>
-            </td>
-            <td><span class="badge bg-warning-subtle text-warning fw-bold">EVENT</span></td>
-            <td>05 Oktober 2024</td>
-            <td><span class="badge bg-success"><i class="bi bi-check-circle me-1"></i> Tampil</span></td>
-            <td><span class="badge-table success">Terbit</span></td>
-            <td>
-              <div class="d-flex justify-content-center gap-1">
-                <a href="../informasi/berita.php" target="_blank" class="table-btn-action" title="Pratinjau"><i class="bi bi-eye"></i></a>
-                <button type="button" class="table-btn-action" title="Edit Berita" onclick="editBerita('Workshop Transformasi Digital 4.0 Bagi Guru Vokasi', 'Event', '2024-10-05', 'Mengintegrasikan teknologi Internet of Things (IoT) ke dalam modul pembelajaran praktik di semua program keahlian...')">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button type="button" class="table-btn-action delete" title="Hapus Berita" onclick="hapusBerita(this, 'Workshop Transformasi Digital 4.0')">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
+          <?php if (!empty($beritaList)): ?>
+            <?php foreach ($beritaList as $b): 
+              $thumb = resolveBeritaImg($b['gambar']);
+              $tglFormat = !empty($b['tanggal']) ? date('d F Y', strtotime($b['tanggal'])) : '-';
+              $katClass = match(strtolower($b['kategori'])) {
+                'prestasi' => 'bg-success-subtle text-success',
+                'kerjasama' => 'bg-primary-subtle text-primary',
+                'event' => 'bg-warning-subtle text-warning',
+                default => 'bg-info-subtle text-info',
+              };
+            ?>
+              <tr>
+                <td style="width: 80px;">
+                  <img src="<?= htmlspecialchars($thumb) ?>" alt="Thumbnail" class="rounded object-fit-cover border" style="width: 68px; height: 46px;" onerror="this.src='../images/gedung.jpg'">
+                </td>
+                <td class="table-cell-title text-wrap-cell">
+                  <div class="fw-bold text-main mb-1"><?= htmlspecialchars($b['judul']) ?></div>
+                  <div class="text-muted fs-xs" style="line-height: 1.45;"><?= htmlspecialchars($b['ringkasan']) ?></div>
+                </td>
+                <td><span class="badge <?= $katClass ?> fw-bold"><?= strtoupper(htmlspecialchars($b['kategori'])) ?></span></td>
+                <td><?= htmlspecialchars($tglFormat) ?></td>
+                <td>
+                  <button type="button" class="btn btn-sm <?= $b['tampil_landing'] == 1 ? 'btn-success' : 'btn-outline-secondary' ?>" style="font-size:0.75rem; padding: 2px 8px;" onclick="toggleLandingBerita(<?= $b['id'] ?>)">
+                    <i class="bi <?= $b['tampil_landing'] == 1 ? 'bi-check-circle me-1' : 'bi-dash-circle me-1' ?>"></i> <?= $b['tampil_landing'] == 1 ? 'Tampil' : 'Tidak' ?>
+                  </button>
+                </td>
+                <td><span class="badge-table <?= $b['status'] === 'Publikasi' ? 'success' : 'warning' ?>"><?= htmlspecialchars($b['status']) ?></span></td>
+                <td>
+                  <div class="d-flex justify-content-center gap-1">
+                    <a href="../informasi/berita.php" target="_blank" class="table-btn-action" title="Pratinjau"><i class="bi bi-eye"></i></a>
+                    <button type="button" class="table-btn-action" title="Edit Berita" onclick='bukaEditBerita(<?= json_encode($b) ?>)'>
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button type="button" class="table-btn-action delete" title="Hapus Berita" onclick="hapusBerita(<?= $b['id'] ?>, '<?= htmlspecialchars(addslashes($b['judul'])) ?>')">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <tr>
+              <td colspan="7" class="text-center py-4 text-muted">Belum ada artikel berita yang tersedia.</td>
+            </tr>
+          <?php endif; ?>
         </tbody>
       </table>
     </div>
@@ -215,14 +313,7 @@ include __DIR__ . '/components/sidebar.php';
     <!-- Table Pagination -->
     <div class="table-footer-control">
       <div class="table-pagination-info">
-        Menampilkan <strong>1 - 3</strong> dari <strong>48</strong> Publikasi Berita Sekolah
-      </div>
-      <div class="table-pagination-nav">
-        <button class="btn-pagination-nav" disabled><i class="bi bi-chevron-left"></i></button>
-        <button class="btn-pagination-nav active">1</button>
-        <button class="btn-pagination-nav">2</button>
-        <button class="btn-pagination-nav">3</button>
-        <button class="btn-pagination-nav"><i class="bi bi-chevron-right"></i></button>
+        Total <strong><?= $totalArtikel ?></strong> Artikel Berita Terdaftar di Database
       </div>
     </div>
   </div>
@@ -242,48 +333,60 @@ include __DIR__ . '/components/sidebar.php';
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form id="formTambahBerita">
+        <form id="formTambahBerita" enctype="multipart/form-data">
+          <input type="hidden" name="action" value="tambah">
           <div class="row g-3">
             <div class="col-12">
-              <label class="form-label-custom" for="tambahJudulBerita">Judul Artikel Berita</label>
-              <input type="text" class="form-control-custom" id="tambahJudulBerita" placeholder="Contoh: Siswa SMKN 2 Karanganyar Raih Medali Emas LKS Tingkat Nasional 2026" required>
-              <div class="form-text-custom">Buat judul yang informatif, menarik, dan mencerminkan esensi warta kegiatan.</div>
+              <label class="form-label-custom" for="tambahJudulBerita">Judul Artikel Berita <span class="text-danger">*</span></label>
+              <input type="text" class="form-control-custom" id="tambahJudulBerita" name="judul" placeholder="Contoh: Siswa SMKN 2 Karanganyar Raih Medali Emas LKS Tingkat Nasional 2026" required>
             </div>
 
             <div class="col-md-6">
               <label class="form-label-custom" for="tambahKategoriBerita">Kategori Warta</label>
-              <select class="form-select-custom" id="tambahKategoriBerita">
+              <select class="form-select-custom" id="tambahKategoriBerita" name="kategori">
                 <option value="Prestasi" selected>Prestasi &amp; Kejuaraan</option>
                 <option value="Kerjasama">Kerjasama Industri (DUDI)</option>
                 <option value="Event">Event &amp; Kegiatan Sekolah</option>
-                <option value="Pengumuman">Pengumuman Resmi Akademik</option>
+                <option value="Akademik">Akademik</option>
+                <option value="Pengumuman">Pengumuman Resmi Sekolah</option>
               </select>
             </div>
             <div class="col-md-6">
               <label class="form-label-custom" for="tambahTanggalBerita">Tanggal Publikasi</label>
-              <input type="date" class="form-control-custom" id="tambahTanggalBerita" value="<?= date('Y-m-d') ?>">
+              <input type="date" class="form-control-custom" id="tambahTanggalBerita" name="tanggal" value="<?= date('Y-m-d') ?>">
             </div>
 
-            <div class="col-12">
-              <label class="form-label-custom" for="tambahUrlGambar">URL Gambar Utama / Foto Liputan</label>
-              <input type="text" class="form-control-custom" id="tambahUrlGambar" placeholder="https://..." value="https://lh3.googleusercontent.com/d/1BfS1eR1M3P5Qz7V8W0XyZ9AbCdEfGhIj">
-              <div class="form-text-custom">Gunakan link gambar Google Drive / Web publik dengan rasio 16:9.</div>
+            <div class="col-md-6">
+              <label class="form-label-custom" for="tambahGambarFile">Unggah File Gambar</label>
+              <input type="file" class="form-control-custom" id="tambahGambarFile" name="gambar_file" accept="image/*">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-custom" for="tambahUrlGambar">Atau URL Gambar Web</label>
+              <input type="text" class="form-control-custom" id="tambahUrlGambar" name="url_gambar" placeholder="https://...">
             </div>
 
             <div class="col-12">
               <label class="form-label-custom" for="tambahRingkasanBerita">Ringkasan Cuplikan (Lead/Snippet)</label>
-              <textarea class="form-control-custom" id="tambahRingkasanBerita" rows="2" placeholder="Ringkasan 1-2 kalimat pengantar yang akan tampil pada preview kartu di landing page..."></textarea>
+              <textarea class="form-control-custom" id="tambahRingkasanBerita" name="ringkasan" rows="2" placeholder="Ringkasan 1-2 kalimat pengantar..."></textarea>
             </div>
 
             <div class="col-12">
               <label class="form-label-custom" for="tambahKontenBerita">Isi Konten Artikel Lengkap</label>
-              <textarea class="form-control-custom" id="tambahKontenBerita" rows="5" placeholder="Tulis narasi berita lengkap, dokumentasi acara, kutipan narasumber, dan informasi penutup..."></textarea>
+              <textarea class="form-control-custom" id="tambahKontenBerita" name="konten" rows="5" placeholder="Tulis narasi berita lengkap, dokumentasi acara, kutipan narasumber..."></textarea>
             </div>
 
-            <div class="col-12">
+            <div class="col-md-6">
+              <label class="form-label-custom" for="tambahStatusBerita">Status Publikasi</label>
+              <select class="form-select-custom" id="tambahStatusBerita" name="status">
+                <option value="Publikasi" selected>Publikasi Langsung</option>
+                <option value="Draft">Simpan Draft</option>
+              </select>
+            </div>
+
+            <div class="col-md-6 d-flex align-items-center pt-3">
               <div class="form-switch-custom">
-                <input class="form-switch-input-custom" type="checkbox" id="checkLandingBerita" checked>
-                <label class="form-label-custom mb-0" for="checkLandingBerita">Tampilkan sebagai Top 3 Highlight di Landing Page</label>
+                <input class="form-switch-input-custom" type="checkbox" id="checkLandingBerita" name="tampil_landing" value="1" checked>
+                <label class="form-label-custom mb-0" for="checkLandingBerita">Tampilkan di Highlight Landing Page</label>
               </div>
             </div>
           </div>
@@ -310,28 +413,61 @@ include __DIR__ . '/components/sidebar.php';
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form id="formEditBerita">
+        <form id="formEditBerita" enctype="multipart/form-data">
+          <input type="hidden" name="action" value="edit">
+          <input type="hidden" id="editIdBerita" name="id">
           <div class="row g-3">
             <div class="col-12">
-              <label class="form-label-custom" for="editJudulBerita">Judul Artikel Berita</label>
-              <input type="text" class="form-control-custom" id="editJudulBerita" required>
+              <label class="form-label-custom" for="editJudulBerita">Judul Artikel Berita <span class="text-danger">*</span></label>
+              <input type="text" class="form-control-custom" id="editJudulBerita" name="judul" required>
             </div>
             <div class="col-md-6">
               <label class="form-label-custom" for="editKategoriBerita">Kategori Warta</label>
-              <select class="form-select-custom" id="editKategoriBerita">
+              <select class="form-select-custom" id="editKategoriBerita" name="kategori">
                 <option value="Prestasi">Prestasi &amp; Kejuaraan</option>
                 <option value="Kerjasama">Kerjasama Industri (DUDI)</option>
                 <option value="Event">Event &amp; Kegiatan Sekolah</option>
-                <option value="Pengumuman">Pengumuman Resmi Akademik</option>
+                <option value="Akademik">Akademik</option>
+                <option value="Pengumuman">Pengumuman Resmi Sekolah</option>
               </select>
             </div>
             <div class="col-md-6">
               <label class="form-label-custom" for="editTanggalBerita">Tanggal Publikasi</label>
-              <input type="date" class="form-control-custom" id="editTanggalBerita">
+              <input type="date" class="form-control-custom" id="editTanggalBerita" name="tanggal">
             </div>
+
+            <div class="col-md-6">
+              <label class="form-label-custom" for="editGambarFile">Ganti File Gambar</label>
+              <input type="file" class="form-control-custom" id="editGambarFile" name="gambar_file" accept="image/*">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-custom" for="editUrlGambar">Atau URL Gambar Web</label>
+              <input type="text" class="form-control-custom" id="editUrlGambar" name="url_gambar">
+            </div>
+
             <div class="col-12">
               <label class="form-label-custom" for="editRingkasanBerita">Ringkasan Cuplikan</label>
-              <textarea class="form-control-custom" id="editRingkasanBerita" rows="3"></textarea>
+              <textarea class="form-control-custom" id="editRingkasanBerita" name="ringkasan" rows="3"></textarea>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label-custom" for="editKontenBerita">Konten Artikel Lengkap</label>
+              <textarea class="form-control-custom" id="editKontenBerita" name="konten" rows="5"></textarea>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label-custom" for="editStatusBerita">Status Publikasi</label>
+              <select class="form-select-custom" id="editStatusBerita" name="status">
+                <option value="Publikasi">Publikasi</option>
+                <option value="Draft">Draft</option>
+              </select>
+            </div>
+
+            <div class="col-md-6 d-flex align-items-center pt-3">
+              <div class="form-switch-custom">
+                <input class="form-switch-input-custom" type="checkbox" id="editCheckLandingBerita" name="tampil_landing" value="1">
+                <label class="form-label-custom mb-0" for="editCheckLandingBerita">Tampilkan di Highlight Landing Page</label>
+              </div>
             </div>
           </div>
         </form>
@@ -347,11 +483,16 @@ include __DIR__ . '/components/sidebar.php';
 </div>
 
 <script>
-function editBerita(judul, kategori, tanggal, ringkasan) {
-  document.getElementById('editJudulBerita').value = judul;
-  document.getElementById('editKategoriBerita').value = kategori;
-  document.getElementById('editTanggalBerita').value = tanggal;
-  document.getElementById('editRingkasanBerita').value = ringkasan;
+function bukaEditBerita(data) {
+  document.getElementById('editIdBerita').value = data.id || '';
+  document.getElementById('editJudulBerita').value = data.judul || '';
+  document.getElementById('editKategoriBerita').value = data.kategori || 'Prestasi';
+  document.getElementById('editTanggalBerita').value = data.tanggal || '';
+  document.getElementById('editUrlGambar').value = (data.gambar && data.gambar.startsWith('http')) ? data.gambar : '';
+  document.getElementById('editRingkasanBerita').value = data.ringkasan || '';
+  document.getElementById('editKontenBerita').value = data.konten || '';
+  document.getElementById('editStatusBerita').value = data.status || 'Publikasi';
+  document.getElementById('editCheckLandingBerita').checked = (data.tampil_landing == 1);
 
   const modalEl = document.getElementById('modalEditBerita');
   const modal = new bootstrap.Modal(modalEl);
@@ -359,36 +500,78 @@ function editBerita(judul, kategori, tanggal, ringkasan) {
 }
 
 function simpanTambahBerita() {
-  const judul = document.getElementById('tambahJudulBerita').value;
-  if (!judul) {
+  const form = document.getElementById('formTambahBerita');
+  if (!form.judul.value.trim()) {
     alert('Silakan isi judul berita!');
     return;
   }
-  const modalEl = document.getElementById('modalTambahBerita');
-  const modal = bootstrap.Modal.getInstance(modalEl);
-  if (modal) modal.hide();
-  alert('Berita "' + judul + '" berhasil diterbitkan ke website!');
+  const fd = new FormData(form);
+  fetch('kelola-berita.php', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message);
+        window.location.reload();
+      } else {
+        alert('Gagal: ' + data.message);
+      }
+    })
+    .catch(err => alert('Error: ' + err.message));
 }
 
 function simpanEditBerita() {
-  const judul = document.getElementById('editJudulBerita').value;
-  const modalEl = document.getElementById('modalEditBerita');
-  const modal = bootstrap.Modal.getInstance(modalEl);
-  if (modal) modal.hide();
-  alert('Berita "' + judul + '" berhasil diperbarui!');
+  const form = document.getElementById('formEditBerita');
+  if (!form.judul.value.trim()) {
+    alert('Silakan isi judul berita!');
+    return;
+  }
+  const fd = new FormData(form);
+  fetch('kelola-berita.php', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        alert(data.message);
+        window.location.reload();
+      } else {
+        alert('Gagal: ' + data.message);
+      }
+    })
+    .catch(err => alert('Error: ' + err.message));
 }
 
-function hapusBerita(btn, judul) {
-  if (confirm('Hapus publikasi warta berita: "' + judul + '"?')) {
-    const row = btn.closest('tr');
-    if (row) {
-      row.style.opacity = '0.3';
-      setTimeout(() => {
-        row.remove();
-        alert('Berita berhasil dihapus.');
-      }, 250);
-    }
+function hapusBerita(id, judul) {
+  if (confirm('Hapus warta berita: "' + judul + '"?')) {
+    const fd = new FormData();
+    fd.append('action', 'hapus');
+    fd.append('id', id);
+    fetch('kelola-berita.php', { method: 'POST', body: fd })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          alert(data.message);
+          window.location.reload();
+        } else {
+          alert('Gagal: ' + data.message);
+        }
+      })
+      .catch(err => alert('Error: ' + err.message));
   }
+}
+
+function toggleLandingBerita(id) {
+  const fd = new FormData();
+  fd.append('action', 'toggle_landing');
+  fd.append('id', id);
+  fetch('kelola-berita.php', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        window.location.reload();
+      } else {
+        alert('Gagal: ' + data.message);
+      }
+    })
+    .catch(err => alert('Error: ' + err.message));
 }
 
 function filterBeritaTable() {

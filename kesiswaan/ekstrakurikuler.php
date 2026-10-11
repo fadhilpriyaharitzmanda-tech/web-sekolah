@@ -1,3 +1,14 @@
+<?php
+require_once __DIR__ . '/../config/database.php';
+$webEkskulList = [];
+try {
+    $pdo = getDbConnection();
+    $stmt = $pdo->query("SELECT * FROM ekstrakurikuler WHERE status = 'Aktif' ORDER BY id ASC");
+    $webEkskulList = $stmt->fetchAll();
+} catch (Exception $e) {
+    //
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -125,55 +136,49 @@
     <section class="section pt-4">
       <div class="container">
         <div class="eks-card-grid" data-animate>
-          <div class="eks-card">
-            <div class="eks-icon" style="background:#e8f5e9;color:#2e7d32;">
-              <span class="material-symbols-outlined icon-fill">groups</span>
+          <?php if (!empty($webEkskulList)): ?>
+            <?php 
+              $icons = ['groups', 'medical_services', 'flag', 'forest', 'mosque', 'newspaper', 'hiking', 'sports_soccer', 'palette', 'music_note'];
+              $colors = [
+                ['bg' => '#e8f5e9', 'color' => '#2e7d32'],
+                ['bg' => '#fff3e0', 'color' => '#e65100'],
+                ['bg' => '#e3f2fd', 'color' => '#1565c0'],
+                ['bg' => '#fce4ec', 'color' => '#c62828'],
+                ['bg' => '#f3e5f5', 'color' => '#7b1fa2'],
+                ['bg' => '#e0f7fa', 'color' => '#00838f']
+              ];
+            ?>
+            <?php foreach ($webEkskulList as $idx => $e): 
+              $theme = $colors[$idx % count($colors)];
+              $icon = $icons[$idx % count($icons)];
+            ?>
+              <div class="eks-card">
+                <div class="eks-icon" style="background:<?= $theme['bg'] ?>;color:<?= $theme['color'] ?>;">
+                  <span class="material-symbols-outlined icon-fill"><?= $icon ?></span>
+                </div>
+                <h3><?= htmlspecialchars($e['nama_ekskul']) ?></h3>
+                <p><?= htmlspecialchars($e['deskripsi'] ?? 'Kegiatan ekstrakurikuler SMKN 2 Karanganyar.') ?></p>
+                <?php if (!empty($e['pembina']) || !empty($e['hari_jadwal'])): ?>
+                  <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed #e8f0e8;font-size:0.8rem;color:var(--secondary);">
+                    <?php if (!empty($e['pembina'])): ?>
+                      <div>Pembina: <strong><?= htmlspecialchars($e['pembina']) ?></strong></div>
+                    <?php endif; ?>
+                    <?php if (!empty($e['hari_jadwal'])): ?>
+                      <div>Jadwal: <strong><?= htmlspecialchars($e['hari_jadwal']) ?></strong></div>
+                    <?php endif; ?>
+                  </div>
+                <?php endif; ?>
+              </div>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <div class="eks-card">
+              <div class="eks-icon" style="background:#e8f5e9;color:#2e7d32;">
+                <span class="material-symbols-outlined icon-fill">groups</span>
+              </div>
+              <h3>OSIS</h3>
+              <p>Organisasi intra sekolah yang menjadi wadah pengembangan jiwa kepemimpinan, organisasi, dan demokrasi siswa.</p>
             </div>
-            <h3>OSIS</h3>
-            <p>Organisasi intra sekolah yang menjadi wadah pengembangan jiwa kepemimpinan, organisasi, dan demokrasi siswa.</p>
-          </div>
-          <div class="eks-card">
-            <div class="eks-icon" style="background:#fff3e0;color:#e65100;">
-              <span class="material-symbols-outlined icon-fill">medical_services</span>
-            </div>
-            <h3>PMR</h3>
-            <p>Palang Merah Remaja yang melatih kepedulian sosial, pertolongan pertama, dan kesiapsiagaan bencana.</p>
-          </div>
-          <div class="eks-card">
-            <div class="eks-icon" style="background:#e3f2fd;color:#1565c0;">
-              <span class="material-symbols-outlined icon-fill">flag</span>
-            </div>
-            <h3>Paskibra</h3>
-            <p>Pasukan pengibar bendera yang membentuk karakter disiplin, tanggung jawab, dan semangat nasionalisme.</p>
-          </div>
-          <div class="eks-card">
-            <div class="eks-icon" style="background:#fce4ec;color:#c62828;">
-              <span class="material-symbols-outlined icon-fill">forest</span>
-            </div>
-            <h3>Ambalan</h3>
-            <p>Kegiatan kepramukaan tingkat penegak yang mengembangkan kemandirian, kepemimpinan, dan kecintaan alam.</p>
-          </div>
-          <div class="eks-card">
-            <div class="eks-icon" style="background:#f3e5f5;color:#7b1fa2;">
-              <span class="material-symbols-outlined icon-fill">mosque</span>
-            </div>
-            <h3>Rohis</h3>
-            <p>Rohani Islam sebagai wadah pengembangan keimanan, akhlak mulia, dan kegiatan keagamaan siswa muslim.</p>
-          </div>
-          <div class="eks-card">
-            <div class="eks-icon" style="background:#e0f7fa;color:#00838f;">
-              <span class="material-symbols-outlined icon-fill">newspaper</span>
-            </div>
-            <h3>Jurnalistik</h3>
-            <p>Mengembangkan kemampuan menulis, reportase, dan publikasi berita sekolah melalui media cetak dan digital.</p>
-          </div>
-          <div class="eks-card">
-            <div class="eks-icon" style="background:#fff8e1;color:#f57f17;">
-              <span class="material-symbols-outlined icon-fill">hiking</span>
-            </div>
-            <h3>IMAPA</h3>
-            <p>Ikatan Pelajar Pecinta Alam yang menyalurkan minat di bidang pencinta alam, konservasi, dan petualangan.</p>
-          </div>
+          <?php endif; ?>
         </div>
       </div>
     </section>

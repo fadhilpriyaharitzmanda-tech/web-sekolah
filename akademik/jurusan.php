@@ -1,3 +1,12 @@
+<?php
+require_once __DIR__ . '/../config/database.php';
+try {
+    $pdo = getDbConnection();
+    $jurusanList = $pdo->query("SELECT * FROM jurusan WHERE status = 'Aktif' ORDER BY urutan ASC, id ASC")->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $jurusanList = [];
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -132,143 +141,53 @@
     <section class="section">
       <div class="container">
         <div class="jur-grid" data-animate>
-
-          <!-- RPL - Banner Large -->
-          <div class="jur-banner" style="--mc:#16a34a">
-            <div class="jur-banner-img">
-              <img src="../images/3d-rpl.png" alt="Rekayasa Perangkat Lunak">
-            </div>
-            <div class="jur-banner-body">
-              <span class="jur-badge">RPL</span>
-              <h3>Rekayasa Perangkat Lunak</h3>
-              <p>Mempelajari pengembangan aplikasi web, mobile, dan desktop. Fokus pada pemrograman, database, UI/UX, serta pengembangan AI dan teknologi cloud.</p>
-              <ul class="jur-list">
-                <li>Web &amp; Mobile</li>
-                <li>AI &amp; Machine Learning</li>
-                <li>Database &amp; Cloud</li>
-                <li>UI/UX Design</li>
-              </ul>
-              
-              <!-- Transaksi TeFa RPL -->
-              <div class="jur-tefa-box">
-                <div class="jur-tefa-header">
-                  <span class="jur-tefa-tag">
-                    <span class="material-symbols-outlined" style="font-size:14px;">terminal</span>
-                    Unit Produksi &amp; Software TeFa
-                  </span>
-                  <span class="jur-tefa-method">Download Otomatis &amp; Lisensi Email</span>
+          <?php if (!empty($jurusanList)): ?>
+            <?php foreach ($jurusanList as $jur): 
+              $warnaJur = !empty($jur['warna']) ? $jur['warna'] : '#16a34a';
+              $imgJur = !empty($jur['gambar']) ? $jur['gambar'] : 'images/3d-rpl.png';
+              if (strpos($imgJur, 'http://') !== 0 && strpos($imgJur, 'https://') !== 0) {
+                $imgJur = '../' . ltrim($imgJur, '/');
+              }
+              $kompList = array_filter(array_map('trim', explode(',', $jur['kompetensi'] ?? '')));
+              $tefaPage = 'produk-' . strtolower($jur['singkatan']) . '.php';
+            ?>
+              <div class="jur-banner" style="--mc:<?= htmlspecialchars($warnaJur) ?>">
+                <div class="jur-banner-img">
+                  <img src="<?= htmlspecialchars($imgJur) ?>" alt="<?= htmlspecialchars($jur['nama']) ?>" onerror="this.src='../images/3d-rpl.png'">
                 </div>
-                <p class="jur-tefa-prods">Produk: Aplikasi E-Arsip Dokumen Sekolah, Template Dashboard Web, UI/UX Kit, dan Jasa Pembuatan Website Kustom.</p>
-                <a href="produk-rpl.php" class="jur-btn-action">
-                  <span>Lihat Produk &amp; Transaksi RPL</span>
-                  <span class="material-symbols-outlined" style="font-size:16px;">arrow_forward</span>
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <!-- Mesin - Banner -->
-          <div class="jur-banner" style="--mc:#2563eb">
-            <div class="jur-banner-img">
-              <img src="../images/3d-mesin.png" alt="Teknik Mesin">
-            </div>
-            <div class="jur-banner-body">
-              <span class="jur-badge">Mesin</span>
-              <h3>Teknik Mesin</h3>
-              <p>Menguasai teknologi permesinan konvensional dan CNC. Belajar menggambar teknik, proses produksi, serta pengendalian mutu di industri manufaktur.</p>
-              <ul class="jur-list">
-                <li>Mesin Konvensional</li>
-                <li>CNC Modern</li>
-                <li>Gambar Teknik</li>
-                <li>Pengendalian Mutu</li>
-              </ul>
-
-              <!-- Transaksi TeFa Mesin -->
-              <div class="jur-tefa-box">
-                <div class="jur-tefa-header">
-                  <span class="jur-tefa-tag">
-                    <span class="material-symbols-outlined" style="font-size:14px;">settings</span>
-                    Bengkel Bubut, CNC &amp; Fabrikasi
-                  </span>
-                  <span class="jur-tefa-method">Kurir / Ekspedisi / Ambil TeFa &amp; Servis</span>
+                <div class="jur-banner-body">
+                  <span class="jur-badge"><?= htmlspecialchars($jur['singkatan']) ?></span>
+                  <h3><?= htmlspecialchars($jur['nama']) ?></h3>
+                  <p><?= htmlspecialchars($jur['deskripsi']) ?></p>
+                  <ul class="jur-list">
+                    <?php if (!empty($kompList)): ?>
+                      <?php foreach ($kompList as $kp): ?>
+                        <li><?= htmlspecialchars($kp) ?></li>
+                      <?php endforeach; ?>
+                    <?php else: ?>
+                      <li>Kurikulum Standar Industri</li>
+                      <li>Praktik Kejuruan Terpadu</li>
+                    <?php endif; ?>
+                  </ul>
+                  
+                  <?php if (file_exists(__DIR__ . '/' . $tefaPage)): ?>
+                    <div class="jur-tefa-box">
+                      <div class="jur-tefa-header">
+                        <span class="jur-tefa-tag">
+                          <span class="material-symbols-outlined" style="font-size:14px;">terminal</span>
+                          Teaching Factory (TeFa) <?= htmlspecialchars($jur['singkatan']) ?>
+                        </span>
+                      </div>
+                      <a href="<?= htmlspecialchars($tefaPage) ?>" class="jur-btn-action">
+                        <span>Lihat Produk &amp; Transaksi <?= htmlspecialchars($jur['singkatan']) ?></span>
+                        <span class="material-symbols-outlined" style="font-size:16px;">arrow_forward</span>
+                      </a>
+                    </div>
+                  <?php endif; ?>
                 </div>
-                <p class="jur-tefa-prods">Produk: Suku Cadang Bushing/Flange Kuningan, Ornamen Papan Nama Stainless Cutting, dan Jasa Servis Mesin Bubut.</p>
-                <a href="produk-mesin.php" class="jur-btn-action">
-                  <span>Pesan Suku Cadang &amp; Servis Mesin</span>
-                  <span class="material-symbols-outlined" style="font-size:16px;">arrow_forward</span>
-                </a>
               </div>
-            </div>
-          </div>
-
-          <!-- Tekstil - Banner -->
-          <div class="jur-banner" style="--mc:#ea580c">
-            <div class="jur-banner-img">
-              <img src="../images/3d-tekstil.png" alt="Teknik Pembuatan Kain">
-            </div>
-            <div class="jur-banner-body">
-              <span class="jur-badge">Tekstil</span>
-              <h3>Teknik Pembuatan Kain</h3>
-              <p>Mempelajari teknologi produksi tekstil, mulai dari serat, pemintalan, pertenunan, hingga pencelupan dan finishing kain untuk industri fashion dan garmen.</p>
-              <ul class="jur-list">
-                <li>Desain Tenun</li>
-                <li>Mesin Pembuatan Kain</li>
-                <li>Pencelupan &amp; Finishing</li>
-                <li>Pengendalian Mutu</li>
-              </ul>
-
-              <!-- Transaksi TeFa Tekstil -->
-              <div class="jur-tefa-box">
-                <div class="jur-tefa-header">
-                  <span class="jur-tefa-tag">
-                    <span class="material-symbols-outlined" style="font-size:14px;">checkroom</span>
-                    Unit Garmen &amp; Tenun TeFa
-                  </span>
-                  <span class="jur-tefa-method">Ready Stock &amp; PO (Kurir / Ambil di TeFa)</span>
-                </div>
-                <p class="jur-tefa-prods">Produk: Seragam Wearpack Praktik Drill, Tas Totebag Tenun Etnik Lawu, dan Syal Motif Printing Khas Karanganyar.</p>
-                <a href="produk-tekstil.php" class="jur-btn-action">
-                  <span>Beli Produk Tekstil &amp; Seragam</span>
-                  <span class="material-symbols-outlined" style="font-size:16px;">shopping_bag</span>
-                </a>
-              </div>
-            </div>
-          </div>
-
-          <!-- Ototronik - Banner Large -->
-          <div class="jur-banner" style="--mc:#dc2626">
-            <div class="jur-banner-img">
-              <img src="../images/3d-oto.png" alt="Teknik Ototronik">
-            </div>
-            <div class="jur-banner-body">
-              <span class="jur-badge">Ototronik</span>
-              <h3>Teknik Ototronik</h3>
-              <p>Perpaduan antara otomotif, elektronika, dan sistem kontrol. Fokus pada kendaraan cerdas, sensor, aktuator, dan sistem embedded.</p>
-              <ul class="jur-list">
-                <li>Otomotif &amp; Elektronika</li>
-                <li>Sistem Kontrol</li>
-                <li>Sensor &amp; Aktuator</li>
-                <li>Kendaraan Cerdas</li>
-              </ul>
-
-              <!-- Transaksi TeFa Ototronik -->
-              <div class="jur-tefa-box">
-                <div class="jur-tefa-header">
-                  <span class="jur-tefa-tag">
-                    <span class="material-symbols-outlined" style="font-size:14px;">car_repair</span>
-                    Bengkel Servis TeFa Otomotif
-                  </span>
-                  <span class="jur-tefa-method">Sistem Booking Jadwal (Bayar di Tempat)</span>
-                </div>
-                <p class="jur-tefa-prods">Layanan: Servis Berkala &amp; Tune Up Injeksi Motor, Scan ECU Komputer Mobil OBD-II, dan Perawatan AC Mobil.</p>
-                <a href="produk-ototronik.php" class="jur-btn-action">
-                  <span>Booking Jadwal Servis Bengkel</span>
-                  <span class="material-symbols-outlined" style="font-size:16px;">event_available</span>
-                </a>
-              </div>
-            </div>
-          </div>
-
+            <?php endforeach; ?>
+          <?php endif; ?>
         </div>
       </div>
     </section>

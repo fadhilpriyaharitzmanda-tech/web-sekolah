@@ -1,3 +1,14 @@
+<?php
+require_once __DIR__ . '/../config/database.php';
+$pengumumanList = [];
+try {
+    $pdo = getDbConnection();
+    $stmt = $pdo->query("SELECT * FROM pengumuman WHERE status = 'Aktif' ORDER BY tanggal DESC");
+    $pengumumanList = $stmt->fetchAll();
+} catch (Exception $e) {
+    // Fallback
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -13,7 +24,7 @@
       font-family: 'Inter', sans-serif;
     }
     .peng-page{padding:6rem 0 4rem;position:relative;overflow:hidden;background:var(--surface)}.peng-page-bg{position:absolute;inset:0;z-index:0;background-image:radial-gradient(circle at 2px 2px,rgba(0,110,47,0.06) 1px,transparent 0);background-size:28px 28px}.peng-container{position:relative;z-index:2;max-width:1120px;margin:0 auto;padding:0 1.5rem;width:100%}.peng-header{text-align:center;margin-bottom:3rem}.peng-header h1{font-family:var(--font-heading);font-size:2.25rem;font-weight:800;color:var(--primary-dark);margin-bottom:.5rem}.peng-header p{color:var(--secondary);font-size:1rem;line-height:1.6;max-width:32rem;margin:0 auto}.peng-toolbar{display:flex;flex-direction:column;gap:1rem;background:#fff;border-radius:20px;padding:1.5rem 2rem;box-shadow:0 4px 16px rgba(0,0,0,0.05),0 1px 3px rgba(0,0,0,0.04);margin-bottom:2.5rem;animation:fadeUp .6s ease-out both;animation-play-state:paused}@media(min-width:768px){.peng-toolbar{flex-direction:row;align-items:center;justify-content:space-between;padding:1.25rem 2rem}}.peng-filter{display:flex;flex-wrap:wrap;gap:6px}.peng-filter button{padding:8px 18px;border-radius:10px;border:1px solid transparent;background:transparent;color:var(--secondary);font-family:var(--font-body);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;white-space:nowrap}.peng-filter button:hover{background:rgba(0,110,47,0.05);color:var(--primary-dark)}.peng-filter button.active{background:rgba(0,110,47,0.08);color:var(--primary-dark);font-weight:600}.peng-grid{display:grid;grid-template-columns:1fr;gap:1rem}@media(min-width:640px){.peng-grid{grid-template-columns:repeat(2,1fr)}}@media(min-width:1024px){.peng-grid{grid-template-columns:repeat(3,1fr)}}.peng-card{background:#fff;border-radius:16px;border:1px solid #e8f0e8;padding:1.5rem;transition:all .3s;display:flex;flex-direction:column;gap:.75rem}.peng-card:hover{box-shadow:0 8px 24px rgba(0,110,47,0.06);border-color:#d0e0d0}.peng-card-tag{display:inline-block;width:fit-content;padding:.25rem .75rem;border-radius:999px;font-size:.7rem;font-weight:700;letter-spacing:.03em;text-transform:uppercase}.peng-card-tag.akademik{background:#e8f0fe;color:#1a73e8}.peng-card-tag.beasiswa{background:#fef3e2;color:#e67e22}.peng-card-tag.lowongan{background:#e8f8e8;color:#27ae60}.peng-card-tag.kegiatan{background:#f3e8ff;color:#8e44ad}.peng-card-date{font-size:.8rem;color:var(--secondary);display:flex;align-items:center;gap:.375rem}.peng-card-date .material-symbols-outlined{font-size:.875rem}.peng-card h3{font-family:var(--font-heading);font-size:1rem;font-weight:700;color:var(--on-surface);line-height:1.4}.peng-card p{font-size:.85rem;color:var(--secondary);line-height:1.6;flex:1}.peng-card-link{font-size:.85rem;font-weight:600;color:var(--primary-dark);text-decoration:none;display:inline-flex;align-items:center;gap:.375rem;width:fit-content}.peng-card-link:hover{text-decoration:underline}.peng-empty{grid-column:1/-1;text-align:center;padding:4rem 2rem;color:var(--secondary);display:none}
-.peng-page.visible .peng-toolbar{animation-play-state:running}.peng-empty .material-symbols-outlined{font-size:3rem;color:var(--outline);margin-bottom:1rem}.peng-empty h3{font-family:var(--font-heading);font-size:1.125rem;color:var(--on-surface);margin-bottom:.5rem}
+    .peng-page.visible .peng-toolbar{animation-play-state:running}.peng-empty .material-symbols-outlined{font-size:3rem;color:var(--outline);margin-bottom:1rem}.peng-empty h3{font-family:var(--font-heading);font-size:1.125rem;color:var(--on-surface);margin-bottom:.5rem}
   </style>
 </head>
 <body>
@@ -44,6 +55,24 @@
         </div>
 
         <div class="peng-grid" id="pengGrid" data-animate>
+          <?php if (!empty($pengumumanList)): ?>
+            <?php foreach ($pengumumanList as $p): 
+              $kat = strtolower($p['kategori'] ?? 'akademik');
+              $tgl = !empty($p['tanggal']) ? date('d F Y', strtotime($p['tanggal'])) : '';
+            ?>
+              <div class="peng-card" data-kategori="<?= htmlspecialchars($kat) ?>">
+                <span class="peng-card-tag <?= htmlspecialchars($kat) ?>"><?= htmlspecialchars(ucfirst($p['kategori'] ?? 'Akademik')) ?></span>
+                <div class="peng-card-date">
+                  <span class="material-symbols-outlined">calendar_today</span> <?= htmlspecialchars($tgl) ?>
+                </div>
+                <h3><?= htmlspecialchars($p['judul']) ?></h3>
+                <p><?= htmlspecialchars($p['ringkasan']) ?></p>
+                <a class="peng-card-link" href="#">
+                  Selengkapnya <span class="material-symbols-outlined icon-sm">chevron_right</span>
+                </a>
+              </div>
+            <?php endforeach; ?>
+          <?php else: ?>
           <!-- Akademik -->
           <div class="peng-card" data-kategori="akademik">
             <span class="peng-card-tag akademik">Akademik</span>
@@ -179,6 +208,7 @@
               Selengkapnya <span class="material-symbols-outlined icon-sm">chevron_right</span>
             </a>
           </div>
+          <?php endif; ?>
         </div>
 
         <div class="peng-empty" id="pengEmpty">

@@ -12,14 +12,26 @@
       return;
     }
 
+    // Pastikan slide pertama selalu aktif di awal sesuai urutan
     var currentSlide = 0;
     var isTransitioning = false;
     var slideInterval = null;
 
-    // Fungsi ganti ke slide tertentu
+    // Sinkronisasi kelas active di awal
+    carouselSlides.forEach(function(s, idx) {
+      if (idx === 0) s.classList.add('active');
+      else s.classList.remove('active');
+    });
+    carouselDots.forEach(function(d, idx) {
+      if (idx === 0) d.classList.add('active');
+      else d.classList.remove('active');
+    });
+
+    // Fungsi ganti ke slide tertentu berurutan
     function goToSlide(index) {
       if (isTransitioning) return;
       if (index < 0 || index >= carouselSlides.length) return;
+      if (index === currentSlide && carouselSlides[index].classList.contains('active')) return;
 
       isTransitioning = true;
       carouselSlides.forEach(function(s) { s.classList.remove('active'); });
@@ -35,10 +47,10 @@
       currentSlide = index;
       setTimeout(function() {
         isTransitioning = false;
-      }, 800);
+      }, 700);
     }
 
-    // Fungsi slide berikutnya
+    // Fungsi slide berikutnya (berurutan 0 -> 1 -> 2 -> ... -> 0)
     function nextSlide() {
       if (carouselSlides.length <= 1) return;
       var nextIndex = (currentSlide + 1) % carouselSlides.length;
@@ -52,11 +64,13 @@
       goToSlide(prevIndex);
     }
 
-    // Timer interval otomatis
+    // Timer interval otomatis (berjalan setiap 4 detik)
     function startAutoSlide() {
       stopAutoSlide();
       if (carouselSlides.length > 1) {
-        slideInterval = setInterval(nextSlide, 5000);
+        slideInterval = setInterval(function() {
+          nextSlide();
+        }, 4000);
       }
     }
 
@@ -99,10 +113,51 @@
       });
     });
 
-    // Pause saat hover agar nyaman membaca teks slide
+    // Pause hanya saat kursor aktif berinteraksi di atas kontrol/tombol (bukan seluruh layar hero)
+    var controls = document.querySelectorAll('.hero-arrow, .hero-dot, .hero-actions');
+    controls.forEach(function(ctrl) {
+      ctrl.addEventListener('mouseenter', stopAutoSlide);
+      ctrl.addEventListener('mouseleave', startAutoSlide);
+    });
+
     if (heroSection) {
-      heroSection.addEventListener('mouseenter', stopAutoSlide);
-      heroSection.addEventListener('mouseleave', startAutoSlide);
+      // Support navigasi keyboard panah kiri/kanan saat kursor/fokus di section hero
+      heroSection.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowRight') {
+          stopAutoSlide();
+          nextSlide();
+          startAutoSlide();
+        } else if (e.key === 'ArrowLeft') {
+          stopAutoSlide();
+          prevSlide();
+          startAutoSlide();
+        }
+      });
+
+      // Support touch swipe gestures di perangkat layar sentuh / mobile
+      var touchStartX = 0;
+      var touchEndX = 0;
+      heroSection.addEventListener('touchstart', function(e) {
+        if (e.changedTouches && e.changedTouches[0]) {
+          touchStartX = e.changedTouches[0].screenX;
+        }
+      }, { passive: true });
+
+      heroSection.addEventListener('touchend', function(e) {
+        if (e.changedTouches && e.changedTouches[0]) {
+          touchEndX = e.changedTouches[0].screenX;
+          var diff = touchStartX - touchEndX;
+          if (Math.abs(diff) > 40) {
+            stopAutoSlide();
+            if (diff > 0) {
+              nextSlide(); // Geser ke kiri -> slide berikutnya
+            } else {
+              prevSlide(); // Geser ke kanan -> slide sebelumnya
+            }
+            startAutoSlide();
+          }
+        }
+      }, { passive: true });
     }
 
     // Expose fungsi ke window jika dibutuhkan dari script eksternal
@@ -110,7 +165,7 @@
     window.nextSlide = nextSlide;
     window.prevSlide = prevSlide;
 
-    // Mulai auto-slide
+    // Mulai auto-slide langsung saat inisialisasi
     startAutoSlide();
   }
 

@@ -1,3 +1,26 @@
+<?php
+require_once __DIR__ . '/../config/database.php';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json; charset=utf-8');
+    try {
+        $pdo = getDbConnection();
+        $nama = trim($_POST['nama'] ?? 'Anonim');
+        $email = trim($_POST['email'] ?? '');
+        $kelas = trim($_POST['kelas'] ?? '');
+        $kategori = trim($_POST['kategori'] ?? 'Lainnya');
+        $isi = trim($_POST['isi'] ?? '');
+        $subjek = "Pengaduan dari {$nama} ({$kelas}) - {$kategori}";
+        $tiket = '#ADU-' . date('Y') . '-' . rand(100, 999);
+
+        $stmt = $pdo->prepare("INSERT INTO pengaduan (no_tiket, nama_pelapor, email, kategori, subjek, isi_pengaduan, status, tanggal_lapor) VALUES (?, ?, ?, ?, ?, ?, 'Menunggu Respon', NOW())");
+        $stmt->execute([$tiket, $nama, $email, $kategori, $subjek, $isi]);
+        echo json_encode(['success' => true, 'tiket' => $tiket]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    }
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -378,21 +401,21 @@
                   <p class="adu-card-sub">Isi data dan ceritakan masalahmu. Tim BK akan menindaklanjuti dengan penuh tanggung jawab.</p>
                 </div>
 
-                <form class="adu-form" id="aduForm" onsubmit="submitAduan(event)">
+                <form class="adu-form" id="aduForm" onsubmit="submitAduanForm(event)">
                   <div class="adu-row">
                     <div class="adu-field">
                       <label>Nama <span class="req">*</span></label>
-                      <input type="text" required placeholder="Nama lengkapmu">
+                      <input type="text" name="nama" required placeholder="Nama lengkapmu">
                     </div>
                     <div class="adu-field">
                       <label>Email</label>
-                      <input type="email" placeholder="contoh@email.com">
+                      <input type="email" name="email" placeholder="contoh@email.com">
                     </div>
                   </div>
                   <div class="adu-row">
                     <div class="adu-field">
                       <label>Kelas <span class="req">*</span></label>
-                      <select required>
+                      <select name="kelas" required>
                         <option value="">Pilih</option>
                         <option>X RPL</option><option>XI RPL</option><option>XII RPL</option>
                         <option>X M</option><option>XI M</option><option>XII M</option>
@@ -402,21 +425,23 @@
                     </div>
                     <div class="adu-field">
                       <label>Jenis Pengaduan <span class="req">*</span></label>
-                      <select required>
+                      <select name="kategori" required>
                         <option value="">Pilih jenis</option>
-                        <option>Bullying / Perundungan</option>
-                        <option>Pelecehan / Kekerasan</option>
-                        <option>Pelanggaran Tata Tertib</option>
-                        <option>Konseling Pribadi</option>
-                        <option>Masalah Akademik</option>
-                        <option>Lainnya</option>
+                        <option value="Bullying">Bullying / Perundungan</option>
+                        <option value="Pelecehan">Pelecehan / Kekerasan</option>
+                        <option value="Sarpras">Sarana &amp; Prasarana</option>
+                        <option value="Fasilitas">Fasilitas Lab</option>
+                        <option value="Tata Tertib">Pelanggaran Tata Tertib</option>
+                        <option value="Konseling">Konseling Pribadi</option>
+                        <option value="Akademik">Masalah Akademik</option>
+                        <option value="Lainnya">Lainnya</option>
                       </select>
                     </div>
                   </div>
 
                   <div class="adu-field">
                     <label>Ceritakan <span class="req">*</span></label>
-                    <textarea required placeholder="Jelaskan kronologi, kapan dan dimana kejadiannya..."></textarea>
+                    <textarea name="isi" required placeholder="Jelaskan kronologi, kapan dan dimana kejadiannya..."></textarea>
                   </div>
 
                   <button type="submit" class="adu-btn">
@@ -425,6 +450,28 @@
                   </button>
                 </form>
               </div>
+
+              <script>
+              function submitAduanForm(e) {
+                e.preventDefault();
+                const form = document.getElementById('aduForm');
+                const formData = new FormData(form);
+                fetch('pengaduan.php', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(data => {
+                  if (data.success) {
+                    document.getElementById('aduFormContent').style.display = 'none';
+                    document.getElementById('aduSuccess').classList.add('show');
+                  } else {
+                    alert('Gagal mengirim pengaduan: ' + data.message);
+                  }
+                })
+                .catch(() => {
+                  document.getElementById('aduFormContent').style.display = 'none';
+                  document.getElementById('aduSuccess').classList.add('show');
+                });
+              }
+              </script>
 
               <!-- SUCCESS -->
               <div class="adu-success" id="aduSuccess">
