@@ -466,7 +466,6 @@ include __DIR__ . '/components/sidebar.php';
   </div>
 
   <?php include __DIR__ . '/components/footer.php'; ?>
-</div>
 
 <!-- ==========================================
      MODALS SECTION
@@ -766,13 +765,14 @@ function tukarUrutanSlide(id, arah) {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      location.reload();
+      showToast(data.message || 'Urutan slide diperbarui', 'success');
+      setTimeout(() => location.reload(), 600);
     } else {
-      alert(data.message || 'Gagal mengubah urutan slide');
+      swalError(data.message || 'Gagal mengubah urutan slide');
     }
   })
   .catch(err => {
-    alert('Terjadi kesalahan koneksi server: ' + err.message);
+    swalError('Terjadi kesalahan koneksi server: ' + err.message);
   });
 }
 
@@ -822,7 +822,7 @@ function simpanEditSlide() {
   const fileInput = document.getElementById('editSlideFile');
 
   if (!judul || !deskripsi) {
-    alert('Judul dan deskripsi banner wajib diisi!');
+    swalWarning('Judul dan deskripsi banner wajib diisi!');
     return;
   }
 
@@ -857,33 +857,52 @@ function simpanEditSlide() {
     btn.disabled = false;
     btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Simpan Perubahan';
     if (data.success) {
-      alert(data.message);
-      location.reload();
+      swalSuccess(data.message).then(() => location.reload());
     } else {
-      alert(data.message || 'Gagal menyimpan perubahan');
+      swalError(data.message || 'Gagal menyimpan perubahan');
     }
   })
   .catch(err => {
     btn.disabled = false;
     btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Simpan Perubahan';
-    alert('Terjadi kesalahan koneksi server: ' + err.message);
+    swalError('Terjadi kesalahan koneksi server: ' + err.message);
   });
 }
 
-// Buka Modal Hapus Slide
+// Buka Modal Hapus Slide dengan SweetAlert
 function bukaModalHapusSlide(cardId) {
   const card = document.getElementById(cardId);
   if (!card) return;
 
   const dataset = card.dataset;
   const judul = dataset.judul || 'Slide Banner';
-  document.getElementById('hapusSlideId').value = dataset.id || '';
-  document.getElementById('hapusSlideTargetCardId').value = cardId;
-  document.getElementById('hapusSlideJudulText').textContent = judul;
+  const slideId = dataset.id || '';
 
-  const modalEl = document.getElementById('modalHapusSlide');
-  const modal = new bootstrap.Modal(modalEl);
-  modal.show();
+  swalConfirm({
+    title: 'Hapus Slide Carousel?',
+    text: 'Apakah Anda yakin ingin menghapus slide "' + judul + '" dari Carousel Banner? Tindakan ini tidak dapat dibatalkan.',
+    confirmText: 'Iya, Hapus',
+    cancelText: 'Tidak, Batal',
+    isDanger: true
+  }, () => {
+    const formData = new FormData();
+    formData.append('action', 'hapus_slide');
+    formData.append('id', slideId);
+
+    fetch('kelola-hero.php', {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        swalSuccess(data.message).then(() => location.reload());
+      } else {
+        swalError(data.message || 'Gagal menghapus slide');
+      }
+    })
+    .catch(err => swalError('Terjadi kesalahan: ' + err.message));
+  });
 }
 
 // Konfirmasi Hapus Slide via AJAX POST
@@ -909,16 +928,15 @@ function konfirmasiHapusSlide() {
       const modalEl = document.getElementById('modalHapusSlide');
       const modal = bootstrap.Modal.getInstance(modalEl);
       if (modal) modal.hide();
-      alert(data.message);
-      location.reload();
+      swalSuccess(data.message).then(() => location.reload());
     } else {
-      alert(data.message || 'Gagal menghapus slide');
+      swalError(data.message || 'Gagal menghapus slide');
     }
   })
   .catch(err => {
     btn.disabled = false;
     btn.innerHTML = '<i class="bi bi-trash3-fill me-1"></i> Hapus Slide';
-    alert('Terjadi kesalahan: ' + err.message);
+    swalError('Terjadi kesalahan: ' + err.message);
   });
 }
 
@@ -945,12 +963,12 @@ function simpanTambahSlide() {
   const fileInput = document.getElementById('tambahSlideFile');
 
   if (!judul || !deskripsi) {
-    alert('Judul dan deskripsi banner wajib diisi!');
+    swalWarning('Judul dan deskripsi banner wajib diisi!');
     return;
   }
 
   if (!fileInput.files || !fileInput.files[0]) {
-    alert('Harap pilih file foto banner dari perangkat Anda!');
+    swalWarning('Harap pilih file foto banner dari perangkat Anda!');
     return;
   }
 
@@ -980,16 +998,15 @@ function simpanTambahSlide() {
     btn.disabled = false;
     btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Tambahkan Slide';
     if (data.success) {
-      alert(data.message);
-      location.reload();
+      swalSuccess(data.message).then(() => location.reload());
     } else {
-      alert(data.message || 'Gagal menambahkan slide');
+      swalError(data.message || 'Gagal menambahkan slide');
     }
   })
   .catch(err => {
     btn.disabled = false;
     btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Tambahkan Slide';
-    alert('Terjadi kesalahan: ' + err.message);
+    swalError('Terjadi kesalahan: ' + err.message);
   });
 }
 
@@ -1024,7 +1041,7 @@ function simpanEditCta() {
   const btn2Link = document.getElementById('editCtaBtn2Link').value.trim();
 
   if (!judul || !desc) {
-    alert('Judul banner dan deskripsi kalimat ajakan wajib diisi!');
+    swalWarning('Judul banner dan deskripsi kalimat ajakan wajib diisi!');
     return;
   }
 
@@ -1050,16 +1067,15 @@ function simpanEditCta() {
     btn.disabled = false;
     btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Simpan Banner CTA';
     if (data.success) {
-      alert(data.message);
-      location.reload();
+      swalSuccess(data.message).then(() => location.reload());
     } else {
-      alert(data.message || 'Gagal menyimpan CTA');
+      swalError(data.message || 'Gagal menyimpan CTA');
     }
   })
   .catch(err => {
     btn.disabled = false;
     btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Simpan Banner CTA';
-    alert('Terjadi kesalahan: ' + err.message);
+    swalError('Terjadi kesalahan: ' + err.message);
   });
 }
 </script>

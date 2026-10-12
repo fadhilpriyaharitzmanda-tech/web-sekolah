@@ -82,7 +82,7 @@ include __DIR__ . '/components/sidebar.php';
       <a href="../layanan/pengaduan.php" target="_blank" class="btn btn-outline-success btn-sm d-flex align-items-center gap-2">
         <i class="bi bi-eye"></i> Form Aduan Website
       </a>
-      <button type="button" class="btn btn-success btn-sm d-flex align-items-center gap-2" onclick="alert('Laporan pengaduan berhasil diekspor!')">
+      <button type="button" class="btn btn-success btn-sm d-flex align-items-center gap-2" onclick="showToast('Laporan pengaduan berhasil diekspor!', 'success')">
         <i class="bi bi-download"></i> Unduh Laporan
       </button>
     </div>
@@ -248,9 +248,6 @@ include __DIR__ . '/components/sidebar.php';
   </div>
   <!-- END: table-card-custom -->
 
-</div>
-<!-- END: .main-wrapper -->
-
 <!-- Modal Tindak Lanjut Pengaduan -->
 <div class="modal fade" id="modalTindakLanjutPengaduan" tabindex="-1" aria-labelledby="modalTindakLanjutLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -334,17 +331,23 @@ function kirimResponAduan() {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert(data.message);
-      location.reload();
+      swalSuccess(data.message).then(() => location.reload());
     } else {
-      alert('Gagal: ' + data.message);
+      swalError(data.message || 'Gagal menyimpan tindak lanjut pengaduan');
     }
   })
-  .catch(() => alert('Terjadi kesalahan jaringan.'));
+  .catch(err => swalError('Terjadi kesalahan jaringan: ' + err.message));
 }
 
 function selesaikanAduan(id, tiket) {
-  if (confirm('Tandai tiket ' + tiket + ' sebagai SELESAI ditindaklanjuti?')) {
+  swalConfirm({
+    title: 'Selesaikan Pengaduan?',
+    text: 'Tandai tiket laporan #' + tiket + ' sebagai SELESAI ditindaklanjuti?',
+    confirmText: 'Iya, Selesaikan',
+    cancelText: 'Tidak, Batal',
+    isDanger: false,
+    icon: 'question'
+  }, () => {
     const formData = new FormData();
     formData.append('action', 'selesai');
     formData.append('id', id);
@@ -353,18 +356,23 @@ function selesaikanAduan(id, tiket) {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        alert(data.message);
-        location.reload();
+        swalSuccess(data.message).then(() => location.reload());
       } else {
-        alert('Gagal: ' + data.message);
+        swalError(data.message);
       }
     })
-    .catch(() => alert('Terjadi kesalahan jaringan.'));
-  }
+    .catch(() => swalError('Terjadi kesalahan jaringan.'));
+  });
 }
 
 function hapusPengaduan(id, tiket) {
-  if (confirm('Hapus laporan tiket ' + tiket + '?')) {
+  swalConfirm({
+    title: 'Hapus Laporan Pengaduan?',
+    text: 'Apakah Anda yakin ingin menghapus data tiket #' + tiket + '? Tindakan ini permanen.',
+    confirmText: 'Iya, Hapus',
+    cancelText: 'Tidak, Batal',
+    isDanger: true
+  }, () => {
     const formData = new FormData();
     formData.append('action', 'hapus');
     formData.append('id', id);
@@ -373,14 +381,13 @@ function hapusPengaduan(id, tiket) {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        alert(data.message);
-        location.reload();
+        swalSuccess(data.message).then(() => location.reload());
       } else {
-        alert('Gagal: ' + data.message);
+        swalError(data.message);
       }
     })
-    .catch(() => alert('Terjadi kesalahan jaringan.'));
-  }
+    .catch(() => swalError('Terjadi kesalahan jaringan.'));
+  });
 }
 
 function filterPengaduanTable() {

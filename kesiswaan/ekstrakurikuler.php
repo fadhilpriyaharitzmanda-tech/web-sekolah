@@ -15,6 +15,9 @@ try {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ekstrakurikuler | SMKN 2 Karanganyar</title>
+  <!-- Favicon Logo SMKN 2 Karanganyar -->
+  <link rel="icon" type="image/png" href="../logo/smkn2kra.png">
+  <link rel="shortcut icon" href="../logo/smkn2kra.png">
   <link rel="stylesheet" href="../css/style.css?v=3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -151,20 +154,22 @@ try {
             <?php foreach ($webEkskulList as $idx => $e): 
               $theme = $colors[$idx % count($colors)];
               $icon = $icons[$idx % count($icons)];
+              $namaEkskul = !empty($e['nama_ekskul']) ? $e['nama_ekskul'] : ($e['nama'] ?? 'Ekstrakurikuler');
+              $hariJadwal = !empty($e['hari_jadwal']) ? $e['hari_jadwal'] : ($e['jadwal'] ?? '');
             ?>
               <div class="eks-card">
                 <div class="eks-icon" style="background:<?= $theme['bg'] ?>;color:<?= $theme['color'] ?>;">
                   <span class="material-symbols-outlined icon-fill"><?= $icon ?></span>
                 </div>
-                <h3><?= htmlspecialchars($e['nama_ekskul']) ?></h3>
+                <h3><?= htmlspecialchars($namaEkskul) ?></h3>
                 <p><?= htmlspecialchars($e['deskripsi'] ?? 'Kegiatan ekstrakurikuler SMKN 2 Karanganyar.') ?></p>
-                <?php if (!empty($e['pembina']) || !empty($e['hari_jadwal'])): ?>
+                <?php if (!empty($e['pembina']) || !empty($hariJadwal)): ?>
                   <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px dashed #e8f0e8;font-size:0.8rem;color:var(--secondary);">
                     <?php if (!empty($e['pembina'])): ?>
                       <div>Pembina: <strong><?= htmlspecialchars($e['pembina']) ?></strong></div>
                     <?php endif; ?>
-                    <?php if (!empty($e['hari_jadwal'])): ?>
-                      <div>Jadwal: <strong><?= htmlspecialchars($e['hari_jadwal']) ?></strong></div>
+                    <?php if (!empty($hariJadwal)): ?>
+                      <div>Jadwal: <strong><?= htmlspecialchars($hariJadwal) ?></strong></div>
                     <?php endif; ?>
                   </div>
                 <?php endif; ?>

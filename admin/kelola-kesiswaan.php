@@ -29,13 +29,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if ($action === 'tambah_prestasi') {
-                $stmt = $pdo->prepare("INSERT INTO prestasi (judul, tingkat, peringkat, nama_peraih, kelas_jurusan, tahun, penyelenggara, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, 'Publikasi', NOW())");
-                $stmt->execute([$judul, $tingkat, $peringkat, $nama_peraih, $kelas_jurusan, $tahun, $penyelenggara]);
+                $stmt = $pdo->prepare("INSERT INTO prestasi (judul, nama_lomba, tingkat, peringkat, nama_peraih, nama_siswa, kelas_jurusan, kelas, tahun, penyelenggara, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Publikasi', NOW())");
+                $stmt->execute([$judul, $judul, $tingkat, $peringkat, $nama_peraih, $nama_peraih, $kelas_jurusan, $kelas_jurusan, $tahun, $penyelenggara]);
                 echo json_encode(['success' => true, 'message' => 'Prestasi berhasil ditambahkan!']);
                 exit;
             } else {
-                $stmt = $pdo->prepare("UPDATE prestasi SET judul = ?, tingkat = ?, peringkat = ?, nama_peraih = ?, kelas_jurusan = ?, tahun = ?, penyelenggara = ? WHERE id = ?");
-                $stmt->execute([$judul, $tingkat, $peringkat, $nama_peraih, $kelas_jurusan, $tahun, $penyelenggara, $id]);
+                $stmt = $pdo->prepare("UPDATE prestasi SET judul = ?, nama_lomba = ?, tingkat = ?, peringkat = ?, nama_peraih = ?, nama_siswa = ?, kelas_jurusan = ?, kelas = ?, tahun = ?, penyelenggara = ? WHERE id = ?");
+                $stmt->execute([$judul, $judul, $tingkat, $peringkat, $nama_peraih, $nama_peraih, $kelas_jurusan, $kelas_jurusan, $tahun, $penyelenggara, $id]);
                 echo json_encode(['success' => true, 'message' => 'Data prestasi berhasil diperbarui!']);
                 exit;
             }
@@ -65,13 +65,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if ($action === 'tambah_ekskul') {
-                $stmt = $pdo->prepare("INSERT INTO ekstrakurikuler (nama_ekskul, pembina, jumlah_anggota, hari_jadwal, deskripsi, status, created_at) VALUES (?, ?, ?, ?, ?, ?, NOW())");
-                $stmt->execute([$nama_ekskul, $pembina, $jumlah_anggota, $hari_jadwal, $deskripsi, $status]);
+                $stmt = $pdo->prepare("INSERT INTO ekstrakurikuler (nama_ekskul, nama, pembina, jumlah_anggota, hari_jadwal, jadwal, deskripsi, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+                $stmt->execute([$nama_ekskul, $nama_ekskul, $pembina, $jumlah_anggota, $hari_jadwal, $hari_jadwal, $deskripsi, $status]);
                 echo json_encode(['success' => true, 'message' => 'Ekstrakurikuler berhasil ditambahkan!']);
                 exit;
             } else {
-                $stmt = $pdo->prepare("UPDATE ekstrakurikuler SET nama_ekskul = ?, pembina = ?, jumlah_anggota = ?, hari_jadwal = ?, deskripsi = ?, status = ? WHERE id = ?");
-                $stmt->execute([$nama_ekskul, $pembina, $jumlah_anggota, $hari_jadwal, $deskripsi, $status, $id]);
+                $stmt = $pdo->prepare("UPDATE ekstrakurikuler SET nama_ekskul = ?, nama = ?, pembina = ?, jumlah_anggota = ?, hari_jadwal = ?, jadwal = ?, deskripsi = ?, status = ? WHERE id = ?");
+                $stmt->execute([$nama_ekskul, $nama_ekskul, $pembina, $jumlah_anggota, $hari_jadwal, $hari_jadwal, $deskripsi, $status, $id]);
                 echo json_encode(['success' => true, 'message' => 'Ekstrakurikuler berhasil diperbarui!']);
                 exit;
             }
@@ -245,7 +245,7 @@ include __DIR__ . '/components/sidebar.php';
               <option value="Provinsi">Tingkat Provinsi</option>
               <option value="Kabupaten">Tingkat Kabupaten</option>
             </select>
-            <button class="btn-table-action" type="button" onclick="alert('Data prestasi siswa berhasil diekspor ke Excel!')">
+            <button class="btn-table-action" type="button" onclick="showToast('Data prestasi siswa berhasil diekspor ke Excel!', 'success')">
               <i class="bi bi-file-earmark-excel"></i> Unduh Excel
             </button>
           </div>
@@ -271,25 +271,31 @@ include __DIR__ . '/components/sidebar.php';
                     'Provinsi' => 'primary',
                     default => 'info'
                   };
+                  $judulPrestasi = !empty($p['judul']) ? $p['judul'] : ($p['nama_lomba'] ?? 'Prestasi Siswa');
+                  $namaPeraih = !empty($p['nama_peraih']) ? $p['nama_peraih'] : ($p['nama_siswa'] ?? 'Siswa Berprestasi');
+                  $kelasJurusan = !empty($p['kelas_jurusan']) ? $p['kelas_jurusan'] : ($p['kelas'] ?? '-');
+                  $peringkat = $p['peringkat'] ?? 'Juara';
+                  $tingkat = $p['tingkat'] ?? 'Tingkat Sekolah';
+                  $tahun = $p['tahun'] ?? date('Y');
                 ?>
                 <tr data-id="<?= $p['id'] ?>">
                   <td>
-                    <div class="fw-bold text-main"><?= htmlspecialchars($p['judul']) ?></div>
+                    <div class="fw-bold text-main"><?= htmlspecialchars($judulPrestasi) ?></div>
                     <div class="text-muted fs-xs"><?= htmlspecialchars($p['penyelenggara'] ?? 'Penyelenggara Resmi') ?></div>
                   </td>
-                  <td><span class="badge bg-<?= $tingkatBadge ?>-subtle text-<?= $tingkatBadge ?> fw-bold"><?= htmlspecialchars($p['tingkat']) ?></span></td>
-                  <td><span class="badge bg-success fw-bold"><i class="bi bi-trophy me-1"></i> <?= htmlspecialchars($p['peringkat']) ?></span></td>
+                  <td><span class="badge bg-<?= $tingkatBadge ?>-subtle text-<?= $tingkatBadge ?> fw-bold"><?= htmlspecialchars($tingkat) ?></span></td>
+                  <td><span class="badge bg-success fw-bold"><i class="bi bi-trophy me-1"></i> <?= htmlspecialchars($peringkat) ?></span></td>
                   <td>
-                    <div class="fw-bold text-main"><?= htmlspecialchars($p['nama_peraih']) ?></div>
-                    <div class="text-muted fs-xs"><?= htmlspecialchars($p['kelas_jurusan'] ?? '-') ?></div>
+                    <div class="fw-bold text-main"><?= htmlspecialchars($namaPeraih) ?></div>
+                    <div class="text-muted fs-xs"><?= htmlspecialchars($kelasJurusan) ?></div>
                   </td>
-                  <td><span class="badge bg-light text-dark border"><?= htmlspecialchars($p['tahun']) ?></span></td>
+                  <td><span class="badge bg-light text-dark border"><?= htmlspecialchars($tahun) ?></span></td>
                   <td>
                     <div class="d-flex justify-content-center gap-1">
                       <button type="button" class="table-btn-action" title="Edit Prestasi" onclick="editPrestasi(<?= htmlspecialchars(json_encode($p)) ?>)">
                         <i class="bi bi-pencil"></i>
                       </button>
-                      <button type="button" class="table-btn-action delete" title="Hapus Prestasi" onclick="hapusPrestasi(<?= $p['id'] ?>, '<?= htmlspecialchars(addslashes($p['judul'])) ?>')">
+                      <button type="button" class="table-btn-action delete" title="Hapus Prestasi" onclick="hapusPrestasi(<?= $p['id'] ?>, '<?= htmlspecialchars(addslashes($judulPrestasi)) ?>')">
                         <i class="bi bi-trash"></i>
                       </button>
                     </div>
@@ -313,6 +319,10 @@ include __DIR__ . '/components/sidebar.php';
         <?php if (!empty($ekskulList)): ?>
           <?php foreach ($ekskulList as $e): 
             $isAktif = ($e['status'] ?? 'Aktif') === 'Aktif';
+            $namaEkskul = !empty($e['nama_ekskul']) ? $e['nama_ekskul'] : ($e['nama'] ?? 'Ekstrakurikuler');
+            $pembina = $e['pembina'] ?? '-';
+            $jumlahAnggota = $e['jumlah_anggota'] ?? '-';
+            $hariJadwal = !empty($e['hari_jadwal']) ? $e['hari_jadwal'] : ($e['jadwal'] ?? '-');
           ?>
           <div class="col-md-4 ekskul-card-col" data-id="<?= $e['id'] ?>">
             <div class="card p-4 shadow-sm border-0 h-100 d-flex flex-column justify-content-between" style="border-radius: var(--radius-xl); border: 1px solid rgba(11, 19, 15, 0.06) !important;">
@@ -323,11 +333,11 @@ include __DIR__ . '/components/sidebar.php';
                       <i class="bi bi-stars"></i>
                     </div>
                     <div>
-                      <h6 class="fw-bold mb-0 text-main ekskul-title"><?= htmlspecialchars($e['nama_ekskul']) ?></h6>
-                      <div class="text-muted fs-xs ekskul-pembina">Pembina: <?= htmlspecialchars($e['pembina'] ?? '-') ?></div>
+                      <h6 class="fw-bold mb-0 text-main ekskul-title"><?= htmlspecialchars($namaEkskul) ?></h6>
+                      <div class="text-muted fs-xs ekskul-pembina">Pembina: <?= htmlspecialchars($pembina) ?></div>
                     </div>
                   </div>
-                  <button type="button" class="btn btn-sm py-1 px-2.5 rounded-pill fw-bold border-0 btn-status-ekskul <?= $isAktif ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' ?>" onclick="toggleStatusEkskul(<?= $e['id'] ?>, '<?= $isAktif ? 'Nonaktif' : 'Aktif' ?>', '<?= htmlspecialchars(addslashes($e['nama_ekskul'])) ?>')">
+                  <button type="button" class="btn btn-sm py-1 px-2.5 rounded-pill fw-bold border-0 btn-status-ekskul <?= $isAktif ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' ?>" onclick="toggleStatusEkskul(<?= $e['id'] ?>, '<?= $isAktif ? 'Nonaktif' : 'Aktif' ?>', '<?= htmlspecialchars(addslashes($namaEkskul)) ?>')">
                     <i class="bi <?= $isAktif ? 'bi-check-circle-fill' : 'bi-slash-circle' ?> me-1"></i> <span class="status-label"><?= $isAktif ? 'Aktif' : 'Nonaktif' ?></span>
                   </button>
                 </div>
@@ -335,14 +345,14 @@ include __DIR__ . '/components/sidebar.php';
               </div>
               <div class="pt-3 border-top">
                 <div class="d-flex justify-content-between align-items-center mb-3 fs-xs text-muted">
-                  <span>Anggota: <strong class="text-main ekskul-anggota"><?= htmlspecialchars($e['jumlah_anggota'] ?? '-') ?></strong></span>
-                  <span>Jadwal: <strong class="text-main ekskul-jadwal"><?= htmlspecialchars($e['hari_jadwal'] ?? '-') ?></strong></span>
+                  <span>Anggota: <strong class="text-main ekskul-anggota"><?= htmlspecialchars($jumlahAnggota) ?></strong></span>
+                  <span>Jadwal: <strong class="text-main ekskul-jadwal"><?= htmlspecialchars($hariJadwal) ?></strong></span>
                 </div>
                 <div class="d-flex justify-content-end gap-2">
                   <button type="button" class="btn btn-sm btn-outline-secondary" onclick="editEkskul(<?= htmlspecialchars(json_encode($e)) ?>)">
                     <i class="bi bi-pencil me-1"></i> Edit
                   </button>
-                  <button type="button" class="btn btn-sm btn-outline-danger" onclick="hapusEkskul(<?= $e['id'] ?>, '<?= htmlspecialchars(addslashes($e['nama_ekskul'])) ?>')">
+                  <button type="button" class="btn btn-sm btn-outline-danger" onclick="hapusEkskul(<?= $e['id'] ?>, '<?= htmlspecialchars(addslashes($namaEkskul)) ?>')">
                     <i class="bi bi-trash"></i>
                   </button>
                 </div>
@@ -356,9 +366,6 @@ include __DIR__ . '/components/sidebar.php';
       </div>
     </div>
   </div>
-
-</div>
-<!-- END: .main-wrapper -->
 
 <!-- Modal Tambah Prestasi -->
 <div class="modal fade" id="modalTambahPrestasi" tabindex="-1" aria-labelledby="modalTambahPrestasiLabel" aria-hidden="true">
@@ -611,11 +618,11 @@ function bukaModalTambahKesiswaan() {
 // PRESTASI FUNCTIONS
 function editPrestasi(data) {
   document.getElementById('editIdPrestasi').value = data.id || '';
-  document.getElementById('editNamaLomba').value = data.judul || '';
+  document.getElementById('editNamaLomba').value = data.judul || data.nama_lomba || '';
   document.getElementById('editTingkatLomba').value = data.tingkat || 'Provinsi';
   document.getElementById('editPeringkatLomba').value = data.peringkat || 'Juara 1';
-  document.getElementById('editNamaSiswaLomba').value = data.nama_peraih || '';
-  document.getElementById('editKelasSiswaLomba').value = data.kelas_jurusan || '';
+  document.getElementById('editNamaSiswaLomba').value = data.nama_peraih || data.nama_siswa || '';
+  document.getElementById('editKelasSiswaLomba').value = data.kelas_jurusan || data.kelas || '';
   document.getElementById('editTahunLomba').value = data.tahun || new Date().getFullYear();
   document.getElementById('editPenyelenggaraLomba').value = data.penyelenggara || '';
 
@@ -627,7 +634,7 @@ function editPrestasi(data) {
 function simpanTambahPrestasi() {
   const form = document.getElementById('formTambahPrestasi');
   if (!form.judul.value.trim() || !form.nama_peraih.value.trim()) {
-    alert('Nama perlombaan dan siswa peraih wajib diisi!');
+    swalWarning('Nama perlombaan dan siswa peraih wajib diisi!');
     return;
   }
 
@@ -636,19 +643,20 @@ function simpanTambahPrestasi() {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert(data.message);
-      location.href = 'kelola-kesiswaan.php?tab=prestasi';
+      swalSuccess(data.message).then(() => {
+        location.href = 'kelola-kesiswaan.php?tab=prestasi';
+      });
     } else {
-      alert('Gagal: ' + data.message);
+      swalError(data.message || 'Gagal menambahkan prestasi');
     }
   })
-  .catch(() => alert('Terjadi kesalahan jaringan.'));
+  .catch(err => swalError('Terjadi kesalahan jaringan: ' + err.message));
 }
 
 function simpanEditPrestasi() {
   const form = document.getElementById('formEditPrestasi');
   if (!form.judul.value.trim() || !form.nama_peraih.value.trim()) {
-    alert('Nama perlombaan dan siswa peraih wajib diisi!');
+    swalWarning('Nama perlombaan dan siswa peraih wajib diisi!');
     return;
   }
 
@@ -657,17 +665,24 @@ function simpanEditPrestasi() {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert(data.message);
-      location.href = 'kelola-kesiswaan.php?tab=prestasi';
+      swalSuccess(data.message).then(() => {
+        location.href = 'kelola-kesiswaan.php?tab=prestasi';
+      });
     } else {
-      alert('Gagal: ' + data.message);
+      swalError(data.message || 'Gagal memperbarui prestasi');
     }
   })
-  .catch(() => alert('Terjadi kesalahan jaringan.'));
+  .catch(err => swalError('Terjadi kesalahan jaringan: ' + err.message));
 }
 
 function hapusPrestasi(id, nama) {
-  if (confirm('Hapus torehan prestasi ' + nama + '?')) {
+  swalConfirm({
+    title: 'Hapus Prestasi?',
+    text: 'Apakah Anda yakin ingin menghapus torehan prestasi "' + nama + '"? Tindakan ini tidak dapat dibatalkan.',
+    confirmText: 'Iya, Hapus',
+    cancelText: 'Tidak, Batal',
+    isDanger: true
+  }, () => {
     const formData = new FormData();
     formData.append('action', 'hapus_prestasi');
     formData.append('id', id);
@@ -676,14 +691,15 @@ function hapusPrestasi(id, nama) {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        alert(data.message);
-        location.href = 'kelola-kesiswaan.php?tab=prestasi';
+        swalSuccess(data.message).then(() => {
+          location.href = 'kelola-kesiswaan.php?tab=prestasi';
+        });
       } else {
-        alert('Gagal: ' + data.message);
+        swalError(data.message);
       }
     })
-    .catch(() => alert('Terjadi kesalahan jaringan.'));
-  }
+    .catch(() => swalError('Terjadi kesalahan jaringan.'));
+  });
 }
 
 function filterPrestasiTable() {
@@ -706,11 +722,11 @@ function filterPrestasiTable() {
 // EKSKUL FUNCTIONS
 function editEkskul(data) {
   document.getElementById('editIdEkskul').value = data.id || '';
-  document.getElementById('editNamaEkskul').value = data.nama_ekskul || '';
+  document.getElementById('editNamaEkskul').value = data.nama_ekskul || data.nama || '';
   document.getElementById('editStatusEkskul').value = data.status || 'Aktif';
   document.getElementById('editPembinaEkskul').value = data.pembina || '';
   document.getElementById('editAnggotaEkskul').value = data.jumlah_anggota || '';
-  document.getElementById('editJadwalEkskul').value = data.hari_jadwal || '';
+  document.getElementById('editJadwalEkskul').value = data.hari_jadwal || data.jadwal || '';
   document.getElementById('editDeskripsiEkskul').value = data.deskripsi || '';
 
   const modalEl = document.getElementById('modalEditEkskul');
@@ -721,7 +737,7 @@ function editEkskul(data) {
 function simpanTambahEkskul() {
   const form = document.getElementById('formTambahEkskul');
   if (!form.nama_ekskul.value.trim()) {
-    alert('Nama ekstrakurikuler wajib diisi!');
+    swalWarning('Nama ekstrakurikuler wajib diisi!');
     return;
   }
 
@@ -730,19 +746,20 @@ function simpanTambahEkskul() {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert(data.message);
-      location.href = 'kelola-kesiswaan.php?tab=ekskul';
+      swalSuccess(data.message).then(() => {
+        location.href = 'kelola-kesiswaan.php?tab=ekskul';
+      });
     } else {
-      alert('Gagal: ' + data.message);
+      swalError(data.message || 'Gagal menambahkan ekstrakurikuler');
     }
   })
-  .catch(() => alert('Terjadi kesalahan jaringan.'));
+  .catch(err => swalError('Terjadi kesalahan jaringan: ' + err.message));
 }
 
 function simpanEditEkskul() {
   const form = document.getElementById('formEditEkskul');
   if (!form.nama_ekskul.value.trim()) {
-    alert('Nama ekstrakurikuler wajib diisi!');
+    swalWarning('Nama ekstrakurikuler wajib diisi!');
     return;
   }
 
@@ -751,17 +768,24 @@ function simpanEditEkskul() {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert(data.message);
-      location.href = 'kelola-kesiswaan.php?tab=ekskul';
+      swalSuccess(data.message).then(() => {
+        location.href = 'kelola-kesiswaan.php?tab=ekskul';
+      });
     } else {
-      alert('Gagal: ' + data.message);
+      swalError(data.message || 'Gagal memperbarui ekstrakurikuler');
     }
   })
-  .catch(() => alert('Terjadi kesalahan jaringan.'));
+  .catch(err => swalError('Terjadi kesalahan jaringan: ' + err.message));
 }
 
 function hapusEkskul(id, nama) {
-  if (confirm('Hapus ekstrakurikuler ' + nama + '?')) {
+  swalConfirm({
+    title: 'Hapus Ekstrakurikuler?',
+    text: 'Apakah Anda yakin ingin menghapus ekstrakurikuler "' + nama + '"? Tindakan ini tidak dapat dibatalkan.',
+    confirmText: 'Iya, Hapus',
+    cancelText: 'Tidak, Batal',
+    isDanger: true
+  }, () => {
     const formData = new FormData();
     formData.append('action', 'hapus_ekskul');
     formData.append('id', id);
@@ -770,14 +794,15 @@ function hapusEkskul(id, nama) {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        alert(data.message);
-        location.href = 'kelola-kesiswaan.php?tab=ekskul';
+        swalSuccess(data.message).then(() => {
+          location.href = 'kelola-kesiswaan.php?tab=ekskul';
+        });
       } else {
-        alert('Gagal: ' + data.message);
+        swalError(data.message);
       }
     })
-    .catch(() => alert('Terjadi kesalahan jaringan.'));
-  }
+    .catch(() => swalError('Terjadi kesalahan jaringan.'));
+  });
 }
 
 function toggleStatusEkskul(id, status, nama) {
@@ -790,12 +815,13 @@ function toggleStatusEkskul(id, status, nama) {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      location.href = 'kelola-kesiswaan.php?tab=ekskul';
+      showToast(data.message || 'Status ekstrakurikuler diperbarui', 'success');
+      setTimeout(() => { location.href = 'kelola-kesiswaan.php?tab=ekskul'; }, 500);
     } else {
-      alert('Gagal: ' + data.message);
+      swalError('Gagal: ' + data.message);
     }
   })
-  .catch(() => alert('Terjadi kesalahan jaringan.'));
+  .catch(err => swalError('Terjadi kesalahan jaringan: ' + err.message));
 }
 </script>
 

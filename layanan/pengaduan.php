@@ -27,6 +27,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pengaduan | SMKN 2 Karanganyar</title>
+  <!-- Favicon Logo SMKN 2 Karanganyar -->
+  <link rel="icon" type="image/png" href="../logo/smkn2kra.png">
+  <link rel="shortcut icon" href="../logo/smkn2kra.png">
   <link rel="stylesheet" href="../css/style.css?v=3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -462,13 +465,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   if (data.success) {
                     document.getElementById('aduFormContent').style.display = 'none';
                     document.getElementById('aduSuccess').classList.add('show');
+                    swalSuccess('Pengaduan berhasil dikirim! Kode Tiket: ' + (data.no_tiket || ''));
                   } else {
-                    alert('Gagal mengirim pengaduan: ' + data.message);
+                    swalError('Gagal mengirim pengaduan: ' + data.message);
                   }
                 })
-                .catch(() => {
-                  document.getElementById('aduFormContent').style.display = 'none';
-                  document.getElementById('aduSuccess').classList.add('show');
+                .catch(err => {
+                  swalError('Terjadi kesalahan koneksi server: ' + err.message);
                 });
               }
               </script>

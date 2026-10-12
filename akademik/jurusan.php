@@ -13,6 +13,9 @@ try {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jurusan | SMKN 2 Karanganyar</title>
+  <!-- Favicon Logo SMKN 2 Karanganyar -->
+  <link rel="icon" type="image/png" href="../logo/smkn2kra.png">
+  <link rel="shortcut icon" href="../logo/smkn2kra.png">
   <link rel="stylesheet" href="../css/style.css?v=3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -143,22 +146,23 @@ try {
         <div class="jur-grid" data-animate>
           <?php if (!empty($jurusanList)): ?>
             <?php foreach ($jurusanList as $jur): 
-              $warnaJur = !empty($jur['warna']) ? $jur['warna'] : '#16a34a';
+              $warnaJur = !empty($jur['warna']) ? $jur['warna'] : (!empty($jur['warna_aksen']) ? $jur['warna_aksen'] : '#16a34a');
               $imgJur = !empty($jur['gambar']) ? $jur['gambar'] : 'images/3d-rpl.png';
               if (strpos($imgJur, 'http://') !== 0 && strpos($imgJur, 'https://') !== 0) {
                 $imgJur = '../' . ltrim($imgJur, '/');
               }
-              $kompList = array_filter(array_map('trim', explode(',', $jur['kompetensi'] ?? '')));
-              $tefaPage = 'produk-' . strtolower($jur['singkatan']) . '.php';
+              $singkatanJur = !empty($jur['singkatan']) ? $jur['singkatan'] : (!empty($jur['kode']) ? $jur['kode'] : 'JUR');
+              $kompList = array_filter(array_map('trim', explode(',', $jur['kompetensi'] ?? ($jur['keunggulan'] ?? ''))));
+              $tefaPage = 'produk-' . strtolower($singkatanJur) . '.php';
             ?>
               <div class="jur-banner" style="--mc:<?= htmlspecialchars($warnaJur) ?>">
                 <div class="jur-banner-img">
-                  <img src="<?= htmlspecialchars($imgJur) ?>" alt="<?= htmlspecialchars($jur['nama']) ?>" onerror="this.src='../images/3d-rpl.png'">
+                  <img src="<?= htmlspecialchars($imgJur) ?>" alt="<?= htmlspecialchars($jur['nama'] ?? '') ?>" onerror="this.src='../images/3d-rpl.png'">
                 </div>
                 <div class="jur-banner-body">
-                  <span class="jur-badge"><?= htmlspecialchars($jur['singkatan']) ?></span>
-                  <h3><?= htmlspecialchars($jur['nama']) ?></h3>
-                  <p><?= htmlspecialchars($jur['deskripsi']) ?></p>
+                  <span class="jur-badge"><?= htmlspecialchars($singkatanJur) ?></span>
+                  <h3><?= htmlspecialchars($jur['nama'] ?? '') ?></h3>
+                  <p><?= htmlspecialchars($jur['deskripsi'] ?? '') ?></p>
                   <ul class="jur-list">
                     <?php if (!empty($kompList)): ?>
                       <?php foreach ($kompList as $kp): ?>
@@ -175,11 +179,11 @@ try {
                       <div class="jur-tefa-header">
                         <span class="jur-tefa-tag">
                           <span class="material-symbols-outlined" style="font-size:14px;">terminal</span>
-                          Teaching Factory (TeFa) <?= htmlspecialchars($jur['singkatan']) ?>
+                          Teaching Factory (TeFa) <?= htmlspecialchars($singkatanJur) ?>
                         </span>
                       </div>
                       <a href="<?= htmlspecialchars($tefaPage) ?>" class="jur-btn-action">
-                        <span>Lihat Produk &amp; Transaksi <?= htmlspecialchars($jur['singkatan']) ?></span>
+                        <span>Lihat Produk &amp; Transaksi <?= htmlspecialchars($singkatanJur) ?></span>
                         <span class="material-symbols-outlined" style="font-size:16px;">arrow_forward</span>
                       </a>
                     </div>

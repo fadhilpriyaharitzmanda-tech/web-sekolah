@@ -227,10 +227,12 @@ include __DIR__ . '/components/sidebar.php';
   <div class="row g-4 mb-4" id="testimoniGrid">
     <?php if (!empty($testimoniList)): ?>
       <?php foreach ($testimoniList as $t): 
-        $fotoUrl = !empty($t['foto']) ? (str_starts_with($t['foto'], 'http') ? $t['foto'] : '../' . $t['foto']) : 'https://ui-avatars.com/api/?name=' . urlencode($t['nama']) . '&background=4ade80&color=072f1f&size=80&bold=true';
+        $fotoUrl = !empty($t['foto']) ? (str_starts_with($t['foto'], 'http') ? $t['foto'] : '../' . $t['foto']) : 'https://ui-avatars.com/api/?name=' . urlencode($t['nama'] ?? 'Alumni') . '&background=4ade80&color=072f1f&size=80&bold=true';
         $isLanding = !empty($t['tampil_landing']);
         $isAktif = ($t['status'] ?? 'Aktif') === 'Aktif';
-        $pekerjaan = $t['profesi'] ?? $t['perusahaan'] ?? '';
+        $pekerjaan = !empty($t['profesi']) ? $t['profesi'] . (!empty($t['perusahaan']) ? ' di ' . $t['perusahaan'] : '') : ($t['pekerjaan'] ?? ($t['perusahaan'] ?? ''));
+        $jurusanTeks = !empty($t['jurusan']) ? $t['jurusan'] : (!empty($t['jurusan_tahun']) ? $t['jurusan_tahun'] : 'Alumni');
+        $tahunTeks = !empty($t['tahun_lulus']) ? 'Lulusan ' . $t['tahun_lulus'] : '';
       ?>
       <div class="col-lg-4 col-md-6 testi-item" data-id="<?= $t['id'] ?>">
         <div class="card p-4 h-100 shadow-sm border-0 d-flex flex-column justify-content-between" style="border-radius: var(--radius-xl); border: 1px solid rgba(11, 19, 15, 0.06) !important;">
@@ -244,20 +246,20 @@ include __DIR__ . '/components/sidebar.php';
                 <?php endif; ?>
               </div>
               <div class="form-check form-switch m-0 d-flex align-items-center gap-1">
-                <input class="form-check-input" type="checkbox" id="testi-<?= $t['id'] ?>" <?= $isAktif ? 'checked' : '' ?> onchange="toggleTestiStatus(<?= $t['id'] ?>, this.checked, '<?= htmlspecialchars(addslashes($t['nama'])) ?>')">
+                <input class="form-check-input" type="checkbox" id="testi-<?= $t['id'] ?>" <?= $isAktif ? 'checked' : '' ?> onchange="toggleTestiStatus(<?= $t['id'] ?>, this.checked, '<?= htmlspecialchars(addslashes($t['nama'] ?? '')) ?>')">
                 <label class="form-check-label fs-xs fw-semibold text-muted" for="testi-<?= $t['id'] ?>"><?= $isAktif ? 'Aktif' : 'Nonaktif' ?></label>
               </div>
             </div>
             <div class="d-flex align-items-center gap-3 mb-3">
-              <img src="<?= htmlspecialchars($fotoUrl) ?>" alt="<?= htmlspecialchars($t['nama']) ?>" class="rounded-circle border" style="width: 52px; height: 52px; object-fit: cover; flex-shrink: 0;">
+              <img src="<?= htmlspecialchars($fotoUrl) ?>" alt="<?= htmlspecialchars($t['nama'] ?? '') ?>" class="rounded-circle border" style="width: 52px; height: 52px; object-fit: cover; flex-shrink: 0;">
               <div>
-                <h6 class="fw-bold mb-0 text-main testi-name"><?= htmlspecialchars($t['nama']) ?></h6>
-                <div class="text-success fs-xs fw-bold testi-jurusan"><?= htmlspecialchars($t['jurusan']) ?> &bull; Lulusan <?= htmlspecialchars($t['tahun_lulus']) ?></div>
+                <h6 class="fw-bold mb-0 text-main testi-name"><?= htmlspecialchars($t['nama'] ?? '') ?></h6>
+                <div class="text-success fs-xs fw-bold testi-jurusan"><?= htmlspecialchars($jurusanTeks) ?><?= !empty($tahunTeks) ? ' &bull; ' . htmlspecialchars($tahunTeks) : '' ?></div>
                 <div class="text-muted fs-xs testi-job"><?= htmlspecialchars($pekerjaan) ?></div>
               </div>
             </div>
             <blockquote class="text-muted fs-sm fst-italic border-start border-3 border-success ps-3 my-3" style="line-height: 1.6; min-height: 68px;">
-              "<?= htmlspecialchars($t['testimoni']) ?>"
+              "<?= htmlspecialchars($t['testimoni'] ?? '') ?>"
             </blockquote>
           </div>
           <div class="d-flex justify-content-between align-items-center pt-3 border-top">
@@ -284,9 +286,6 @@ include __DIR__ . '/components/sidebar.php';
       </div>
     <?php endif; ?>
   </div>
-
-</div>
-<!-- END: .main-wrapper -->
 
 <!-- Modal Tambah Testimoni -->
 <div class="modal fade" id="modalTambahTesti" tabindex="-1" aria-labelledby="modalTambahTestiLabel" aria-hidden="true">
@@ -459,7 +458,7 @@ function editTestimoni(data) {
 function simpanTambahTesti() {
   const form = document.getElementById('formTambahTesti');
   if (!form.nama.value.trim() || !form.testimoni.value.trim()) {
-    alert('Nama alumni dan ulasan testimoni wajib diisi!');
+    swalWarning('Nama alumni dan ulasan testimoni wajib diisi!');
     return;
   }
 
@@ -471,21 +470,20 @@ function simpanTambahTesti() {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert(data.message);
-      location.reload();
+      swalSuccess(data.message).then(() => location.reload());
     } else {
-      alert('Gagal: ' + data.message);
+      swalError(data.message || 'Gagal menambahkan testimoni');
     }
   })
   .catch(err => {
-    alert('Terjadi kesalahan jaringan.');
+    swalError('Terjadi kesalahan jaringan: ' + err.message);
   });
 }
 
 function simpanEditTesti() {
   const form = document.getElementById('formEditTesti');
   if (!form.nama.value.trim() || !form.testimoni.value.trim()) {
-    alert('Nama alumni dan ulasan testimoni wajib diisi!');
+    swalWarning('Nama alumni dan ulasan testimoni wajib diisi!');
     return;
   }
 
@@ -497,19 +495,24 @@ function simpanEditTesti() {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert(data.message);
-      location.reload();
+      swalSuccess(data.message).then(() => location.reload());
     } else {
-      alert('Gagal: ' + data.message);
+      swalError(data.message || 'Gagal memperbarui testimoni');
     }
   })
   .catch(err => {
-    alert('Terjadi kesalahan jaringan.');
+    swalError('Terjadi kesalahan jaringan: ' + err.message);
   });
 }
 
 function hapusTestimoni(id, nama) {
-  if (confirm('Apakah Anda yakin ingin menghapus testimoni dari ' + nama + '?')) {
+  swalConfirm({
+    title: 'Hapus Testimoni?',
+    text: 'Apakah Anda yakin ingin menghapus testimoni dari "' + nama + '"? Tindakan ini tidak dapat dibatalkan.',
+    confirmText: 'Iya, Hapus',
+    cancelText: 'Tidak, Batal',
+    isDanger: true
+  }, () => {
     const formData = new FormData();
     formData.append('action', 'hapus');
     formData.append('id', id);
@@ -521,16 +524,15 @@ function hapusTestimoni(id, nama) {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        alert(data.message);
-        location.reload();
+        swalSuccess(data.message).then(() => location.reload());
       } else {
-        alert('Gagal: ' + data.message);
+        swalError(data.message);
       }
     })
     .catch(err => {
-      alert('Terjadi kesalahan jaringan.');
+      swalError('Terjadi kesalahan jaringan: ' + err.message);
     });
-  }
+  });
 }
 
 function toggleTestiStatus(id, isChecked, nama) {
@@ -546,14 +548,14 @@ function toggleTestiStatus(id, isChecked, nama) {
   })
   .then(res => res.json())
   .then(data => {
-    if (!data.success) {
-      alert('Gagal memperbarui status: ' + data.message);
-      location.reload();
+    if (data.success) {
+      showToast(data.message || 'Status testimoni berhasil diubah', 'success');
+    } else {
+      swalError('Gagal memperbarui status: ' + data.message).then(() => location.reload());
     }
   })
   .catch(err => {
-    alert('Terjadi kesalahan jaringan.');
-    location.reload();
+    swalError('Terjadi kesalahan jaringan: ' + err.message).then(() => location.reload());
   });
 }
 

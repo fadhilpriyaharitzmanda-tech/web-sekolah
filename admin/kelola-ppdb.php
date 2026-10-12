@@ -74,7 +74,7 @@ include __DIR__ . '/components/sidebar.php';
       <a href="../layanan/ppdb-aju-akun.php" target="_blank" class="btn btn-outline-success btn-sm d-flex align-items-center gap-2">
         <i class="bi bi-eye"></i> Form PPDB Website
       </a>
-      <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2" onclick="alert('Data pendaftar PPDB diekspor!')">
+      <button type="button" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-2" onclick="showToast('Data pendaftar PPDB diekspor!', 'success')">
         <i class="bi bi-file-earmark-excel"></i> Ekspor Excel
       </button>
     </div>
@@ -246,9 +246,6 @@ include __DIR__ . '/components/sidebar.php';
   </div>
   <!-- END: table-card-custom -->
 
-</div>
-<!-- END: .main-wrapper -->
-
 <!-- Modal Detail & Verifikasi Calon Siswa -->
 <div class="modal fade" id="modalDetailPpdb" tabindex="-1" aria-labelledby="modalDetailPpdbLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -334,17 +331,22 @@ function simpanVerifikasi() {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert(data.message);
-      location.reload();
+      swalSuccess(data.message).then(() => location.reload());
     } else {
-      alert('Gagal: ' + data.message);
+      swalError(data.message || 'Gagal menyimpan status verifikasi');
     }
   })
-  .catch(() => alert('Terjadi kesalahan jaringan.'));
+  .catch(err => swalError('Terjadi kesalahan jaringan: ' + err.message));
 }
 
 function hapusPpdb(id, nama) {
-  if (confirm('Apakah Anda yakin ingin menghapus data pendaftar ' + nama + '?')) {
+  swalConfirm({
+    title: 'Hapus Data Calon Siswa?',
+    text: 'Apakah Anda yakin ingin menghapus data pendaftar "' + nama + '"? Tindakan ini tidak dapat dibatalkan.',
+    confirmText: 'Iya, Hapus',
+    cancelText: 'Tidak, Batal',
+    isDanger: true
+  }, () => {
     const formData = new FormData();
     formData.append('action', 'hapus');
     formData.append('id', id);
@@ -353,14 +355,13 @@ function hapusPpdb(id, nama) {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        alert(data.message);
-        location.reload();
+        swalSuccess(data.message).then(() => location.reload());
       } else {
-        alert('Gagal: ' + data.message);
+        swalError(data.message);
       }
     })
-    .catch(() => alert('Terjadi kesalahan jaringan.'));
-  }
+    .catch(() => swalError('Terjadi kesalahan jaringan.'));
+  });
 }
 
 function filterPpdbTable() {

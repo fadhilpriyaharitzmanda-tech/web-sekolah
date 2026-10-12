@@ -24,14 +24,17 @@ $assetsPath = $assetsPath ?? 'assets/';
   <meta name="description" content="Admin Panel SMKN 2 Karanganyar - Manajemen Sistem Sekolah Modern">
   <meta name="author" content="SMKN 2 Karanganyar">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="<?= $assetsPath ?>images/favicon.ico">
+  <!-- Favicon Logo SMKN 2 Karanganyar -->
+  <link rel="icon" type="image/png" href="<?= $assetsPath ?>images/smkn2kra.png">
+  <link rel="shortcut icon" href="<?= $assetsPath ?>images/smkn2kra.png">
 
   <!-- Local Third-Party Libraries (100% Offline Compatible) -->
   <link rel="stylesheet" href="<?= $assetsPath ?>libs/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="<?= $assetsPath ?>libs/bootstrap-icons/bootstrap-icons.css">
   <link rel="stylesheet" href="<?= $assetsPath ?>libs/apexcharts/apexcharts.css">
   <link rel="stylesheet" href="<?= $assetsPath ?>libs/flatpickr/flatpickr.min.css">
+  <script src="<?= $assetsPath ?>libs/sweetalert2/sweetalert2.all.min.js"></script>
+  <script src="<?= $assetsPath ?>js/swal-helper.js"></script>
 
   <!-- Main Design System & Custom Stylesheet -->
   <link rel="stylesheet" href="<?= $assetsPath ?>css/main.css">

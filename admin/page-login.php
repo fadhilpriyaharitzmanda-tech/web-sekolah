@@ -71,12 +71,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= htmlspecialchars($pageTitle) ?></title>
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="<?= $assetsPath ?>images/favicon.ico">
+  <!-- Favicon Logo SMKN 2 Karanganyar -->
+  <link rel="icon" type="image/png" href="<?= $assetsPath ?>images/smkn2kra.png">
+  <link rel="shortcut icon" href="<?= $assetsPath ?>images/smkn2kra.png">
 
   <!-- Local Third-Party Libraries -->
   <link rel="stylesheet" href="<?= $assetsPath ?>libs/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="<?= $assetsPath ?>libs/bootstrap-icons/bootstrap-icons.css">
+  <script src="<?= $assetsPath ?>libs/sweetalert2/sweetalert2.all.min.js"></script>
 
   <!-- Main Design System & Custom Stylesheet -->
   <link rel="stylesheet" href="<?= $assetsPath ?>css/main.css">
@@ -148,7 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="checkbox" class="custom-checkbox-input" id="rememberMe" checked>
             <span>Ingat Saya</span>
           </label>
-          <a href="#" class="forgot-password-link" onclick="alert('Silakan hubungi administrator IT untuk mereset kata sandi.')">Lupa Password?</a>
+          <a href="#" class="forgot-password-link" onclick="swalWarning('Silakan hubungi administrator IT untuk mereset kata sandi.')">Lupa Password?</a>
         </div>
 
         <!-- Submit Button -->
@@ -176,6 +178,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <!-- Local Bootstrap bundle -->
   <script src="<?= $assetsPath ?>libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="<?= $assetsPath ?>libs/sweetalert2/sweetalert2.all.min.js"></script>
+  <script src="<?= $assetsPath ?>js/swal-helper.js"></script>
 
   <!-- Custom Authentication interactions script -->
   <script src="<?= $assetsPath ?>js/auth.js"></script>

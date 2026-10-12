@@ -24,7 +24,11 @@ try {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SMKN 2 Karanganyar</title>
+  <!-- Favicon Logo SMKN 2 Karanganyar -->
+  <link rel="icon" type="image/png" href="logo/smkn2kra.png">
+  <link rel="shortcut icon" href="logo/smkn2kra.png">
   <link rel="stylesheet" href="css/style.css?v=<?= time() ?>">
+  <script src="js/sweetalert2.all.min.js"></script>
   <style>
     .testi-section {
       padding: 5rem 0;
@@ -322,11 +326,17 @@ try {
                 <div class="testi-header">
                   <img src="<?= htmlspecialchars($tFoto) ?>" alt="<?= htmlspecialchars($t['nama']) ?>" onerror="this.src='https://ui-avatars.com/api/?name=<?= urlencode($t['nama']) ?>&background=4ade80&color=fff&size=80'">
                   <div>
-                    <div class="testi-name"><?= htmlspecialchars($t['nama']) ?></div>
-                    <div class="testi-info"><?= htmlspecialchars($t['jurusan']) ?> - <?= htmlspecialchars($t['angkatan']) ?> | <?= htmlspecialchars($t['pekerjaan']) ?> <?= !empty($t['perusahaan']) ? 'di ' . htmlspecialchars($t['perusahaan']) : '' ?></div>
+                    <div class="testi-name"><?= htmlspecialchars($t['nama'] ?? '') ?></div>
+                    <?php
+                      $tJurusan = !empty($t['jurusan']) ? $t['jurusan'] : (!empty($t['jurusan_tahun']) ? $t['jurusan_tahun'] : 'Alumni');
+                      $tAngkatan = !empty($t['tahun_lulus']) ? $t['tahun_lulus'] : ($t['angkatan'] ?? '');
+                      $tPekerjaan = !empty($t['profesi']) ? $t['profesi'] : ($t['pekerjaan'] ?? '');
+                      $tPerusahaan = !empty($t['perusahaan']) ? $t['perusahaan'] : '';
+                    ?>
+                    <div class="testi-info"><?= htmlspecialchars($tJurusan) ?><?= !empty($tAngkatan) ? ' - ' . htmlspecialchars($tAngkatan) : '' ?><?= !empty($tPekerjaan) ? ' | ' . htmlspecialchars($tPekerjaan) : '' ?><?= !empty($tPerusahaan) ? ' di ' . htmlspecialchars($tPerusahaan) : '' ?></div>
                   </div>
                 </div>
-                <blockquote><?= htmlspecialchars($t['testimoni']) ?></blockquote>
+                <blockquote><?= htmlspecialchars($t['testimoni'] ?? '') ?></blockquote>
               </div>
             <?php endforeach; ?>
           <?php else: ?>

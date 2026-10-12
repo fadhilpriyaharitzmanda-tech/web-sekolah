@@ -74,3 +74,5 @@
     </div>
   </div>
 </footer>
+<script src="<?= $bf ?>js/sweetalert2.all.min.js"></script>
+<script src="<?= $bf ?>js/swal-helper.js"></script>

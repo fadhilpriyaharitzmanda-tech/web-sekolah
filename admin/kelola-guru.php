@@ -49,17 +49,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!$fotoPath) {
                     $fotoPath = 'assets/images/avatar.png';
                 }
-                $stmt = $pdo->prepare("INSERT INTO guru_staff (nama, nip, bidang_studi, jabatan, pendidikan_terakhir, status_kepegawaian, email, foto, kategori, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
-                $stmt->execute([$nama, $nip, $bidang_studi, $jabatan, $pendidikan_terakhir, $status_kepegawaian, $email, $fotoPath, $kategori]);
+                $stmt = $pdo->prepare("INSERT INTO guru_staff (nama, nip, bidang_studi, mata_pelajaran, jabatan, pendidikan_terakhir, status_kepegawaian, email, foto, kategori, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+                $stmt->execute([$nama, $nip, $bidang_studi, $bidang_studi, $jabatan, $pendidikan_terakhir, $status_kepegawaian, $email, $fotoPath, $kategori]);
                 echo json_encode(['success' => true, 'message' => 'Data guru/staff berhasil ditambahkan!']);
                 exit;
             } else {
                 if ($fotoPath) {
-                    $stmt = $pdo->prepare("UPDATE guru_staff SET nama = ?, nip = ?, bidang_studi = ?, jabatan = ?, pendidikan_terakhir = ?, status_kepegawaian = ?, email = ?, foto = ?, kategori = ? WHERE id = ?");
-                    $stmt->execute([$nama, $nip, $bidang_studi, $jabatan, $pendidikan_terakhir, $status_kepegawaian, $email, $fotoPath, $kategori, $id]);
+                    $stmt = $pdo->prepare("UPDATE guru_staff SET nama = ?, nip = ?, bidang_studi = ?, mata_pelajaran = ?, jabatan = ?, pendidikan_terakhir = ?, status_kepegawaian = ?, email = ?, foto = ?, kategori = ? WHERE id = ?");
+                    $stmt->execute([$nama, $nip, $bidang_studi, $bidang_studi, $jabatan, $pendidikan_terakhir, $status_kepegawaian, $email, $fotoPath, $kategori, $id]);
                 } else {
-                    $stmt = $pdo->prepare("UPDATE guru_staff SET nama = ?, nip = ?, bidang_studi = ?, jabatan = ?, pendidikan_terakhir = ?, status_kepegawaian = ?, email = ?, kategori = ? WHERE id = ?");
-                    $stmt->execute([$nama, $nip, $bidang_studi, $jabatan, $pendidikan_terakhir, $status_kepegawaian, $email, $kategori, $id]);
+                    $stmt = $pdo->prepare("UPDATE guru_staff SET nama = ?, nip = ?, bidang_studi = ?, mata_pelajaran = ?, jabatan = ?, pendidikan_terakhir = ?, status_kepegawaian = ?, email = ?, kategori = ? WHERE id = ?");
+                    $stmt->execute([$nama, $nip, $bidang_studi, $bidang_studi, $jabatan, $pendidikan_terakhir, $status_kepegawaian, $email, $kategori, $id]);
                 }
                 echo json_encode(['success' => true, 'message' => 'Data guru/staff berhasil diperbarui!']);
                 exit;
@@ -204,7 +204,7 @@ include __DIR__ . '/components/sidebar.php';
           <option value="Ototronik">Produktif Ototronik</option>
           <option value="PNS">Pegawai PNS</option>
         </select>
-        <button class="btn-table-action" type="button" onclick="alert('Data guru berhasil diekspor ke format Excel!')">
+        <button class="btn-table-action" type="button" onclick="showToast('Data guru berhasil diekspor ke format Excel!', 'success')">
           <i class="bi bi-file-earmark-arrow-down"></i> Unduh Excel
         </button>
       </div>
@@ -227,33 +227,36 @@ include __DIR__ . '/components/sidebar.php';
           <?php if (!empty($guruList)): ?>
             <?php foreach ($guruList as $g): 
               $fotoUrl = !empty($g['foto']) ? (str_starts_with($g['foto'], 'http') || str_starts_with($g['foto'], 'assets') ? $g['foto'] : '../' . $g['foto']) : 'assets/images/avatar.png';
-              $statusBadgeClass = match($g['status_kepegawaian'] ?? 'PNS') {
+              $statusKepegawaian = !empty($g['status_kepegawaian']) ? $g['status_kepegawaian'] : 'PNS';
+              $statusBadgeClass = match($statusKepegawaian) {
                 'PNS' => 'success',
                 'PPPK' => 'info',
                 default => 'warning'
               };
+              $bidangStudi = !empty($g['bidang_studi']) ? $g['bidang_studi'] : (!empty($g['mata_pelajaran']) ? $g['mata_pelajaran'] : (!empty($g['kompetensi']) ? $g['kompetensi'] : 'Guru'));
+              $namaGuru = $g['nama'] ?? '';
             ?>
             <tr data-id="<?= $g['id'] ?>">
               <td>
                 <div class="table-user-cell">
-                  <img src="<?= htmlspecialchars($fotoUrl) ?>" alt="<?= htmlspecialchars($g['nama']) ?>" class="table-user-avatar" onerror="this.src='assets/images/avatar.png'">
+                  <img src="<?= htmlspecialchars($fotoUrl) ?>" alt="<?= htmlspecialchars($namaGuru) ?>" class="table-user-avatar" onerror="this.src='assets/images/avatar.png'">
                   <div>
-                    <div class="table-user-name"><?= htmlspecialchars($g['nama']) ?></div>
+                    <div class="table-user-name"><?= htmlspecialchars($namaGuru) ?></div>
                     <div class="table-user-sub"><?= htmlspecialchars($g['email'] ?? '-') ?></div>
                   </div>
                 </div>
               </td>
               <td><?= htmlspecialchars($g['nip'] ?? '-') ?></td>
-              <td><span class="badge bg-success-subtle text-success"><?= htmlspecialchars($g['bidang_studi']) ?></span></td>
+              <td><span class="badge bg-success-subtle text-success"><?= htmlspecialchars($bidangStudi) ?></span></td>
               <td><?= htmlspecialchars($g['jabatan'] ?? '-') ?></td>
               <td><?= htmlspecialchars($g['pendidikan_terakhir'] ?? '-') ?></td>
-              <td><span class="badge-table <?= $statusBadgeClass ?>"><?= htmlspecialchars($g['status_kepegawaian']) ?></span></td>
+              <td><span class="badge-table <?= $statusBadgeClass ?>"><?= htmlspecialchars($statusKepegawaian) ?></span></td>
               <td>
                 <div class="d-flex justify-content-center gap-1">
                   <button type="button" class="table-btn-action" title="Edit Guru" onclick="editGuru(<?= htmlspecialchars(json_encode($g)) ?>)">
                     <i class="bi bi-pencil"></i>
                   </button>
-                  <button type="button" class="table-btn-action delete" title="Hapus Guru" onclick="hapusGuru(<?= $g['id'] ?>, '<?= htmlspecialchars(addslashes($g['nama'])) ?>')">
+                  <button type="button" class="table-btn-action delete" title="Hapus Guru" onclick="hapusGuru(<?= $g['id'] ?>, '<?= htmlspecialchars(addslashes($namaGuru)) ?>')">
                     <i class="bi bi-trash"></i>
                   </button>
                 </div>
@@ -281,9 +284,6 @@ include __DIR__ . '/components/sidebar.php';
     </div>
   </div>
   <!-- END: table-card-custom -->
-
-</div>
-<!-- END: .main-wrapper -->
 
 <!-- Modal Tambah Guru -->
 <div class="modal fade" id="modalTambahGuru" tabindex="-1" aria-labelledby="modalTambahGuruLabel" aria-hidden="true">
@@ -441,7 +441,7 @@ function editGuru(data) {
   document.getElementById('editNamaGuru').value = data.nama || '';
   document.getElementById('editNipGuru').value = data.nip || '';
   document.getElementById('editStatusGuru').value = data.status_kepegawaian || 'PNS';
-  document.getElementById('editMapelGuru').value = data.bidang_studi || '';
+  document.getElementById('editMapelGuru').value = data.bidang_studi || data.mata_pelajaran || data.kompetensi || '';
   document.getElementById('editJabatanGuru').value = data.jabatan || '';
   document.getElementById('editPendidikanGuru').value = data.pendidikan_terakhir || '';
   document.getElementById('editEmailGuru').value = data.email || '';
@@ -455,7 +455,7 @@ function editGuru(data) {
 function simpanTambahGuru() {
   const form = document.getElementById('formTambahGuru');
   if (!form.nama.value.trim()) {
-    alert('Silakan masukkan nama guru!');
+    swalWarning('Silakan masukkan nama guru/staff terlebih dahulu!');
     return;
   }
 
@@ -467,21 +467,20 @@ function simpanTambahGuru() {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert(data.message);
-      location.reload();
+      swalSuccess(data.message).then(() => location.reload());
     } else {
-      alert('Gagal: ' + data.message);
+      swalError(data.message || 'Gagal menambahkan guru');
     }
   })
   .catch(err => {
-    alert('Terjadi kesalahan jaringan.');
+    swalError('Terjadi kesalahan jaringan: ' + err.message);
   });
 }
 
 function simpanEditGuru() {
   const form = document.getElementById('formEditGuru');
   if (!form.nama.value.trim()) {
-    alert('Silakan masukkan nama guru!');
+    swalWarning('Silakan masukkan nama guru/staff!');
     return;
   }
 
@@ -493,19 +492,24 @@ function simpanEditGuru() {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert(data.message);
-      location.reload();
+      swalSuccess(data.message).then(() => location.reload());
     } else {
-      alert('Gagal: ' + data.message);
+      swalError(data.message || 'Gagal memperbarui data guru');
     }
   })
   .catch(err => {
-    alert('Terjadi kesalahan jaringan.');
+    swalError('Terjadi kesalahan jaringan: ' + err.message);
   });
 }
 
 function hapusGuru(id, nama) {
-  if (confirm('Apakah Anda yakin ingin menghapus data guru: ' + nama + '?')) {
+  swalConfirm({
+    title: 'Hapus Data Guru?',
+    text: 'Apakah Anda yakin ingin menghapus data guru: "' + nama + '"? Tindakan ini tidak dapat dibatalkan.',
+    confirmText: 'Iya, Hapus',
+    cancelText: 'Tidak, Batal',
+    isDanger: true
+  }, () => {
     const formData = new FormData();
     formData.append('action', 'hapus');
     formData.append('id', id);
@@ -517,16 +521,15 @@ function hapusGuru(id, nama) {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        alert(data.message);
-        location.reload();
+        swalSuccess(data.message).then(() => location.reload());
       } else {
-        alert('Gagal: ' + data.message);
+        swalError(data.message);
       }
     })
     .catch(err => {
-      alert('Terjadi kesalahan jaringan.');
+      swalError('Terjadi kesalahan jaringan: ' + err.message);
     });
-  }
+  });
 }
 
 function filterGuruTable() {

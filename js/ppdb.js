@@ -109,11 +109,19 @@ function submitStage1(e) {
   });
 
   if (!valid) {
-    alert('Harap lengkapi semua field yang wajib diisi.');
+    if (typeof swalWarning === 'function') {
+      swalWarning('Harap lengkapi semua field yang wajib diisi.');
+    } else {
+      alert('Harap lengkapi semua field yang wajib diisi.');
+    }
     return false;
   }
 
-  alert('Pengajuan akun berhasil! Silakan lanjut ke tahap Verifikasi Akun.');
+  if (typeof swalSuccess === 'function') {
+    swalSuccess('Pengajuan akun berhasil! Silakan lanjut ke tahap Verifikasi Akun.');
+  } else {
+    alert('Pengajuan akun berhasil! Silakan lanjut ke tahap Verifikasi Akun.');
+  }
   completeStage(1);
   return false;
 }
@@ -127,21 +135,28 @@ function submitStage3(e) {
   var passConfirm = document.getElementById('password_confirm');
 
   if (!nisn.value.trim() || !token.value.trim() || !pass.value.trim() || !passConfirm.value.trim()) {
-    alert('Harap lengkapi semua field.');
+    if (typeof swalWarning === 'function') swalWarning('Harap lengkapi semua field.');
+    else alert('Harap lengkapi semua field.');
     return false;
   }
 
   if (pass.value.length < 8) {
-    alert('Password minimal 8 karakter.');
+    if (typeof swalWarning === 'function') swalWarning('Password minimal 8 karakter.');
+    else alert('Password minimal 8 karakter.');
     return false;
   }
 
   if (pass.value !== passConfirm.value) {
-    alert('Konfirmasi password tidak sesuai.');
+    if (typeof swalWarning === 'function') swalWarning('Konfirmasi password tidak sesuai.');
+    else alert('Konfirmasi password tidak sesuai.');
     return false;
   }
 
-  alert('Akun berhasil diaktivasi! Silakan lanjut ke tahap Daftar Sekolah.');
+  if (typeof swalSuccess === 'function') {
+    swalSuccess('Akun berhasil diaktivasi! Silakan lanjut ke tahap Daftar Sekolah.');
+  } else {
+    alert('Akun berhasil diaktivasi! Silakan lanjut ke tahap Daftar Sekolah.');
+  }
   completeStage(3);
   return false;
 }
@@ -179,12 +194,14 @@ function getSelectedJalur() {
 function lanjutKeModul() {
   var jurusan = getSelectedJurusan();
   if (!jurusan) {
-    alert('Pilih kompetensi keahlian terlebih dahulu.');
+    if (typeof swalWarning === 'function') swalWarning('Pilih kompetensi keahlian terlebih dahulu.');
+    else alert('Pilih kompetensi keahlian terlebih dahulu.');
     return;
   }
   var jalur = getSelectedJalur();
   if (!jalur) {
-    alert('Pilih jalur pendaftaran terlebih dahulu.');
+    if (typeof swalWarning === 'function') swalWarning('Pilih jalur pendaftaran terlebih dahulu.');
+    else alert('Pilih jalur pendaftaran terlebih dahulu.');
     return;
   }
   location.href = 'ppdb-lengkapi-jalur.php?jurusan=' + encodeURIComponent(jurusan) + '&jalur=' + encodeURIComponent(jalur);
@@ -277,9 +294,16 @@ function submitModul(e) {
     }
   }
 
-  alert('Data berhasil disimpan! Silakan pantau peringkat kamu di Jurnal Seleksi.');
-  completeStage(4);
-  location.href = 'ppdb-jurnal.php';
+  if (typeof swalSuccess === 'function') {
+    swalSuccess('Data berhasil disimpan! Silakan pantau peringkat kamu di Jurnal Seleksi.').then(function() {
+      completeStage(4);
+      location.href = 'ppdb-jurnal.php';
+    });
+  } else {
+    alert('Data berhasil disimpan! Silakan pantau peringkat kamu di Jurnal Seleksi.');
+    completeStage(4);
+    location.href = 'ppdb-jurnal.php';
+  }
   return false;
 }
 
@@ -597,7 +621,8 @@ function hitungNilaiAkademik() {
 function cekHasil() {
   var nisn = document.getElementById('cariNisn').value.trim();
   if (!nisn || nisn.length < 5) {
-    alert('Masukkan NISN yang valid (minimal 5 digit).');
+    if (typeof swalWarning === 'function') swalWarning('Masukkan NISN yang valid (minimal 5 digit).');
+    else alert('Masukkan NISN yang valid (minimal 5 digit).');
     return;
   }
 
@@ -618,16 +643,22 @@ function submitStage6(e) {
   var syarat = document.getElementById('du_syarat');
 
   if (!nisn.value.trim() || !nama.value.trim() || !hp.value.trim()) {
-    alert('Harap lengkapi data diri.');
+    if (typeof swalWarning === 'function') swalWarning('Harap lengkapi data diri.');
+    else alert('Harap lengkapi data diri.');
     return false;
   }
 
   if (!syarat.checked) {
-    alert('Centang pernyataan di atas untuk melanjutkan.');
+    if (typeof swalWarning === 'function') swalWarning('Centang pernyataan di atas untuk melanjutkan.');
+    else alert('Centang pernyataan di atas untuk melanjutkan.');
     return false;
   }
 
-  alert('Daftar ulang berhasil! Selamat bergabung di SMKN 2 Karanganyar.');
+  if (typeof swalSuccess === 'function') {
+    swalSuccess('Daftar ulang berhasil! Selamat bergabung di SMKN 2 Karanganyar.');
+  } else {
+    alert('Daftar ulang berhasil! Selamat bergabung di SMKN 2 Karanganyar.');
+  }
   completeStage(6);
   return false;
 }
@@ -644,7 +675,8 @@ function handleUpload(input, previewId) {
   var maxSize = 2 * 1024 * 1024;
 
   if (file.size > maxSize) {
-    alert('Ukuran file maksimal 2 MB. File kamu terlalu besar.');
+    if (typeof swalWarning === 'function') swalWarning('Ukuran file maksimal 2 MB. File kamu terlalu besar.');
+    else alert('Ukuran file maksimal 2 MB. File kamu terlalu besar.');
     input.value = '';
     preview.style.display = 'none';
     return;

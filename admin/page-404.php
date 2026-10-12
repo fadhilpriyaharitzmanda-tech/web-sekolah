@@ -13,8 +13,9 @@ $assetsPath = 'assets/';
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= htmlspecialchars($pageTitle) ?></title>
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="<?= $assetsPath ?>images/favicon.ico">
+  <!-- Favicon Logo SMKN 2 Karanganyar -->
+  <link rel="icon" type="image/png" href="<?= $assetsPath ?>images/smkn2kra.png">
+  <link rel="shortcut icon" href="<?= $assetsPath ?>images/smkn2kra.png">
 
   <!-- Local Third-Party Libraries -->
   <link rel="stylesheet" href="<?= $assetsPath ?>libs/bootstrap/css/bootstrap.min.css">

@@ -15,6 +15,9 @@ try {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Guru &amp; Staff | SMKN 2 Karanganyar</title>
+  <!-- Favicon Logo SMKN 2 Karanganyar -->
+  <link rel="icon" type="image/png" href="../logo/smkn2kra.png">
+  <link rel="shortcut icon" href="../logo/smkn2kra.png">
   <link rel="stylesheet" href="../css/style.css?v=3">
   <style>.guru-toolbar{display:flex;flex-direction:column;gap:1rem;background:#fff;border-radius:20px;padding:1.5rem 2rem;box-shadow:0 4px 16px rgba(0,0,0,0.05),0 1px 3px rgba(0,0,0,0.04);margin-bottom:2.5rem}@media(min-width:768px){.guru-toolbar{flex-direction:row;align-items:center;justify-content:space-between;padding:1.25rem 2rem}}.guru-toolbar select{padding:11px 16px;border:1.5px solid #e2e8e2;border-radius:12px;background:#f4f7f4;font-family:var(--font-body);font-size:14px;color:var(--on-surface);outline:none;cursor:pointer;min-width:180px;transition:all .2s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235d5f5f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center;padding-right:2.5rem}.guru-toolbar select:focus{border-color:var(--primary-dark);background:#fff;box-shadow:0 0 0 3px rgba(0,110,47,0.08)}.guru-grid{display:grid;grid-template-columns:1fr;gap:1rem;margin-top:2.5rem}@media(min-width:640px){.guru-grid{grid-template-columns:repeat(2,1fr)}}@media(min-width:1024px){.guru-grid{grid-template-columns:repeat(3,1fr)}}.guru-card{background:#fff;border-radius:16px;border:1px solid #e8f0e8;overflow:hidden;transition:all .3s;cursor:pointer}.guru-card:hover{box-shadow:0 8px 24px rgba(0,110,47,0.06)}.guru-card-header{display:flex;align-items:center;gap:1rem;padding:1.25rem;transition:background .2s}.guru-card-header:hover{background:rgba(34,197,94,0.02)}.guru-avatar{width:48px;height:48px;border-radius:50%;background:var(--surface-container);display:flex;align-items:center;justify-content:center;font-size:1.25rem;color:var(--primary-dark);flex-shrink:0;font-weight:700;font-family:var(--font-heading)}.guru-card-info{flex:1;min-width:0}.guru-card-info h3{font-family:var(--font-heading);font-size:.95rem;font-weight:700;color:var(--on-surface);margin-bottom:.125rem}.guru-card-info .kompetensi{font-size:.8rem;color:var(--secondary)}.guru-card-chevron{color:var(--secondary);font-size:1.25rem;transition:transform .3s;flex-shrink:0}.guru-card.open .guru-card-chevron{transform:rotate(180deg)}.guru-card-body{max-height:0;overflow:hidden;transition:max-height .35s ease}.guru-detail{padding:0 1.25rem 1.25rem;border-top:1px solid #e8f0e8;margin-top:0}.guru-detail-item{display:flex;gap:.75rem;padding:.75rem 0;border-bottom:1px solid #f0f4f0}.guru-detail-item:last-child{border-bottom:none}.guru-detail-item .label{font-size:.8rem;color:var(--secondary);min-width:90px;flex-shrink:0}.guru-detail-item .value{font-size:.9rem;color:var(--on-surface);font-weight:500}.guru-empty{text-align:center;padding:4rem 2rem;color:var(--secondary);display:none}.guru-empty .material-symbols-outlined{font-size:3rem;margin-bottom:1rem;color:var(--outline)}.guru-empty h3{font-family:var(--font-heading);font-size:1.125rem;color:var(--on-surface);margin-bottom:.5rem}
   </style>
@@ -59,7 +62,7 @@ try {
               }
               if (empty($initials)) $initials = 'GR';
 
-              $bidang = $g['bidang_studi'] ?? '';
+              $bidang = !empty($g['bidang_studi']) ? $g['bidang_studi'] : (!empty($g['mata_pelajaran']) ? $g['mata_pelajaran'] : (!empty($g['kompetensi']) ? $g['kompetensi'] : ''));
               $komp = 'all';
               if (stripos($bidang, 'RPL') !== false || stripos($bidang, 'Perangkat Lunak') !== false) $komp = 'RPL';
               elseif (stripos($bidang, 'Mesin') !== false || stripos($bidang, 'Pemesinan') !== false) $komp = 'Mesin';
@@ -76,8 +79,8 @@ try {
                 <div class="guru-card-header" onclick="toggleGuru(this)">
                   <div class="guru-avatar"><?= htmlspecialchars(substr($initials, 0, 2)) ?></div>
                   <div class="guru-card-info">
-                    <h3><?= htmlspecialchars($g['nama']) ?></h3>
-                    <span class="kompetensi"><?= htmlspecialchars($g['bidang_studi']) ?></span>
+                    <h3><?= htmlspecialchars($g['nama'] ?? '') ?></h3>
+                    <span class="kompetensi"><?= htmlspecialchars($bidang ?: 'Guru') ?></span>
                   </div>
                   <span class="material-symbols-outlined guru-card-chevron">expand_more</span>
                 </div>
@@ -85,7 +88,7 @@ try {
                   <div class="guru-detail">
                     <div class="guru-detail-item">
                       <span class="label">Nama Lengkap</span>
-                      <span class="value"><?= htmlspecialchars($g['nama']) ?></span>
+                      <span class="value"><?= htmlspecialchars($g['nama'] ?? '') ?></span>
                     </div>
                     <?php if (!empty($g['nip'])): ?>
                     <div class="guru-detail-item">
@@ -99,7 +102,7 @@ try {
                     </div>
                     <div class="guru-detail-item">
                       <span class="label">Mata Pelajaran</span>
-                      <span class="value"><?= htmlspecialchars($g['bidang_studi']) ?></span>
+                      <span class="value"><?= htmlspecialchars($bidang ?: 'Guru Pengampu') ?></span>
                     </div>
                     <?php if (!empty($g['jabatan'])): ?>
                     <div class="guru-detail-item">

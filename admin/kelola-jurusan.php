@@ -239,9 +239,13 @@ include __DIR__ . '/components/sidebar.php';
   <div class="row g-4 mb-4" id="jurusanCardContainer">
     <?php if (!empty($jurusanList)): ?>
       <?php foreach ($jurusanList as $jur): 
-        $w = !empty($jur['warna']) ? $jur['warna'] : '#22c55e';
-        $img = resolveJurusanImg($jur['gambar']);
-        $kompArr = array_filter(array_map('trim', explode(',', $jur['kompetensi'] ?? '')));
+        $w = !empty($jur['warna']) ? $jur['warna'] : (!empty($jur['warna_aksen']) ? $jur['warna_aksen'] : '#22c55e');
+        $img = resolveJurusanImg($jur['gambar'] ?? '');
+        $singkatan = !empty($jur['singkatan']) ? $jur['singkatan'] : (!empty($jur['kode']) ? $jur['kode'] : 'JUR');
+        $akreditasi = !empty($jur['akreditasi']) ? $jur['akreditasi'] : 'A';
+        $kaprodi = !empty($jur['kaprodi']) ? $jur['kaprodi'] : 'Belum ditentukan';
+        $kuota = !empty($jur['kuota']) ? $jur['kuota'] : '72 Siswa (2 Rombel)';
+        $kompArr = array_filter(array_map('trim', explode(',', $jur['kompetensi'] ?? ($jur['keunggulan'] ?? ''))));
       ?>
         <div class="col-xl-6 jurusan-item">
           <div class="card p-4 h-100 shadow-sm border-0 d-flex flex-column justify-content-between" style="border-radius: var(--radius-xl); border: 1px solid rgba(11, 19, 15, 0.06) !important;">
@@ -250,13 +254,13 @@ include __DIR__ . '/components/sidebar.php';
               <div class="d-flex align-items-start justify-content-between mb-3 pb-3 border-bottom">
                 <div class="d-flex align-items-center gap-3">
                   <div class="rounded-3 p-2" style="background: <?= htmlspecialchars($w) ?>22; width: 62px; height: 62px; display: flex; align-items: center; justify-content: center; border: 1px solid <?= htmlspecialchars($w) ?>55;">
-                    <img src="<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($jur['singkatan']) ?>" style="max-width: 46px; max-height: 46px; object-fit: contain;" onerror="this.src='../images/3d-rpl.png'">
+                    <img src="<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($singkatan) ?>" style="max-width: 46px; max-height: 46px; object-fit: contain;" onerror="this.src='../images/3d-rpl.png'">
                   </div>
                   <div>
-                    <span class="badge bg-success-subtle text-success mb-1" style="font-size: 0.72rem; letter-spacing: 0.03em;"><?= htmlspecialchars($jur['singkatan']) ?> &bull; TERAKREDITASI <?= htmlspecialchars($jur['akreditasi']) ?></span>
-                    <h5 class="fw-bold mb-1 text-main" style="font-size: 1.15rem;"><?= htmlspecialchars($jur['nama']) ?></h5>
+                    <span class="badge bg-success-subtle text-success mb-1" style="font-size: 0.72rem; letter-spacing: 0.03em;"><?= htmlspecialchars($singkatan) ?> &bull; TERAKREDITASI <?= htmlspecialchars($akreditasi) ?></span>
+                    <h5 class="fw-bold mb-1 text-main" style="font-size: 1.15rem;"><?= htmlspecialchars($jur['nama'] ?? '') ?></h5>
                     <div class="text-muted fs-xs d-flex align-items-center gap-1">
-                      <i class="bi bi-person-badge text-success"></i> Kaprodi: <strong><?= htmlspecialchars($jur['kaprodi'] ?: 'Belum ditentukan') ?></strong>
+                      <i class="bi bi-person-badge text-success"></i> Kaprodi: <strong><?= htmlspecialchars($kaprodi) ?></strong>
                     </div>
                   </div>
                 </div>
@@ -293,7 +297,7 @@ include __DIR__ . '/components/sidebar.php';
             <!-- Footer Card -->
             <div class="pt-3 border-top">
               <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2 fs-xs">
-                <div><span class="text-muted">Kuota Penerimaan:</span> <strong class="text-main"><?= htmlspecialchars($jur['kuota']) ?></strong></div>
+                <div><span class="text-muted">Kuota Penerimaan:</span> <strong class="text-main"><?= htmlspecialchars($kuota) ?></strong></div>
                 <div class="d-flex align-items-center gap-1">
                   <span class="text-muted">Aksen Warna:</span>
                   <span class="badge d-inline-flex align-items-center gap-1" style="background:<?= htmlspecialchars($w) ?>; color:#072F1F; font-weight:700;">
@@ -324,9 +328,6 @@ include __DIR__ . '/components/sidebar.php';
       </div>
     <?php endif; ?>
   </div>
-
-</div>
-<!-- END: .main-wrapper -->
 
 <!-- Modal Tambah Jurusan -->
 <div class="modal fade" id="modalTambahJurusan" tabindex="-1" aria-labelledby="modalTambahJurusanLabel" aria-hidden="true">
@@ -488,13 +489,13 @@ include __DIR__ . '/components/sidebar.php';
 function bukaEditJurusan(data) {
   document.getElementById('editIdJurusan').value = data.id || '';
   document.getElementById('editNamaJurusan').value = data.nama || '';
-  document.getElementById('editKodeJurusan').value = data.singkatan || '';
+  document.getElementById('editKodeJurusan').value = data.singkatan || data.kode || '';
   document.getElementById('editKaprodiJurusan').value = data.kaprodi || '';
-  document.getElementById('editKuotaJurusan').value = data.kuota || '';
+  document.getElementById('editKuotaJurusan').value = data.kuota || '72 Siswa (2 Rombel)';
   document.getElementById('editAkreditasiJurusan').value = data.akreditasi || 'A';
   document.getElementById('editDeskripsiJurusan').value = data.deskripsi || '';
-  document.getElementById('editKompetensiJurusan').value = data.kompetensi || '';
-  document.getElementById('editWarnaJurusan').value = data.warna || '#22c55e';
+  document.getElementById('editKompetensiJurusan').value = data.kompetensi || data.keunggulan || '';
+  document.getElementById('editWarnaJurusan').value = data.warna || data.warna_aksen || '#22c55e';
   document.getElementById('editStatusTayang').value = (data.status === 'Aktif') ? '1' : '0';
 
   const modalEl = document.getElementById('modalEditJurusan');
@@ -505,7 +506,7 @@ function bukaEditJurusan(data) {
 function simpanTambahJurusan() {
   const form = document.getElementById('formTambahJurusan');
   if (!form.nama.value.trim() || !form.singkatan.value.trim()) {
-    alert('Nama dan singkatan jurusan wajib diisi!');
+    swalWarning('Nama dan singkatan jurusan wajib diisi!');
     return;
   }
   const fd = new FormData(form);
@@ -513,19 +514,18 @@ function simpanTambahJurusan() {
     .then(r => r.json())
     .then(data => {
       if (data.success) {
-        alert(data.message);
-        window.location.reload();
+        swalSuccess(data.message).then(() => window.location.reload());
       } else {
-        alert('Gagal: ' + data.message);
+        swalError(data.message || 'Gagal menambahkan jurusan');
       }
     })
-    .catch(err => alert('Error: ' + err.message));
+    .catch(err => swalError('Error: ' + err.message));
 }
 
 function simpanEditJurusan() {
   const form = document.getElementById('formEditJurusan');
   if (!form.nama.value.trim() || !form.singkatan.value.trim()) {
-    alert('Nama dan singkatan jurusan wajib diisi!');
+    swalWarning('Nama dan singkatan jurusan wajib diisi!');
     return;
   }
   const fd = new FormData(form);
@@ -533,17 +533,22 @@ function simpanEditJurusan() {
     .then(r => r.json())
     .then(data => {
       if (data.success) {
-        alert(data.message);
-        window.location.reload();
+        swalSuccess(data.message).then(() => window.location.reload());
       } else {
-        alert('Gagal: ' + data.message);
+        swalError(data.message || 'Gagal memperbarui jurusan');
       }
     })
-    .catch(err => alert('Error: ' + err.message));
+    .catch(err => swalError('Error: ' + err.message));
 }
 
 function hapusJurusan(id, nama) {
-  if (confirm('Yakin ingin menghapus jurusan "' + nama + '"?')) {
+  swalConfirm({
+    title: 'Hapus Jurusan?',
+    text: 'Apakah Anda yakin ingin menghapus program keahlian "' + nama + '"? Tindakan ini tidak dapat dibatalkan.',
+    confirmText: 'Iya, Hapus',
+    cancelText: 'Tidak, Batal',
+    isDanger: true
+  }, () => {
     const fd = new FormData();
     fd.append('action', 'hapus');
     fd.append('id', id);
@@ -551,14 +556,13 @@ function hapusJurusan(id, nama) {
       .then(r => r.json())
       .then(data => {
         if (data.success) {
-          alert(data.message);
-          window.location.reload();
+          swalSuccess(data.message).then(() => window.location.reload());
         } else {
-          alert('Gagal: ' + data.message);
+          swalError(data.message);
         }
       })
-      .catch(err => alert('Error: ' + err.message));
-  }
+      .catch(err => swalError('Error: ' + err.message));
+  });
 }
 
 function toggleStatusJurusan(id) {
@@ -569,12 +573,13 @@ function toggleStatusJurusan(id) {
     .then(r => r.json())
     .then(data => {
       if (data.success) {
-        window.location.reload();
+        showToast(data.message || 'Status jurusan berhasil diubah!');
+        setTimeout(() => window.location.reload(), 1000);
       } else {
-        alert('Gagal: ' + data.message);
+        swalError('Gagal: ' + data.message);
       }
     })
-    .catch(err => alert('Error: ' + err.message));
+    .catch(err => swalError('Error: ' + err.message));
 }
 
 function filterJurusanCards() {

@@ -319,9 +319,6 @@ include __DIR__ . '/components/sidebar.php';
   </div>
   <!-- END: table-card-custom -->
 
-</div>
-<!-- END: .main-wrapper -->
-
 <!-- Modal Tambah Berita -->
 <div class="modal fade" id="modalTambahBerita" tabindex="-1" aria-labelledby="modalTambahBeritaLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -502,7 +499,7 @@ function bukaEditBerita(data) {
 function simpanTambahBerita() {
   const form = document.getElementById('formTambahBerita');
   if (!form.judul.value.trim()) {
-    alert('Silakan isi judul berita!');
+    swalWarning('Silakan isi judul berita!');
     return;
   }
   const fd = new FormData(form);
@@ -510,19 +507,18 @@ function simpanTambahBerita() {
     .then(r => r.json())
     .then(data => {
       if (data.success) {
-        alert(data.message);
-        window.location.reload();
+        swalSuccess(data.message).then(() => window.location.reload());
       } else {
-        alert('Gagal: ' + data.message);
+        swalError(data.message || 'Gagal mempublikasikan berita');
       }
     })
-    .catch(err => alert('Error: ' + err.message));
+    .catch(err => swalError('Error: ' + err.message));
 }
 
 function simpanEditBerita() {
   const form = document.getElementById('formEditBerita');
   if (!form.judul.value.trim()) {
-    alert('Silakan isi judul berita!');
+    swalWarning('Silakan isi judul berita!');
     return;
   }
   const fd = new FormData(form);
@@ -530,17 +526,22 @@ function simpanEditBerita() {
     .then(r => r.json())
     .then(data => {
       if (data.success) {
-        alert(data.message);
-        window.location.reload();
+        swalSuccess(data.message).then(() => window.location.reload());
       } else {
-        alert('Gagal: ' + data.message);
+        swalError(data.message || 'Gagal memperbarui berita');
       }
     })
-    .catch(err => alert('Error: ' + err.message));
+    .catch(err => swalError('Error: ' + err.message));
 }
 
 function hapusBerita(id, judul) {
-  if (confirm('Hapus warta berita: "' + judul + '"?')) {
+  swalConfirm({
+    title: 'Hapus Berita?',
+    text: 'Apakah Anda yakin ingin menghapus warta berita: "' + judul + '"? Tindakan ini tidak dapat dibatalkan.',
+    confirmText: 'Iya, Hapus',
+    cancelText: 'Tidak, Batal',
+    isDanger: true
+  }, () => {
     const fd = new FormData();
     fd.append('action', 'hapus');
     fd.append('id', id);
@@ -548,14 +549,13 @@ function hapusBerita(id, judul) {
       .then(r => r.json())
       .then(data => {
         if (data.success) {
-          alert(data.message);
-          window.location.reload();
+          swalSuccess(data.message).then(() => window.location.reload());
         } else {
-          alert('Gagal: ' + data.message);
+          swalError(data.message);
         }
       })
-      .catch(err => alert('Error: ' + err.message));
-  }
+      .catch(err => swalError('Error: ' + err.message));
+  });
 }
 
 function toggleLandingBerita(id) {
@@ -566,12 +566,13 @@ function toggleLandingBerita(id) {
     .then(r => r.json())
     .then(data => {
       if (data.success) {
-        window.location.reload();
+        showToast(data.message || 'Status tayang landing page diperbarui!');
+        setTimeout(() => window.location.reload(), 1000);
       } else {
-        alert('Gagal: ' + data.message);
+        swalError('Gagal: ' + data.message);
       }
     })
-    .catch(err => alert('Error: ' + err.message));
+    .catch(err => swalError('Error: ' + err.message));
 }
 
 function filterBeritaTable() {

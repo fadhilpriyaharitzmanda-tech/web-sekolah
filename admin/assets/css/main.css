@@ -1702,6 +1702,7 @@ span.flatpickr-weekday {
 .footer-custom {
     margin-top: auto;
     padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
     border-top: 1px solid rgba(11, 19, 15, 0.06);
     display: flex;
     align-items: center;
@@ -1711,6 +1712,9 @@ span.flatpickr-weekday {
     font-size: 0.85rem;
     color: var(--text-muted-green);
     transition: all 0.3s ease;
+    width: 100%;
+    position: relative;
+    z-index: 10;
 }
 
 .footer-left {

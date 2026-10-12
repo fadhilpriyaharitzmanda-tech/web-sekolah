@@ -118,7 +118,6 @@ $assetsPath = $assetsPath ?? 'assets/';
       </button>
       <ul class="dropdown-menu dropdown-menu-end dropdown-menu-profile" aria-labelledby="profile-dropdown">
         <li class="dropdown-header">Selamat Datang, <?= htmlspecialchars($_SESSION['admin_username'] ?? 'Admin') ?>!</li>
-        <li><a class="dropdown-item" href="index.php"><i class="bi bi-person"></i> Akun Saya</a></li>
         <li><a class="dropdown-item" href="../index.php" target="_blank"><i class="bi bi-globe2"></i> Ke Website</a></li>
         <li>
           <hr class="dropdown-divider">

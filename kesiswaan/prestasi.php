@@ -3,7 +3,7 @@ require_once __DIR__ . '/../config/database.php';
 $webPrestasiList = [];
 try {
     $pdo = getDbConnection();
-    $stmt = $pdo->query("SELECT * FROM prestasi WHERE status = 'Publikasi' ORDER BY tahun DESC, id DESC");
+    $stmt = $pdo->query("SELECT * FROM prestasi WHERE status IN ('Publikasi', 'Aktif') ORDER BY tahun DESC, id DESC");
     $webPrestasiList = $stmt->fetchAll();
 } catch (Exception $e) {
     //
@@ -15,6 +15,9 @@ try {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Prestasi | SMKN 2 Karanganyar</title>
+  <!-- Favicon Logo SMKN 2 Karanganyar -->
+  <link rel="icon" type="image/png" href="../logo/smkn2kra.png">
+  <link rel="shortcut icon" href="../logo/smkn2kra.png">
   <link rel="stylesheet" href="../css/style.css?v=3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -278,15 +281,21 @@ try {
                     'Provinsi' => 'emas',
                     default => 'perak'
                   };
+                  $judul = !empty($p['judul']) ? $p['judul'] : ($p['nama_lomba'] ?? 'Prestasi Siswa');
+                  $namaPeraih = !empty($p['nama_peraih']) ? $p['nama_peraih'] : ($p['nama_siswa'] ?? 'Siswa Berprestasi');
+                  $kelasJurusan = !empty($p['kelas_jurusan']) ? $p['kelas_jurusan'] : ($p['kelas'] ?? '-');
+                  $peringkat = $p['peringkat'] ?? 'Juara';
+                  $tingkat = $p['tingkat'] ?? 'Tingkat Sekolah';
+                  $tahun = $p['tahun'] ?? date('Y');
                 ?>
                   <tr>
                     <td><?= $idx + 1 ?></td>
-                    <td><?= htmlspecialchars($p['judul']) ?></td>
-                    <td><span class="prestasi-badge <?= $badgeCls ?>"><?= htmlspecialchars($p['tingkat']) ?></span></td>
-                    <td><?= htmlspecialchars($p['tahun']) ?></td>
-                    <td><?= htmlspecialchars($p['nama_peraih']) ?></td>
-                    <td><?= htmlspecialchars($p['kelas_jurusan'] ?? '-') ?></td>
-                    <td><?= htmlspecialchars($p['peringkat']) ?></td>
+                    <td><?= htmlspecialchars($judul) ?></td>
+                    <td><span class="prestasi-badge <?= $badgeCls ?>"><?= htmlspecialchars($tingkat) ?></span></td>
+                    <td><?= htmlspecialchars($tahun) ?></td>
+                    <td><?= htmlspecialchars($namaPeraih) ?></td>
+                    <td><?= htmlspecialchars($kelasJurusan) ?></td>
+                    <td><?= htmlspecialchars($peringkat) ?></td>
                   </tr>
                 <?php endforeach; ?>
               <?php else: ?>

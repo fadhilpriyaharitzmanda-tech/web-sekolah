@@ -15,6 +15,9 @@ try {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Alumni | SMKN 2 Karanganyar</title>
+  <!-- Favicon Logo SMKN 2 Karanganyar -->
+  <link rel="icon" type="image/png" href="../logo/smkn2kra.png">
+  <link rel="shortcut icon" href="../logo/smkn2kra.png">
   <link rel="stylesheet" href="../css/style.css?v=3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -128,20 +131,22 @@ try {
         <?php if (!empty($alumniList)): ?>
           <?php foreach ($alumniList as $a): 
             $fotoUrl = !empty($a['foto']) ? (str_starts_with($a['foto'], 'http') ? $a['foto'] : '../' . $a['foto']) : 'https://ui-avatars.com/api/?name=' . urlencode($a['nama']) . '&background=4ade80&color=fff&size=80';
-            $pekerjaan = $a['profesi'] ?? $a['perusahaan'] ?? '';
+            $pekerjaan = !empty($a['profesi']) ? $a['profesi'] . (!empty($a['perusahaan']) ? ' di ' . $a['perusahaan'] : '') : ($a['pekerjaan'] ?? ($a['perusahaan'] ?? ''));
+            $jurusanTeks = !empty($a['jurusan']) ? $a['jurusan'] : (!empty($a['jurusan_tahun']) ? $a['jurusan_tahun'] : 'Alumni');
+            $tahunTeks = !empty($a['tahun_lulus']) ? ' - ' . $a['tahun_lulus'] : '';
           ?>
             <div class="alumni-card">
               <div class="alumni-header">
-                <img src="<?= htmlspecialchars($fotoUrl) ?>" alt="<?= htmlspecialchars($a['nama']) ?>">
+                <img src="<?= htmlspecialchars($fotoUrl) ?>" alt="<?= htmlspecialchars($a['nama'] ?? '') ?>">
                 <div class="alumni-info">
-                  <h3><?= htmlspecialchars($a['nama']) ?></h3>
-                  <span class="angkatan"><?= htmlspecialchars($a['jurusan']) ?> - <?= htmlspecialchars($a['tahun_lulus']) ?></span>
+                  <h3><?= htmlspecialchars($a['nama'] ?? '') ?></h3>
+                  <span class="angkatan"><?= htmlspecialchars($jurusanTeks . $tahunTeks) ?></span>
                 </div>
               </div>
               <?php if (!empty($pekerjaan)): ?>
                 <p class="posisi"><?= htmlspecialchars($pekerjaan) ?></p>
               <?php endif; ?>
-              <p class="testi">"<?= htmlspecialchars($a['testimoni']) ?>"</p>
+              <p class="testi">"<?= htmlspecialchars($a['testimoni'] ?? '') ?>"</p>
             </div>
           <?php endforeach; ?>
         <?php else: ?>

@@ -1,0 +1,204 @@
+=== TABLE: berita ===
+  id (int) Null:NO Def:NULL
+  judul (varchar(255)) Null:NO Def:NULL
+  slug (varchar(255)) Null:NO Def:NULL
+  kategori (varchar(50)) Null:NO Def:NULL
+  ringkasan (text) Null:NO Def:NULL
+  konten (longtext) Null:NO Def:NULL
+  gambar (varchar(500)) Null:NO Def:NULL
+  penulis (varchar(100)) Null:YES Def:'Admin Humas'
+  tanggal (date) Null:NO Def:NULL
+  tampil_landing (enum('Ya','Tidak')) Null:YES Def:'Ya'
+  status (enum('Terbit','Draf')) Null:YES Def:'Terbit'
+  views (int) Null:YES Def:'0'
+  created_at (timestamp) Null:YES Def:'CURRENT_TIMESTAMP'
+  updated_at (timestamp) Null:YES Def:'CURRENT_TIMESTAMP'
+=== TABLE: cta_banners ===
+  id (int) Null:NO Def:NULL
+  judul (varchar(255)) Null:NO Def:NULL
+  deskripsi (text) Null:NO Def:NULL
+  tombol1_teks (varchar(100)) Null:YES Def:NULL
+  tombol1_link (varchar(255)) Null:YES Def:NULL
+  tombol2_teks (varchar(100)) Null:YES Def:NULL
+  tombol2_link (varchar(255)) Null:YES Def:NULL
+  updated_at (timestamp) Null:YES Def:'CURRENT_TIMESTAMP'
+=== TABLE: ekstrakurikuler ===
+  id (int) Null:NO Def:NULL
+  nama_ekskul (varchar(100)) Null:YES Def:NULL
+  nama (varchar(100)) Null:YES Def:NULL
+  kategori (varchar(50)) Null:YES Def:'Umum'
+  deskripsi (text) Null:YES Def:NULL
+  pembina (varchar(100)) Null:YES Def:NULL
+  jumlah_anggota (varchar(50)) Null:YES Def:'35 Siswa'
+  hari_jadwal (varchar(100)) Null:YES Def:'Sabtu'
+  jadwal (varchar(100)) Null:YES Def:NULL
+  icon (varchar(50)) Null:YES Def:'groups'
+  warna_bg (varchar(20)) Null:YES Def:'#e8f5e9'
+  warna_teks (varchar(20)) Null:YES Def:'#2e7d32'
+  foto (varchar(500)) Null:YES Def:NULL
+  status (enum('Aktif','Nonaktif')) Null:YES Def:'Aktif'
+  created_at (timestamp) Null:YES Def:'CURRENT_TIMESTAMP'
+=== TABLE: galeri ===
+  id (int) Null:NO Def:NULL
+  judul (varchar(255)) Null:NO Def:NULL
+  kategori (varchar(50)) Null:NO Def:NULL
+  gambar (varchar(500)) Null:NO Def:NULL
+  deskripsi (text) Null:YES Def:NULL
+  tanggal (date) Null:NO Def:NULL
+  status (enum('Aktif','Nonaktif')) Null:YES Def:'Aktif'
+  created_at (timestamp) Null:YES Def:'CURRENT_TIMESTAMP'
+=== TABLE: guru_staff ===
+  id (int) Null:NO Def:NULL
+  nip (varchar(50)) Null:YES Def:NULL
+  bidang_studi (varchar(150)) Null:YES Def:NULL
+  nama (varchar(150)) Null:NO Def:NULL
+  jenis_kelamin (enum('Laki-laki','Perempuan')) Null:YES Def:'Laki-laki'
+  jabatan (varchar(100)) Null:YES Def:'Guru Pengampu'
+  pendidikan_terakhir (varchar(50)) Null:YES Def:'S1 Pendidikan'
+  status_kepegawaian (varchar(50)) Null:YES Def:'PNS'
+  email (varchar(100)) Null:YES Def:NULL
+  kompetensi (varchar(100)) Null:YES Def:NULL
+  mata_pelajaran (varchar(255)) Null:YES Def:NULL
+  foto (varchar(500)) Null:YES Def:NULL
+  status (enum('Aktif','Nonaktif')) Null:YES Def:'Aktif'
+  kategori (varchar(50)) Null:YES Def:'Guru'
+  urutan (int) Null:YES Def:'1'
+  created_at (timestamp) Null:YES Def:'CURRENT_TIMESTAMP'
+=== TABLE: hero_banners ===
+  id (int) Null:NO Def:NULL
+  judul (varchar(255)) Null:NO Def:NULL
+  tagline (varchar(100)) Null:YES Def:NULL
+  deskripsi (text) Null:NO Def:NULL
+  gambar (varchar(500)) Null:NO Def:NULL
+  tombol1_teks (varchar(100)) Null:YES Def:NULL
+  tombol1_link (varchar(255)) Null:YES Def:NULL
+  tombol2_teks (varchar(100)) Null:YES Def:NULL
+  tombol2_link (varchar(255)) Null:YES Def:NULL
+  urutan (int) Null:YES Def:'1'
+  status (enum('Aktif','Nonaktif')) Null:YES Def:'Aktif'
+  created_at (timestamp) Null:YES Def:'CURRENT_TIMESTAMP'
+  updated_at (timestamp) Null:YES Def:'CURRENT_TIMESTAMP'
+=== TABLE: jurusan ===
+  id (int) Null:NO Def:NULL
+  kode (varchar(20)) Null:NO Def:NULL
+  nama (varchar(150)) Null:NO Def:NULL
+  singkatan (varchar(50)) Null:YES Def:NULL
+  akreditasi (varchar(10)) Null:YES Def:'A'
+  kaprodi (varchar(100)) Null:YES Def:NULL
+  kuota (varchar(100)) Null:YES Def:'72 Siswa (2 Rombel)'
+  slug (varchar(100)) Null:NO Def:NULL
+  deskripsi (text) Null:NO Def:NULL
+  kompetensi (text) Null:YES Def:NULL
+  gambar (varchar(500)) Null:YES Def:NULL
+  warna (varchar(30)) Null:YES Def:NULL
+  warna_aksen (varchar(20)) Null:YES Def:'#4ade80'
+  prospek_karir (text) Null:YES Def:NULL
+  keunggulan (text) Null:YES Def:NULL
+  status (enum('Aktif','Nonaktif')) Null:YES Def:'Aktif'
+  urutan (int) Null:YES Def:'1'
+  created_at (timestamp) Null:YES Def:'CURRENT_TIMESTAMP'
+=== TABLE: mitra_industri ===
+  id (int) Null:NO Def:NULL
+  nama_perusahaan (varchar(150)) Null:YES Def:NULL
+  bidang_usaha (varchar(100)) Null:YES Def:NULL
+  jurusan_terkait (varchar(100)) Null:YES Def:'Semua Jurusan'
+  kuota_pkl (int) Null:YES Def:'25'
+  mou_mulai (date) Null:YES Def:NULL
+  mou_selesai (date) Null:YES Def:NULL
+  nama_mitra (varchar(150)) Null:NO Def:NULL
+  bidang_industri (varchar(100)) Null:NO Def:NULL
+  kerjasama (varchar(255)) Null:NO Def:NULL
+  logo (varchar(500)) Null:YES Def:NULL
+  website (varchar(255)) Null:YES Def:NULL
+  alamat (text) Null:YES Def:NULL
+  status (enum('Aktif','Nonaktif')) Null:YES Def:'Aktif'
+  created_at (timestamp) Null:YES Def:'CURRENT_TIMESTAMP'
+=== TABLE: pengaduan ===
+  id (int) Null:NO Def:NULL
+  nama_pelapor (varchar(100)) Null:NO Def:NULL
+  email_pelapor (varchar(100)) Null:NO Def:NULL
+  no_telepon (varchar(30)) Null:YES Def:NULL
+  kategori (varchar(50)) Null:NO Def:NULL
+  subjek (varchar(255)) Null:NO Def:NULL
+  isi_pengaduan (text) Null:NO Def:NULL
+  status (enum('Menunggu','Diproses','Selesai','Ditolak')) Null:YES Def:'Menunggu'
+  tanggapan (text) Null:YES Def:NULL
+  created_at (timestamp) Null:YES Def:'CURRENT_TIMESTAMP'
+  updated_at (timestamp) Null:YES Def:'CURRENT_TIMESTAMP'
+=== TABLE: pengumuman ===
+  id (int) Null:NO Def:NULL
+  judul (varchar(255)) Null:NO Def:NULL
+  slug (varchar(255)) Null:NO Def:NULL
+  nomor_surat (varchar(100)) Null:YES Def:NULL
+  kategori (varchar(50)) Null:NO Def:NULL
+  ringkasan (text) Null:NO Def:NULL
+  isi (longtext) Null:NO Def:NULL
+  file_lampiran (varchar(500)) Null:YES Def:NULL
+  tanggal (date) Null:NO Def:NULL
+  status (enum('Aktif','Nonaktif')) Null:YES Def:'Aktif'
+  created_at (timestamp) Null:YES Def:'CURRENT_TIMESTAMP'
+=== TABLE: ppdb_pendaftar ===
+  id (int) Null:NO Def:NULL
+  no_pendaftaran (varchar(50)) Null:NO Def:NULL
+  nama_lengkap (varchar(150)) Null:NO Def:NULL
+  nisn (varchar(30)) Null:NO Def:NULL
+  asal_sekolah (varchar(150)) Null:NO Def:NULL
+  pilihan_jurusan (varchar(100)) Null:NO Def:NULL
+  jalur_pendaftaran (varchar(50)) Null:NO Def:NULL
+  no_hp (varchar(30)) Null:NO Def:NULL
+  email (varchar(100)) Null:YES Def:NULL
+  alamat (text) Null:NO Def:NULL
+  status (enum('Menunggu Verifikasi','Terverifikasi','Diterima','Cadangan','Tidak Diterima')) Null:YES Def:'Menunggu Verifikasi'
+  catatan (text) Null:YES Def:NULL
+  created_at (timestamp) Null:YES Def:'CURRENT_TIMESTAMP'
+=== TABLE: prestasi ===
+  id (int) Null:NO Def:NULL
+  judul (varchar(255)) Null:YES Def:NULL
+  nama_lomba (varchar(255)) Null:YES Def:NULL
+  tingkat (varchar(50)) Null:NO Def:NULL
+  tahun (varchar(10)) Null:NO Def:NULL
+  penyelenggara (varchar(150)) Null:YES Def:'Kemendikbudristek'
+  nama_siswa (varchar(150)) Null:YES Def:NULL
+  kelas (varchar(50)) Null:YES Def:'-'
+  peringkat (varchar(100)) Null:NO Def:NULL
+  nama_peraih (varchar(150)) Null:YES Def:NULL
+  kelas_jurusan (varchar(50)) Null:YES Def:NULL
+  foto (varchar(500)) Null:YES Def:NULL
+  status (enum('Aktif','Nonaktif','Publikasi','Draf')) Null:YES Def:'Aktif'
+  created_at (timestamp) Null:YES Def:'CURRENT_TIMESTAMP'
+=== TABLE: statistik_sekolah ===
+  id (int) Null:NO Def:NULL
+  kode (varchar(50)) Null:YES Def:NULL
+  label (varchar(100)) Null:NO Def:NULL
+  nilai (varchar(50)) Null:NO Def:NULL
+  keterangan (varchar(255)) Null:YES Def:NULL
+  icon (varchar(50)) Null:YES Def:'bi-graph-up'
+  urutan (int) Null:YES Def:'1'
+  status (enum('Aktif','Nonaktif')) Null:YES Def:'Aktif'
+  updated_at (timestamp) Null:YES Def:'CURRENT_TIMESTAMP'
+=== TABLE: testimoni ===
+  id (int) Null:NO Def:NULL
+  nama (varchar(100)) Null:NO Def:NULL
+  jurusan (varchar(100)) Null:YES Def:NULL
+  tahun_lulus (int) Null:YES Def:NULL
+  jurusan_tahun (varchar(100)) Null:NO Def:NULL
+  pekerjaan (varchar(150)) Null:NO Def:NULL
+  profesi (varchar(150)) Null:YES Def:NULL
+  perusahaan (varchar(150)) Null:YES Def:NULL
+  testimoni (text) Null:NO Def:NULL
+  foto (varchar(500)) Null:YES Def:NULL
+  rating (int) Null:YES Def:'5'
+  tampil_landing (tinyint) Null:YES Def:'1'
+  status (enum('Aktif','Nonaktif')) Null:YES Def:'Aktif'
+  urutan (int) Null:YES Def:'1'
+  created_at (timestamp) Null:YES Def:'CURRENT_TIMESTAMP'
+=== TABLE: users ===
+  id (int) Null:NO Def:NULL
+  username (varchar(50)) Null:NO Def:NULL
+  password (varchar(255)) Null:NO Def:NULL
+  nama_lengkap (varchar(100)) Null:NO Def:NULL
+  email (varchar(100)) Null:NO Def:NULL
+  foto (varchar(255)) Null:YES Def:'assets/images/avatar.png'
+  role (varchar(20)) Null:YES Def:'admin'
+  last_login (datetime) Null:YES Def:NULL
+  created_at (timestamp) Null:YES Def:'CURRENT_TIMESTAMP'

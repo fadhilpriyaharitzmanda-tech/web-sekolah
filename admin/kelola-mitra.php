@@ -186,7 +186,7 @@ include __DIR__ . '/components/sidebar.php';
           <option value="Tekstil">Tekstil &amp; Garmen</option>
           <option value="Mesin">Permesinan Presisi</option>
         </select>
-        <button class="btn-table-action" type="button" onclick="alert('Data kemitraan industri berhasil diekspor ke Excel!')">
+        <button class="btn-table-action" type="button" onclick="showToast('Data kemitraan industri berhasil diekspor ke Excel!', 'success')">
           <i class="bi bi-file-earmark-excel"></i> Unduh Excel
         </button>
       </div>
@@ -209,7 +209,8 @@ include __DIR__ . '/components/sidebar.php';
         <tbody>
           <?php if (!empty($mitraList)): ?>
             <?php foreach ($mitraList as $m): 
-              $words = explode(' ', trim($m['nama_perusahaan']));
+              $namaPerusahaan = !empty($m['nama_perusahaan']) ? $m['nama_perusahaan'] : (!empty($m['nama_mitra']) ? $m['nama_mitra'] : 'Mitra Industri');
+              $words = array_filter(explode(' ', trim((string)$namaPerusahaan)));
               $init = '';
               foreach (array_slice($words, 0, 3) as $w) {
                 if (!empty($w)) $init .= strtoupper($w[0]);
@@ -217,22 +218,23 @@ include __DIR__ . '/components/sidebar.php';
               $isAktif = ($m['status'] ?? 'Aktif') === 'Aktif';
               $mouMulai = !empty($m['mou_mulai']) ? date('Y', strtotime($m['mou_mulai'])) : '-';
               $mouSelesai = !empty($m['mou_selesai']) ? date('Y', strtotime($m['mou_selesai'])) : '-';
+              $kuotaPkl = (int)($m['kuota_pkl'] ?? 25);
             ?>
             <tr data-id="<?= $m['id'] ?>">
               <td style="width: 70px;">
                 <div class="rounded-3 bg-light d-flex align-items-center justify-content-center fw-bold text-success border" style="width: 46px; height: 46px; font-size: 0.82rem; letter-spacing: 0.05em;">
-                  <?= htmlspecialchars(substr($init, 0, 3)) ?>
+                  <?= htmlspecialchars(substr($init ?: 'DUD', 0, 3)) ?>
                 </div>
               </td>
               <td>
-                <div class="fw-bold text-main"><?= htmlspecialchars($m['nama_perusahaan']) ?></div>
+                <div class="fw-bold text-main"><?= htmlspecialchars($namaPerusahaan) ?></div>
                 <div class="text-muted fs-xs"><?= htmlspecialchars($m['alamat'] ?? '-') ?></div>
               </td>
-              <td><?= htmlspecialchars($m['bidang_usaha'] ?? 'Kemitraan DUDI') ?></td>
+              <td><?= htmlspecialchars($m['bidang_usaha'] ?? ($m['bidang_industri'] ?? 'Kemitraan DUDI')) ?></td>
               <td>
                 <span class="badge bg-success-subtle text-success fw-bold"><?= htmlspecialchars($m['jurusan_terkait'] ?? 'Semua') ?></span>
               </td>
-              <td><strong><?= (int)($m['kuota_pkl'] ?? 0) ?> Siswa / Thn</strong></td>
+              <td><strong><?= $kuotaPkl ?> Siswa / Thn</strong></td>
               <td><?= $mouMulai ?> - <?= $mouSelesai ?> (<?= $isAktif ? 'Aktif' : 'Berakhir' ?>)</td>
               <td>
                 <span class="badge-table <?= $isAktif ? 'success' : 'secondary' ?>">
@@ -244,10 +246,10 @@ include __DIR__ . '/components/sidebar.php';
                   <button type="button" class="table-btn-action" title="Edit Mitra" onclick="editMitra(<?= htmlspecialchars(json_encode($m)) ?>)">
                     <i class="bi bi-pencil"></i>
                   </button>
-                  <button type="button" class="table-btn-action" title="Data Siswa PKL" onclick="lihatSiswaPKL('<?= htmlspecialchars(addslashes($m['nama_perusahaan'])) ?>', '<?= (int)$m['kuota_pkl'] ?> Siswa')">
+                  <button type="button" class="table-btn-action" title="Data Siswa PKL" onclick="lihatSiswaPKL('<?= htmlspecialchars(addslashes($namaPerusahaan)) ?>', '<?= $kuotaPkl ?> Siswa')">
                     <i class="bi bi-people"></i>
                   </button>
-                  <button type="button" class="table-btn-action delete" title="Hapus Mitra" onclick="hapusMitra(<?= $m['id'] ?>, '<?= htmlspecialchars(addslashes($m['nama_perusahaan'])) ?>')">
+                  <button type="button" class="table-btn-action delete" title="Hapus Mitra" onclick="hapusMitra(<?= $m['id'] ?>, '<?= htmlspecialchars(addslashes($namaPerusahaan)) ?>')">
                     <i class="bi bi-trash"></i>
                   </button>
                 </div>
@@ -276,9 +278,6 @@ include __DIR__ . '/components/sidebar.php';
     </div>
   </div>
   <!-- END: table-card-custom -->
-
-</div>
-<!-- END: .main-wrapper -->
 
 <!-- Modal Tambah Mitra -->
 <div class="modal fade" id="modalTambahMitra" tabindex="-1" aria-labelledby="modalTambahMitraLabel" aria-hidden="true">
@@ -405,9 +404,9 @@ include __DIR__ . '/components/sidebar.php';
 <script>
 function editMitra(data) {
   document.getElementById('editIdMitra').value = data.id || '';
-  document.getElementById('editNamaMitra').value = data.nama_perusahaan || '';
+  document.getElementById('editNamaMitra').value = data.nama_perusahaan || data.nama_mitra || '';
   document.getElementById('editLokasiMitra').value = data.alamat || '';
-  document.getElementById('editBidangMitra').value = data.bidang_usaha || '';
+  document.getElementById('editBidangMitra').value = data.bidang_usaha || data.bidang_industri || '';
   document.getElementById('editJurusanMitra').value = data.jurusan_terkait || '';
   document.getElementById('editKuotaMitra').value = data.kuota_pkl || 25;
   document.getElementById('editMulaiMou').value = data.mou_mulai || '';
@@ -419,13 +418,18 @@ function editMitra(data) {
 }
 
 function lihatSiswaPKL(perusahaan, jumlah) {
-  alert('Data Penempatan PKL:\nPerusahaan: ' + perusahaan + '\nTotal Kuota Siswa: ' + jumlah + '\nStatus: Kerjasama resmi MoU terverifikasi.');
+  Swal.fire({
+    title: 'Data Penempatan PKL',
+    html: '<div class="text-start p-2"><p class="mb-2"><strong>Perusahaan:</strong> ' + perusahaan + '</p><p class="mb-2"><strong>Total Kuota Siswa:</strong> ' + jumlah + '</p><p class="mb-0"><strong>Status:</strong> <span class="badge bg-success">Kerjasama resmi MoU terverifikasi</span></p></div>',
+    icon: 'info',
+    confirmButtonColor: '#0f3d24'
+  });
 }
 
 function simpanTambahMitra() {
   const form = document.getElementById('formTambahMitra');
   if (!form.nama_perusahaan.value.trim()) {
-    alert('Silakan masukkan nama mitra industri!');
+    swalWarning('Silakan masukkan nama mitra industri!');
     return;
   }
 
@@ -437,21 +441,20 @@ function simpanTambahMitra() {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert(data.message);
-      location.reload();
+      swalSuccess(data.message).then(() => location.reload());
     } else {
-      alert('Gagal: ' + data.message);
+      swalError(data.message || 'Gagal menambahkan mitra industri');
     }
   })
   .catch(err => {
-    alert('Terjadi kesalahan jaringan.');
+    swalError('Terjadi kesalahan jaringan: ' + err.message);
   });
 }
 
 function simpanEditMitra() {
   const form = document.getElementById('formEditMitra');
   if (!form.nama_perusahaan.value.trim()) {
-    alert('Silakan masukkan nama mitra industri!');
+    swalWarning('Silakan masukkan nama mitra industri!');
     return;
   }
 
@@ -463,19 +466,24 @@ function simpanEditMitra() {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert(data.message);
-      location.reload();
+      swalSuccess(data.message).then(() => location.reload());
     } else {
-      alert('Gagal: ' + data.message);
+      swalError(data.message || 'Gagal memperbarui mitra industri');
     }
   })
   .catch(err => {
-    alert('Terjadi kesalahan jaringan.');
+    swalError('Terjadi kesalahan jaringan: ' + err.message);
   });
 }
 
 function hapusMitra(id, nama) {
-  if (confirm('Hapus data kemitraan dengan ' + nama + '?')) {
+  swalConfirm({
+    title: 'Hapus Mitra Industri?',
+    text: 'Apakah Anda yakin ingin menghapus data kemitraan dengan "' + nama + '"? Tindakan ini tidak dapat dibatalkan.',
+    confirmText: 'Iya, Hapus',
+    cancelText: 'Tidak, Batal',
+    isDanger: true
+  }, () => {
     const formData = new FormData();
     formData.append('action', 'hapus');
     formData.append('id', id);
@@ -487,16 +495,15 @@ function hapusMitra(id, nama) {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        alert(data.message);
-        location.reload();
+        swalSuccess(data.message).then(() => location.reload());
       } else {
-        alert('Gagal: ' + data.message);
+        swalError(data.message);
       }
     })
     .catch(err => {
-      alert('Terjadi kesalahan jaringan.');
+      swalError('Terjadi kesalahan jaringan: ' + err.message);
     });
-  }
+  });
 }
 
 function filterMitraTable() {

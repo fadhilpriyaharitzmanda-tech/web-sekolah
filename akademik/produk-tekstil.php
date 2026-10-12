@@ -10,6 +10,9 @@ $tekstilProducts = array_filter($PRODUCTS_LIST, function($p) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Produk Tekstil &amp; Busana | SMKN 2 Karanganyar</title>
+  <!-- Favicon Logo SMKN 2 Karanganyar -->
+  <link rel="icon" type="image/png" href="../logo/smkn2kra.png">
+  <link rel="shortcut icon" href="../logo/smkn2kra.png">
   <link rel="stylesheet" href="../css/style.css?v=3">
   <link rel="stylesheet" href="../css/transaksi.css?v=4">
   <link rel="preconnect" href="https://fonts.googleapis.com">

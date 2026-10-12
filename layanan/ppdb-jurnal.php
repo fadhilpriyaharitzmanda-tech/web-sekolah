@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jurnal Seleksi | PPDB SMKN 2 Karanganyar</title>
+  <!-- Favicon Logo SMKN 2 Karanganyar -->
+  <link rel="icon" type="image/png" href="../logo/smkn2kra.png">
+  <link rel="shortcut icon" href="../logo/smkn2kra.png">
   <link rel="stylesheet" href="../css/style.css?v=3">
   <link rel="stylesheet" href="../css/ppdb.css?v=4">
 </head>
@@ -176,7 +179,7 @@
   function cariJurnal() {
     var nisn = document.getElementById('cariNisnJurnal').value.trim();
     if (!nisn) {
-      alert('Masukkan NISN.');
+      swalWarning('Harap masukkan nomor NISN untuk mencari jurnal seleksi.');
       return;
     }
     location.href = 'ppdb-jurnal.php?nisn=' + encodeURIComponent(nisn);

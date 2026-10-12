@@ -35,17 +35,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Fetch stats dari database
 $statRows = $pdo->query("SELECT * FROM statistik_sekolah ORDER BY urutan ASC, id ASC")->fetchAll(PDO::FETCH_ASSOC);
 $stats = [];
-foreach ($statRows as $row) {
-    $stats[$row['kode']] = $row;
+foreach ($statRows as $idx => $row) {
+    $k = !empty($row['kode']) ? $row['kode'] : ('stat_' . ($row['urutan'] ?? ($idx + 1)));
+    $stats[$k] = $row;
 }
-$s1_val = $stats['stat_1']['nilai'] ?? '2500+';
-$s1_lbl = $stats['stat_1']['label'] ?? 'Siswa Aktif';
-$s2_val = $stats['stat_2']['nilai'] ?? '45+';
-$s2_lbl = $stats['stat_2']['label'] ?? 'Partner Industri';
-$s3_val = $stats['stat_3']['nilai'] ?? '100%';
-$s3_lbl = $stats['stat_3']['label'] ?? 'Kurikulum Industri';
-$s4_val = $stats['stat_4']['nilai'] ?? '7+';
-$s4_lbl = $stats['stat_4']['label'] ?? 'Eskul Prestasi';
+$s1_val = $stats['stat_1']['nilai'] ?? ($statRows[0]['nilai'] ?? '2500+');
+$s1_lbl = $stats['stat_1']['label'] ?? ($statRows[0]['label'] ?? 'Siswa Aktif');
+$s2_val = $stats['stat_2']['nilai'] ?? ($statRows[1]['nilai'] ?? '45+');
+$s2_lbl = $stats['stat_2']['label'] ?? ($statRows[1]['label'] ?? 'Partner Industri');
+$s3_val = $stats['stat_3']['nilai'] ?? ($statRows[2]['nilai'] ?? '100%');
+$s3_lbl = $stats['stat_3']['label'] ?? ($statRows[2]['label'] ?? 'Kurikulum Industri');
+$s4_val = $stats['stat_4']['nilai'] ?? ($statRows[3]['nilai'] ?? '7+');
+$s4_lbl = $stats['stat_4']['label'] ?? ($statRows[3]['label'] ?? 'Eskul Prestasi');
 
 $pageTitle = 'Kelola Statistik Sekolah - Admin SMKN 2 Karanganyar';
 $currentPage = 'kelola-stats';
@@ -297,7 +298,7 @@ include __DIR__ . '/components/sidebar.php';
               <option selected>Tahun Ajaran 2026/2027</option>
               <option>Tahun Ajaran 2025/2026</option>
             </select>
-            <button class="btn-table-action" type="button" onclick="alert('Data statistik berhasil diekspor!')">
+            <button class="btn-table-action" type="button" onclick="showToast('Data statistik berhasil diekspor!', 'success')">
               <i class="bi bi-file-earmark-excel"></i> Ekspor Excel
             </button>
           </div>
@@ -482,8 +483,6 @@ include __DIR__ . '/components/sidebar.php';
     </div>
   </div>
 
-</div>
-
 <!-- JavaScript Logic for Live Preview and Save Toast -->
 <script>
 function updateLivePreview() {
@@ -504,16 +503,25 @@ function updateLivePreview() {
 }
 
 function resetDefaultCounter() {
-  document.getElementById('input-stat-1').value = '2500+';
-  document.getElementById('input-label-1').value = 'Siswa Aktif';
-  document.getElementById('input-stat-2').value = '45+';
-  document.getElementById('input-label-2').value = 'Partner Industri';
-  document.getElementById('input-stat-3').value = '100%';
-  document.getElementById('input-label-3').value = 'Kurikulum Industri';
-  document.getElementById('input-stat-4').value = '7+';
-  document.getElementById('input-label-4').value = 'Eskul Prestasi';
-  updateLivePreview();
-  alert('Counter dikembalikan ke nilai default sekolah.');
+  swalConfirm({
+    title: 'Reset Angka Counter?',
+    text: 'Apakah Anda ingin mengembalikan nilai seluruh counter landing page ke default sekolah?',
+    confirmText: 'Iya, Reset',
+    cancelText: 'Tidak, Batal',
+    isDanger: false,
+    icon: 'question'
+  }, () => {
+    document.getElementById('input-stat-1').value = '2500+';
+    document.getElementById('input-label-1').value = 'Siswa Aktif';
+    document.getElementById('input-stat-2').value = '45+';
+    document.getElementById('input-label-2').value = 'Partner Industri';
+    document.getElementById('input-stat-3').value = '100%';
+    document.getElementById('input-label-3').value = 'Kurikulum Industri';
+    document.getElementById('input-stat-4').value = '7+';
+    document.getElementById('input-label-4').value = 'Eskul Prestasi';
+    updateLivePreview();
+    swalSuccess('Counter dikembalikan ke nilai default sekolah.');
+  });
 }
 
 function simpanStatistikGlobal() {
@@ -535,13 +543,13 @@ function simpanStatistikGlobal() {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert('Berhasil! ' + data.message);
+      swalSuccess(data.message);
     } else {
-      alert('Gagal: ' + (data.message || 'Terjadi kesalahan'));
+      swalError(data.message || 'Terjadi kesalahan');
     }
   })
   .catch(err => {
-    alert('Terjadi kesalahan jaringan: ' + err.message);
+    swalError('Terjadi kesalahan jaringan: ' + err.message);
   });
 }
 </script>

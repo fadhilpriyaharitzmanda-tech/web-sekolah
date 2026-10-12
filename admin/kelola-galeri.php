@@ -244,9 +244,6 @@ include __DIR__ . '/components/sidebar.php';
     <?php endif; ?>
   </div>
 
-</div>
-<!-- END: .main-wrapper -->
-
 <!-- Modal Tambah Galeri -->
 <div class="modal fade" id="modalTambahGaleri" tabindex="-1" aria-labelledby="modalTambahGaleriLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -398,7 +395,7 @@ function editGaleri(data) {
 function simpanTambahGaleri() {
   const form = document.getElementById('formTambahGaleri');
   if (!form.judul.value.trim()) {
-    alert('Judul dokumentasi wajib diisi!');
+    swalWarning('Judul dokumentasi wajib diisi!');
     return;
   }
 
@@ -407,19 +404,18 @@ function simpanTambahGaleri() {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert(data.message);
-      location.reload();
+      swalSuccess(data.message).then(() => location.reload());
     } else {
-      alert('Gagal: ' + data.message);
+      swalError(data.message || 'Gagal menambahkan dokumentasi');
     }
   })
-  .catch(() => alert('Terjadi kesalahan jaringan.'));
+  .catch(err => swalError('Terjadi kesalahan jaringan: ' + err.message));
 }
 
 function simpanEditGaleri() {
   const form = document.getElementById('formEditGaleri');
   if (!form.judul.value.trim()) {
-    alert('Judul dokumentasi wajib diisi!');
+    swalWarning('Judul dokumentasi wajib diisi!');
     return;
   }
 
@@ -428,17 +424,22 @@ function simpanEditGaleri() {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert(data.message);
-      location.reload();
+      swalSuccess(data.message).then(() => location.reload());
     } else {
-      alert('Gagal: ' + data.message);
+      swalError(data.message || 'Gagal memperbarui dokumentasi');
     }
   })
-  .catch(() => alert('Terjadi kesalahan jaringan.'));
+  .catch(err => swalError('Terjadi kesalahan jaringan: ' + err.message));
 }
 
 function hapusGaleri(id, judul) {
-  if (confirm('Hapus foto dokumentasi ' + judul + '?')) {
+  swalConfirm({
+    title: 'Hapus Dokumentasi?',
+    text: 'Apakah Anda yakin ingin menghapus foto dokumentasi "' + judul + '"? Tindakan ini tidak dapat dibatalkan.',
+    confirmText: 'Iya, Hapus',
+    cancelText: 'Tidak, Batal',
+    isDanger: true
+  }, () => {
     const formData = new FormData();
     formData.append('action', 'hapus');
     formData.append('id', id);
@@ -447,14 +448,13 @@ function hapusGaleri(id, judul) {
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        alert(data.message);
-        location.reload();
+        swalSuccess(data.message).then(() => location.reload());
       } else {
-        alert('Gagal: ' + data.message);
+        swalError(data.message);
       }
     })
-    .catch(() => alert('Terjadi kesalahan jaringan.'));
-  }
+    .catch(() => swalError('Terjadi kesalahan jaringan.'));
+  });
 }
 
 function filterGaleri(category, btn) {

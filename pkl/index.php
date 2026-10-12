@@ -15,6 +15,9 @@ try {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PKL | SMKN 2 Karanganyar</title>
+  <!-- Favicon Logo SMKN 2 Karanganyar -->
+  <link rel="icon" type="image/png" href="../logo/smkn2kra.png">
+  <link rel="shortcut icon" href="../logo/smkn2kra.png">
   <link rel="stylesheet" href="../css/style.css?v=3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -370,8 +373,8 @@ try {
                   <span class="material-symbols-outlined"><?= $icon ?></span>
                 </div>
                 <div class="partner-info">
-                  <h4><?= htmlspecialchars($pm['nama_perusahaan']) ?></h4>
-                  <p><?= htmlspecialchars($pm['jurusan_terkait'] ?? 'Semua Jurusan') ?> &bull; Kuota: <?= (int)$pm['kuota_pkl'] ?> Siswa / Tahun</p>
+                  <h4><?= htmlspecialchars(!empty($pm['nama_perusahaan']) ? $pm['nama_perusahaan'] : (!empty($pm['nama_mitra']) ? $pm['nama_mitra'] : 'Mitra Industri')) ?></h4>
+                  <p><?= htmlspecialchars($pm['jurusan_terkait'] ?? 'Semua Jurusan') ?> &bull; Kuota: <?= (int)($pm['kuota_pkl'] ?? 25) ?> Siswa / Tahun</p>
                 </div>
               </div>
             <?php endforeach; ?>
